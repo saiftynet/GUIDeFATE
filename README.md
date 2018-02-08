@@ -69,3 +69,6 @@ my $gui=GUIDeFATE->new();
 $gui->MainLoop;
 ```
 This produces something like ![Calculator Screenshot](https://github.com/saiftynet/GUIDeFATE/blob/master/calculator%20screenshot.png)
+
+
+Of course this is at a very early stage, and I have only implemented buttons, static text and text control widgets.  More will come.  Suggestions welcome.
