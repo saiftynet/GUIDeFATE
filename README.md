@@ -66,3 +66,4 @@ GUIDeFATE::convert($window);
 my $gui=GUIDeFATE->new();
 $gui->MainLoop;
 ```
+This produces something like ![Calculator Screenshot](calculator screenshot.png)
