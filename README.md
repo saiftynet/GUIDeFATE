@@ -13,7 +13,7 @@ Sure there are clever things like wxGlade, and QT Designer etc.  These are tools
 
 The user uses a text editor to design the window. Not new of course...text editors have had to be used to describe windows when other graphical representation methods were not possible.  As this is already a two dimensional data, it should be possible to convert this into an actual graphical interface through an interpreter.  The developer simply has to draw the interface in text and then program the interaction that is required.
 
-# Textual representation of a Graphical interface?
+# Textual representation of a Graphical interface
 
 A simple hellow world
 ```
