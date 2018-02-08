@@ -16,7 +16,7 @@ The user uses a text editor to design the window. Not new of course...text edito
 # Textual representation of a Graphical interface?
 
 A simple hellow world
-
+```
 +------------------+
 | Message          |
 +------------------+
@@ -24,9 +24,9 @@ A simple hellow world
 |  Hello World! !  |
 |                  |
 +------------------+
-
+```
 A Calculator
-
+```
 +------------------------+
 |T  Calculator           |
 +------------------------+
@@ -37,3 +37,4 @@ A Calculator
 |  { 7 }{ 8 }{ 9 }{ * }  |
 |  { . }{ 0 }{ = }{ / }  |
 +------------------------+
+```
