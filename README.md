@@ -18,7 +18,7 @@ The user uses a text editor to design the window. Not new of course...text edito
 A simple hellow world
 ```
 +------------------+
-| Message          |
+|T Message         |
 +------------------+
 |                  |
 |  Hello World! !  |
@@ -30,7 +30,7 @@ A Calculator
 +------------------------+
 |T  Calculator           |
 +------------------------+
-|  [                  ]  |
+|  [__________________]  |
 |  { V }{ % }{ C }{AC }  |
 |  { 1 }{ 2 }{ 3 }{ + }  |
 |  { 4 }{ 5 }{ 6 }{ - }  |
