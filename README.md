@@ -64,6 +64,5 @@ END
 
 GUIDeFATE::convert($window);
 my $gui=GUIDeFATE->new();
-#$WxGuibuilder::frame->{txt}->SetLabel("Helloo");
 $gui->MainLoop;
 ```
