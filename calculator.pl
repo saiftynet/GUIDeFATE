@@ -1,11 +1,10 @@
-#!/usr/bin/perl -w
+#!/usr/bin/env perl 
 #A test script that  generates a calculator style interface
-#uses GUIDeFATE (which in turn depends on Wx)
+#use GUIDeFATE (which in turn depends on Wx)
 
 use strict;
-use GUIDeFATE;
+use warnings;
 use GUIDeFATE qw<$frame>;
-package Main;
 
 my $window=<<END;
 +------------------------+
@@ -24,4 +23,5 @@ END
 
 GUIDeFATE::convert($window);
 my $gui=GUIDeFATE->new();
+#$frame->{stattext21}->SetLabel("Test Control frame elements!");
 $gui->MainLoop;
