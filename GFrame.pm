@@ -1,14 +1,16 @@
-  package GFrame;
+   package GFrame;
    
    use strict;
    use warnings;
+
+   our $VERSION = '0.0.1';
    
    use GFrame qw<$frame>;
    use Exporter 'import';
-   our @EXPORT_OK      = qw<addButton addStatText addTextCtrl>;
+   our @EXPORT_OK      = qw<addButton addStatText addTextCtrl addMenuBits>;
    
-   use Wx qw( wxTE_PASSWORD wxTE_PROCESS_ENTER );
-   use Wx::Event qw( EVT_BUTTON EVT_TEXT_ENTER EVT_UPDATE_UI );
+   use Wx qw( wxTE_PASSWORD wxTE_PROCESS_ENTER wxDEFAULT wxNORMAL wxFONTENCODING_DEFAULT);
+   use Wx::Event qw( EVT_BUTTON EVT_TEXT_ENTER EVT_UPDATE_UI EVT_MENU);
    
    
    use base qw(Wx::Frame); # Inherit from Wx::Frame
@@ -17,6 +19,15 @@
    my @buttons=();
    my @textctrls=();
    my @stattexts=();
+   my @menu=();
+   
+    my $font = Wx::Font->new(     20,
+                                wxDEFAULT,
+                                wxNORMAL,
+                                wxNORMAL,
+                                0,
+                                "",
+                                wxFONTENCODING_DEFAULT);
    
    sub new
    {
@@ -40,7 +51,41 @@
 	   foreach my $stattxt (@stattexts){
 		   aST($self,$panel,@$stattxt)
 	   }
-   
+	   if (scalar @menu){
+		   $self ->{"menubar"} = Wx::MenuBar->new();
+		   $self->SetMenuBar($self ->{"menubar"});
+		   my $currentMenu;
+		   foreach my $menuBits (@menu){
+			  $currentMenu=aMB($self,$panel,$currentMenu,@$menuBits)
+	       }
+		   
+	   }
+	   
+	   sub aMB{
+	     my ($self,$panel,$currentMenu, $id, $label, $type, $action)=@_;
+	       if ($type eq "menu"){
+			   $currentMenu="menu".$id;
+			   $self ->{$currentMenu} =  Wx::Menu->new();
+		       $self ->{"menubar"}->Append($self ->{$currentMenu}, $label);
+		   }
+		   elsif ($type eq "radio"){
+			   $self ->{$currentMenu}->AppendRadioItem($id, $label);
+			   EVT_MENU( $self, $id, $action )
+		   }
+		   elsif ($type eq "check"){
+			   $self ->{$currentMenu}->AppendCheckItem($id, $label);
+			   EVT_MENU( $self, $id, $action )
+		   }
+		   elsif ($type eq "separator"){
+			   $self ->{$currentMenu}->AppendSeparator();
+		   }
+		   else{
+			   $self ->{$currentMenu}->Append($id, $label);
+			   EVT_MENU( $self, $id, $action )
+		   }
+		   return $currentMenu;
+	   }
+	   
        sub aBt{
 	    my ($self,$panel, $id, $label, $location, $size, $action)=@_;
 	    $self->{"btn".$id} = Wx::Button->new(     $panel,      # parent
@@ -66,13 +111,16 @@
 		 }
          
          sub aST{
-			  my ($self,$panel, $id, $text, $location)=@_;
+			  my ($self,$panel, $id, $text, $location, $size)=@_;
 			 $self->{"stattext".$id} = Wx::StaticText->new( $panel,             # parent
                                         $id,                  # id
                                         $text,                # label
                                         $location,            # position
-                                      );			 
+                                        $size
+                                      );	
+             $self->{"stattext".$id}->SetFont($font);		 
 		 }
+		 
    }
    
    sub addButton{
@@ -83,6 +131,9 @@
    }
    sub addStatText{
 	   push (@stattexts,shift );
+   }
+   sub addMenuBits{
+	   push (@menu, shift);
    }
  
   1;
