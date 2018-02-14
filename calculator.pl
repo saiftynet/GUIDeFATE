@@ -8,14 +8,19 @@ use GUIDeFATE qw<$frame>;
 
 my $window=<<END;
 +------------------------+
-|T  Calculator           |
+|T  Calculator test      |
 +M-----------------------+
+|    +I------------+     |
+|    |sister.jpg   |     |
+|    |             |     |
+|    +-------------+     |
+|                        |
 |  [                  ]  |
 |  { V }{ % }{ C }{AC }  |
 |  { 1 }{ 2 }{ 3 }{ + }  |
 |  { 4 }{ 5 }{ 6 }{ - }  |
 |  { 7 }{ 8 }{ 9 }{ * }  |
-|  { . }{ 0 }{ = }{ / }  |
+|  { . }{ 0 }{ =      }  |
 |  made with GUIdeFATE   |
 |  and happy things      |
 +------------------------+
@@ -40,6 +45,6 @@ END
 GUIDeFATE::convert($window);
 my $gui=GUIDeFATE->new();
 #$frame->{stattext21}->SetLabel("The button was clicked!");
-$frame->{stattext21}->SetForegroundColour( Wx::Colour->new(255, 0, 0) );
+#$frame->{stattext21}->SetForegroundColour( Wx::Colour->new(255, 0, 0) );
 
 $gui->MainLoop;
