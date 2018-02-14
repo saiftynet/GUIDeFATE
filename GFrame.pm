@@ -3,15 +3,15 @@
    use strict;
    use warnings;
 
-   our $VERSION = '0.0.1';
+   our $VERSION = '0.0.2';
    
    use GFrame qw<$frame>;
    use Exporter 'import';
-   our @EXPORT_OK      = qw<addButton addStatText addTextCtrl addMenuBits>;
+   our @EXPORT_OK      = qw<addButton addStatText addTextCtrl addMenuBits addPanel>;
    
    use Wx qw( wxTE_PASSWORD wxTE_PROCESS_ENTER wxDEFAULT wxNORMAL wxFONTENCODING_DEFAULT);
    use Wx::Event qw( EVT_BUTTON EVT_TEXT_ENTER EVT_UPDATE_UI EVT_MENU);
-   
+   use Wx::Perl::Imagick;                 #for image panels
    
    use base qw(Wx::Frame); # Inherit from Wx::Frame
    
@@ -20,8 +20,9 @@
    my @textctrls=();
    my @stattexts=();
    my @menu=();
+   my @subpanels=();
    
-    my $font = Wx::Font->new(     20,
+   my $font = Wx::Font->new(     24,
                                 wxDEFAULT,
                                 wxNORMAL,
                                 wxNORMAL,
@@ -51,14 +52,16 @@
 	   foreach my $stattxt (@stattexts){
 		   aST($self,$panel,@$stattxt)
 	   }
-	   if (scalar @menu){
+	   if (scalar @menu){   #menu exists
 		   $self ->{"menubar"} = Wx::MenuBar->new();
 		   $self->SetMenuBar($self ->{"menubar"});
-		   my $currentMenu;
-		   foreach my $menuBits (@menu){
+		   my $currentMenu; my $lastMenuItem;
+		   foreach my $menuBits (@menu){ 
 			  $currentMenu=aMB($self,$panel,$currentMenu,@$menuBits)
 	       }
-		   
+	   }
+	   foreach my $sp (@subpanels){
+		   aSP($self,$panel,@$sp);
 	   }
 	   
 	   sub aMB{
@@ -111,16 +114,36 @@
 		 }
          
          sub aST{
-			  my ($self,$panel, $id, $text, $location, $size)=@_;
+			  my ($self,$panel, $id, $text, $location)=@_;
 			 $self->{"stattext".$id} = Wx::StaticText->new( $panel,             # parent
                                         $id,                  # id
                                         $text,                # label
-                                        $location,            # position
-                                        $size
+                                        $location            # position
                                       );	
              $self->{"stattext".$id}->SetFont($font);		 
 		 }
-		 
+		 sub aSP{
+			 my ($self,$panel, $id, $panelType, $content, $location, $size)=@_;
+			 $self->{"subpanel".$id}= Wx::Panel->new( $panel,# parent
+			                                         $id,# id
+			                                         $location,
+			                                         $size			                                         
+			                                         ); 
+			
+			if ($panelType eq "I"){  # handle
+				#my $handler = Wx::JPEGHandler->new();
+				$content=~s/^\s+|\s+$//g;
+			    my $image = Wx::Perl::Imagick->new($content);
+			    my $bmp;    # used to hold the bitmap.
+			    my $geom=${$size}[0]."x".${$size}[1];
+			    $image->Resize(geometry => $geom);
+			    $bmp = $image->ConvertToBitmap();
+			     if( $bmp->Ok() ) {
+                     $self->{"Image".$id}= Wx::StaticBitmap->new($self->{"subpanel".$id}, -1, $bmp);
+                 }
+			 }
+
+		 }
    }
    
    sub addButton{
@@ -135,5 +158,7 @@
    sub addMenuBits{
 	   push (@menu, shift);
    }
- 
+    sub addPanel{
+	   push (@subpanels, shift);
+   }
   1;
