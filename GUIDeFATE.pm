@@ -3,11 +3,11 @@ package GUIDeFATE;
    use strict;
    use warnings;
    
-   our $VERSION = '0.0.1';
+   our $VERSION = '0.0.2';
 
    use parent qw(Wx::App);              # Inherit from Wx::App
    use Exporter 'import';
-   use GFrame qw<addButton addStatText addTextCtrl addMenuBits>;
+   use GFrame qw<addButton addStatText addTextCtrl addMenuBits addPanel>;
    
    our $winWidth;
    our $winHeight;
@@ -47,25 +47,47 @@ sub convert{
 	}
 	my $l=0;my $bid=0;
 	foreach my $line (@lines){
-		last if ($line eq "");
-		while ($line =~m/(\{([^}]*)\})/g){
+		last if ($line eq "");         # blank line determines end of window 
+		while  ($line =~m/(\+([A-z]?)[A-z\-]+\+)/g){
+			my $ps=length($`); my $fl=length($1)-2;my $fh=1; my $panelType=$2;
+			my $reg=qr/^.{$ps}\K(\|.{$fl}\|) /;my $content="";   #\K operator protects the previous match from the deletion to follow
+			while  ($ps && ($lines[$l+$fh] =~m/$reg/g)){
+				my $tmp=$1;
+				$tmp=~s/^\||\|//g;
+				$content.=$tmp;
+				$lines[$l+$fh]=~s/$reg/" " x length($1)/e;       #delete the frame
+				$fh++;
+			}
+			$fh++;
+			if ($ps  && ($fh-2)) {
+				print "SubPanel '$panelType' Id $bid found position  $ps height $fh width $fl at row $l with content $content \n";
+				addPanel([$bid++,$panelType,$content,[$ps*16-8,$l*32],[$fl*16+24,$fh*32]])
+			};
+			
+		}
+		
+		while ($line =~m/(\{([^}]*)\})/g){   # buttons are made from { <label> } 
 			my $ps=length($`);
 			print "Button with label '". $2."' calls function &btn$bid\n";
 			addButton([$bid, $2,[$ps*16-8,$l*32],[length($2)*16+24,32], \&{"main::btn".$bid++}]);
+			$line=~s/(\{([^}]*)\})/" " x length($1)/e;     #remove buttons replacing with spaces
 		}
-		while ($line=~m/(\[([^\]]+)\])/g){
+		while ($line=~m/(\[([^\]]+)\])/g){   # text ctrls are made from [ default text ] 
 			my ($ps,$all,$content)=(length($`),$1,$2);
 			$content=~s/_/ /g;
 			print "Text Control with default text '". $content."', calls function &textctrl$bid \n";
 			addTextCtrl([$bid, $content,[$ps*16-8,$l*32],[length($content)*16+24,32], \&{"main::textctrl".$bid++}]);
+			$line=~s/(\[([^\]]+)\])/" " x length($1)/e;     #remove buttons replacing with spaces
 		}
 		if ($line !~ m/\+/){
 		  my $tmp=$line;
-		  $tmp=~s/^\|\s+|(\[([^\]]+)\])|(\{([^}]*)\})|\s+\|$//g;
+		  $tmp=~s/(\[([^\]]+)\])|(\{([^}]*)\})/" " x length $1/ge;    
+		  $tmp=~s/^(\|)|(\|)$//g;                                     #remove starting and ending border
+		  $tmp=~s/^(\s+)|(\s+)$//g;                                   #remove spaces                                 
 		  if (length $tmp){
 			  print "Static text '".$tmp."'  with id stattext$bid\n";
 		      $line=~m/$tmp/;my $ps=length($`);
-		      addStatText([$bid++, $tmp,[$ps*16-8,$l*32],[length($tmp)*16+24,32]]);
+		      addStatText([$bid++, $tmp,[$ps*16-8,$l*32]]);
 		  }
 	     }
 		$l++;		
