@@ -3,7 +3,7 @@ package GUIDeFATE;
    use strict;
    use warnings;
    
-   our $VERSION = '0.0.2';
+   our $VERSION = '0.0.3';
 
    use parent qw(Wx::App);              # Inherit from Wx::App
    use Exporter 'import';
@@ -31,7 +31,11 @@ package GUIDeFATE;
 sub convert{
 	
 	my @lines=(split /\n/ ,shift) ;
-	my $assist=shift;
+	my $assist=shift; if (!$assist){$assist="v"};
+	my $verbose= $assist=~/v/;
+	my $debug= $assist=~/d/;
+	my $auto= $assist=~/a/;
+	
 	if ($lines[0] =~ /\-(\d+)x(\d+)-/){
 		$winWidth=$1;
 	    $winHeight=$2;
@@ -42,42 +46,52 @@ sub convert{
 	shift @lines;
 	if ($lines[0]=~/\|T\s*(\S.*\S)\s*\|/){
 		$winTitle=$1;
-		print "Title=".$winTitle."\n";
+		if ($verbose){print "Title=".$winTitle."\n"};
 		shift @lines;
 	}
 	my $l=0;my $bid=0;
 	foreach my $line (@lines){
 		last if ($line eq "");         # blank line determines end of window 
-		while  ($line =~m/(\+([A-z]?)[A-z\-]+\+)/g){
+		while  ($line =~m/(\+([A-z]?)[A-z\-]+\+)/){
 			my $ps=length($`); my $fl=length($1)-2;my $fh=1; my $panelType=$2;
-			my $reg=qr/^.{$ps}\K(\|.{$fl}\|) /;my $content="";   #\K operator protects the previous match from the deletion to follow
+			$lines[$l]=~s/(\+([A-z]?)[A-z\-]+\+)/" " x ($fl+2)/e;
+			my $reg=qr/^.{$ps}\K(\|.{$fl}\|)/;my $content="";   #\K operator protects the previous match from the deletion to follow
 			while  ($ps && ($lines[$l+$fh] =~m/$reg/g)){
-				my $tmp=$1;
+				my $tmp=$1;  
 				$tmp=~s/^\||\|//g;
 				$content.=$tmp;
-				$lines[$l+$fh]=~s/$reg/" " x length($1)/e;       #delete the frame
+				$lines[$l+$fh]=~s/$reg/" " x ($fl+2)/e;       #delete the frame by overwriting with spaces
 				$fh++;
 			}
 			$fh++;
 			if ($ps  && ($fh-2)) {
-				print "SubPanel '$panelType' Id $bid found position  $ps height $fh width $fl at row $l with content $content \n";
+				if ($verbose){
+					print "SubPanel '$panelType' Id $bid found position  $ps height $fh width $fl at row $l with content $content \n";
+				}
 				addPanel([$bid++,$panelType,$content,[$ps*16-8,$l*32],[$fl*16+24,$fh*32]])
 			};
 			
+		       
+			
 		}
+		
 		
 		while ($line =~m/(\{([^}]*)\})/g){   # buttons are made from { <label> } 
 			my $ps=length($`);
-			print "Button with label '". $2."' calls function &btn$bid\n";
+			if ($verbose){
+				print "Button with label '". $2."' calls function &btn$bid\n";
+			}
 			addButton([$bid, $2,[$ps*16-8,$l*32],[length($2)*16+24,32], \&{"main::btn".$bid++}]);
 			$line=~s/(\{([^}]*)\})/" " x length($1)/e;     #remove buttons replacing with spaces
 		}
 		while ($line=~m/(\[([^\]]+)\])/g){   # text ctrls are made from [ default text ] 
 			my ($ps,$all,$content)=(length($`),$1,$2);
 			$content=~s/_/ /g;
-			print "Text Control with default text '". $content."', calls function &textctrl$bid \n";
+			if ($verbose){
+				print "Text Control with default text '". $content."', calls function &textctrl$bid \n";
+			}
 			addTextCtrl([$bid, $content,[$ps*16-8,$l*32],[length($content)*16+24,32], \&{"main::textctrl".$bid++}]);
-			$line=~s/(\[([^\]]+)\])/" " x length($1)/e;     #remove buttons replacing with spaces
+			$line=~s/(\[([^\]]+)\])/" " x length($1)/e;     #remove text controls replacing with spaces
 		}
 		if ($line !~ m/\+/){
 		  my $tmp=$line;
@@ -85,7 +99,9 @@ sub convert{
 		  $tmp=~s/^(\|)|(\|)$//g;                                     #remove starting and ending border
 		  $tmp=~s/^(\s+)|(\s+)$//g;                                   #remove spaces                                 
 		  if (length $tmp){
-			  print "Static text '".$tmp."'  with id stattext$bid\n";
+			  if ($verbose){
+				  print "Static text '".$tmp."'  with id stattext$bid\n";
+			  }
 		      $line=~m/$tmp/;my $ps=length($`);
 		      addStatText([$bid++, $tmp,[$ps*16-8,$l*32]]);
 		  }
@@ -98,38 +114,60 @@ sub convert{
 	while ($l++<=scalar(@lines)){
 		next if ((!$lines[$l]) || ($lines[$l] eq "")||($lines[$l]=~m/^#/));
 		if ($lines[$l]=~/menu/i){
-			print "Menu found\n";
+			if ($verbose){print "Menu found\n";}
 			$mode="menu";
 			next;};
 		if($mode eq "menu"){
 			if ($lines[$l]=~/^\-([A-z0-9].*)/i){
-				print "Menu bar $1 found\n";
+				if ($verbose){
+					print "Menu bar $1 found\n";
+				}
 				addMenuBits([$bid++, $1, "menu", ""]);
 				}
 			elsif($lines[$l]=~/^\-{2}([A-z0-9].*)\;radio/i){
-				print "Menu $1  as radio found, calls function &menu$bid \n";
+				if ($verbose){
+					print "Menu $1  as radio found, calls function &menu$bid \n";
+				}
 				addMenuBits([$bid, $1, "radio", \&{"main::menu".$bid++}]);
 				}
 			elsif($lines[$l]=~/^\-{2}([A-z0-9].*)\;check/i){
-				print "Menu $1 as check found, calls function &menu$bid \n";
+				if ($verbose){
+					print "Menu $1 as check found, calls function &menu$bid \n";
+				}
 				addMenuBits([$bid, $1, "check", \&{"main::menu".$bid++}]);
 				}
 			elsif($lines[$l]=~/^\-{6}/){
-				print "Separator found,\n";
+				if ($verbose){
+					print "Separator found,\n";
+				}
 				addMenuBits([$bid++, "", "separator",""]);
 				}
 		    elsif($lines[$l]=~/^\-{2}([A-z0-9].*)/i){
-				print "Menu $1 found, calls function &menu$bid \n";
+				if ($verbose){
+					print "Menu $1 found, calls function &menu$bid \n";
+				}
 				addMenuBits([$bid, $1, "normal", \&{"main::menu".$bid++}]);
 				}
-		    elsif($lines[$l]=~/^\-{3}([A-z0-9].*)/i){print "SubMenu $1 found\n";}
+		    elsif($lines[$l]=~/^\-{3}([A-z0-9].*)/i){
+				if ($verbose){
+					print "SubMenu $1 found\n";
+					}
+				}
 		}
 		
 		}
 		
 }
 
-sub assist{}
+sub debugGui{ # for debugging parsing...insert after deletion of discovered content
+	my @gui=shift;
+	foreach my $deb (@gui){
+		       last if ($deb eq "");
+		       print $deb."\n";
+		     }
+	
+	
+}
 
 
 1;
