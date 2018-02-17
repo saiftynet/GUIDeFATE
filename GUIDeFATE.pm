@@ -14,6 +14,8 @@ package GUIDeFATE;
    our $winTitle;
    our $frame;
    our @EXPORT_OK      = qw<$frame>;  # allows manipulation of frame from main.
+   my  $autoGen="";
+   my  $log="";
    
    sub OnInit
    {
@@ -31,7 +33,7 @@ package GUIDeFATE;
 sub convert{
 	
 	my @lines=(split /\n/ ,shift) ;
-	my $assist=shift; if (!$assist){$assist="v"};
+	my $assist=shift; if (!$assist){$assist="q"};
 	my $verbose= $assist=~/v/;
 	my $debug= $assist=~/d/;
 	my $auto= $assist=~/a/;
@@ -65,9 +67,9 @@ sub convert{
 			}
 			$fh++;
 			if ($ps  && ($fh-2)) {
-				if ($verbose){
-					print "SubPanel '$panelType' Id $bid found position  $ps height $fh width $fl at row $l with content $content \n";
-				}
+				$log="SubPanel '$panelType' Id $bid found position  $ps height $fh width $fl at row $l with content $content \n";##
+				if ($verbose){ print $log; }
+				if ($auto){ $autoGen.="#".$log; }
 				addPanel([$bid++,$panelType,$content,[$ps*16-8,$l*32],[$fl*16+24,$fh*32]])
 			};
 			
@@ -78,18 +80,18 @@ sub convert{
 		
 		while ($line =~m/(\{([^}]*)\})/g){   # buttons are made from { <label> } 
 			my $ps=length($`);
-			if ($verbose){
-				print "Button with label '". $2."' calls function &btn$bid\n";
-			}
+			$log= "Button with label '". $2."' calls function &btn$bid\n"; ##
+			if ($verbose){ print $log; }
+			if ($auto){ $autoGen.="#".$log.makeSub("btn$bid"); }			
 			addButton([$bid, $2,[$ps*16-8,$l*32],[length($2)*16+24,32], \&{"main::btn".$bid++}]);
 			$line=~s/(\{([^}]*)\})/" " x length($1)/e;     #remove buttons replacing with spaces
 		}
 		while ($line=~m/(\[([^\]]+)\])/g){   # text ctrls are made from [ default text ] 
 			my ($ps,$all,$content)=(length($`),$1,$2);
 			$content=~s/_/ /g;
-			if ($verbose){
-				print "Text Control with default text '". $content."', calls function &textctrl$bid \n";
-			}
+			$log= "Text Control with default text '". $content."', calls function &textctrl$bid \n"; ##
+			if ($verbose){ print $log; }
+			if ($auto){ $autoGen.="#".$log.makeSub("textctrl$bid"); }	
 			addTextCtrl([$bid, $content,[$ps*16-8,$l*32],[length($content)*16+24,32], \&{"main::textctrl".$bid++}]);
 			$line=~s/(\[([^\]]+)\])/" " x length($1)/e;     #remove text controls replacing with spaces
 		}
@@ -99,9 +101,9 @@ sub convert{
 		  $tmp=~s/^(\|)|(\|)$//g;                                     #remove starting and ending border
 		  $tmp=~s/^(\s+)|(\s+)$//g;                                   #remove spaces                                 
 		  if (length $tmp){
-			  if ($verbose){
-				  print "Static text '".$tmp."'  with id stattext$bid\n";
-			  }
+			  $log= "Static text '".$tmp."'  with id stattext$bid\n"; ##
+			  if ($verbose){ print $log; }
+			  if ($auto){ $autoGen.="#".$log; }
 		      $line=~m/$tmp/;my $ps=length($`);
 		      addStatText([$bid++, $tmp,[$ps*16-8,$l*32]]);
 		  }
@@ -114,50 +116,63 @@ sub convert{
 	while ($l++<=scalar(@lines)){
 		next if ((!$lines[$l]) || ($lines[$l] eq "")||($lines[$l]=~m/^#/));
 		if ($lines[$l]=~/menu/i){
-			if ($verbose){print "Menu found\n";}
+			$log=print "Menu found\n"; ##
+			if ($verbose){ print $log; }
+			if ($auto){ $autoGen.="#".$log; }
 			$mode="menu";
 			next;};
 		if($mode eq "menu"){
 			if ($lines[$l]=~/^\-([A-z0-9].*)/i){
-				if ($verbose){
-					print "Menu bar $1 found\n";
-				}
+				$log= "Menu bar $1 found\n"; ##
+				if ($verbose){ print $log; }
+				if ($auto){ $autoGen.="#".$log; }
 				addMenuBits([$bid++, $1, "menu", ""]);
 				}
 			elsif($lines[$l]=~/^\-{2}([A-z0-9].*)\;radio/i){
-				if ($verbose){
-					print "Menu $1  as radio found, calls function &menu$bid \n";
-				}
+				$log= "Menu $1  as radio found, calls function &menu$bid \n";##
+				if ($verbose){ print $log; }
+				if ($auto){ $autoGen.="#".$log.makeSub("menu$bid"); }
 				addMenuBits([$bid, $1, "radio", \&{"main::menu".$bid++}]);
 				}
 			elsif($lines[$l]=~/^\-{2}([A-z0-9].*)\;check/i){
-				if ($verbose){
-					print "Menu $1 as check found, calls function &menu$bid \n";
-				}
+				$log= "Menu $1 as check found, calls function &menu$bid \n";##
+				if ($verbose){ print $log; }
+				if ($auto){ $autoGen.="#".$log.makeSub("menu$bid"); }
 				addMenuBits([$bid, $1, "check", \&{"main::menu".$bid++}]);
 				}
 			elsif($lines[$l]=~/^\-{6}/){
-				if ($verbose){
-					print "Separator found,\n";
-				}
+				$log= "Separator found,\n"; ##
+				if ($verbose){ print $log; }
+				if ($auto){ $autoGen.="#".$log.makeSub("menu$bid"); }
 				addMenuBits([$bid++, "", "separator",""]);
 				}
 		    elsif($lines[$l]=~/^\-{2}([A-z0-9].*)/i){
-				if ($verbose){
-					print "Menu $1 found, calls function &menu$bid \n";
+				$log= "Menu $1 found, calls function &menu$bid \n";##
+				if ($verbose){ print $log; }
+				if ($auto){ $autoGen.="#".$log.makeSub("menu$bid"); }
 				}
 				addMenuBits([$bid, $1, "normal", \&{"main::menu".$bid++}]);
 				}
 		    elsif($lines[$l]=~/^\-{3}([A-z0-9].*)/i){
-				if ($verbose){
-					print "SubMenu $1 found\n";
-					}
+				$log= "SubMenu $1 found\n";##
+					
 				}
 		}
-		
+		if ($auto){
+			open(my $fh, '>', 'autogen.txt');
+            print $fh $autoGen;
+            close $fh;
 		}
 		
+    }
+		
+sub makeSub{
+	my $subName=shift;
+	my $subCode="sub $subName {\n  # subroutione code goes here\n};\n\n";
+	return $subCode;
+
 }
+
 
 sub debugGui{ # for debugging parsing...insert after deletion of discovered content
 	my @gui=shift;
