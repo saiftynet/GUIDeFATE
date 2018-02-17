@@ -1,9 +1,9 @@
-   package GFrame;
+package GFrame;
    
    use strict;
    use warnings;
 
-   our $VERSION = '0.0.2';
+   our $VERSION = '0.0.3';
    
    use GFrame qw<$frame>;
    use Exporter 'import';
@@ -134,13 +134,16 @@
 				#my $handler = Wx::JPEGHandler->new();
 				$content=~s/^\s+|\s+$//g;
 			    my $image = Wx::Perl::Imagick->new($content);
-			    my $bmp;    # used to hold the bitmap.
-			    my $geom=${$size}[0]."x".${$size}[1];
-			    $image->Resize(geometry => $geom);
-			    $bmp = $image->ConvertToBitmap();
-			     if( $bmp->Ok() ) {
+			    if ($image){
+			      my $bmp;    # used to hold the bitmap.
+			      my $geom=${$size}[0]."x".${$size}[1]."!";
+			      $image->Resize(geometry => $geom);
+			      $bmp = $image->ConvertToBitmap();
+			        if( $bmp->Ok() ) {
                      $self->{"Image".$id}= Wx::StaticBitmap->new($self->{"subpanel".$id}, -1, $bmp);
-                 }
+                    }
+				 }
+				 else {"print failed to load image $content \n";}
 			 }
 
 		 }
@@ -160,5 +163,21 @@
    }
     sub addPanel{
 	   push (@subpanels, shift);
+   }
+   
+   sub setImage{
+	   my ($self,$file,$id,$size)=@_;
+	    my $image = Wx::Perl::Imagick->new($file);
+			    if ($image){
+			      my $bmp;    # used to hold the bitmap.
+			      my $geom=${$size}[0]."x".${$size}[1]."!";
+			      $image->Resize(geometry => $geom);
+			      $bmp = $image->ConvertToBitmap();
+			        if( $bmp->Ok() ) {
+                     $self->{"Image".$id}= Wx::StaticBitmap->new($self->{"subpanel".$id}, -1, $bmp);
+                    }
+				 }
+				 else {"print failed to load image $file \n";}
+	   
    }
   1;
