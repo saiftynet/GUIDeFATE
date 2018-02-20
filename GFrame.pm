@@ -3,13 +3,16 @@ package GFrame;
    use strict;
    use warnings;
 
-   our $VERSION = '0.0.3';
+   our $VERSION = '0.04';
    
-   use GFrame qw<$frame>;
    use Exporter 'import';
-   our @EXPORT_OK      = qw<addButton addStatText addTextCtrl addMenuBits addPanel>;
+   our @EXPORT_OK      = qw<addButton addStatText addTextCtrl addMenuBits addPanel setScale>;
    
-   use Wx qw( wxTE_PASSWORD wxTE_PROCESS_ENTER wxDEFAULT wxNORMAL wxFONTENCODING_DEFAULT);
+   use Wx qw(wxMODERN wxTE_PASSWORD wxTE_PROCESS_ENTER wxDEFAULT wxNORMAL
+          wxFONTENCODING_DEFAULT wxTE_MULTILINE wxHSCROLL wxDefaultPosition wxFD_SAVE
+          wxYES wxFD_OPEN wxFD_FILE_MUST_EXIST wxFD_CHANGE_DIR wxID_CANCEL
+          wxYES_NO wxCANCEL wxOK  wxCENTRE  wxICON_EXCLAMATION  wxICON_HAND 
+          wxICON_ERROR  wxICON_QUESTION  wxICON_INFORMATION);
    use Wx::Event qw( EVT_BUTTON EVT_TEXT_ENTER EVT_UPDATE_UI EVT_MENU);
    use Wx::Perl::Imagick;                 #for image panels
    
@@ -21,8 +24,12 @@ package GFrame;
    my @stattexts=();
    my @menu=();
    my @subpanels=();
+   my %styles;
    
-   my $font = Wx::Font->new(     24,
+   my $lastMenuLabel;  #bug workaround in menu generator
+   
+   my $winScale=8;
+   my $font = Wx::Font->new(     3*$winScale,
                                 wxDEFAULT,
                                 wxNORMAL,
                                 wxNORMAL,
@@ -34,6 +41,7 @@ package GFrame;
    {
     my $class = shift;    
     my $self = $class->SUPER::new(@_);  # call the superclass' constructor
+    
     # Then define a Panel to put the content on
     my $panel = Wx::Panel->new( $self,-1); # parent, id
     setupContent($self,$panel);  #then add content
@@ -55,10 +63,12 @@ package GFrame;
 	   if (scalar @menu){   #menu exists
 		   $self ->{"menubar"} = Wx::MenuBar->new();
 		   $self->SetMenuBar($self ->{"menubar"});
-		   my $currentMenu; my $lastMenuItem;
+		   my $currentMenu;
 		   foreach my $menuBits (@menu){ 
 			  $currentMenu=aMB($self,$panel,$currentMenu,@$menuBits)
 	       }
+	       # a bug seems to make a menuhead to be also ia menuitem---
+
 	   }
 	   foreach my $sp (@subpanels){
 		   aSP($self,$panel,@$sp);
@@ -66,7 +76,11 @@ package GFrame;
 	   
 	   sub aMB{
 	     my ($self,$panel,$currentMenu, $id, $label, $type, $action)=@_;
-	       if ($type eq "menu"){
+	     if (($lastMenuLabel) &&($label eq $lastMenuLabel)){return $currentMenu} # bug workaround 
+	     else {$lastMenuLabel=$label};	                                         # in menu generator
+	    
+	     
+	       if ($type eq "menuhead"){
 			   $currentMenu="menu".$id;
 			   $self ->{$currentMenu} =  Wx::Menu->new();
 		       $self ->{"menubar"}->Append($self ->{$currentMenu}, $label);
@@ -83,9 +97,12 @@ package GFrame;
 			   $self ->{$currentMenu}->AppendSeparator();
 		   }
 		   else{
-			   $self ->{$currentMenu}->Append($id, $label);
-			   EVT_MENU( $self, $id, $action )
+			   if($currentMenu!~m/$label/){
+			     $self ->{$currentMenu}->Append($id, $label);
+			     EVT_MENU( $self, $id, $action )
+			 }
 		   }
+		   # logging menu generator print "$currentMenu---$id----$label---$type\n";
 		   return $currentMenu;
 	   }
 	   
@@ -130,9 +147,9 @@ package GFrame;
 			                                         $size			                                         
 			                                         ); 
 			
-			if ($panelType eq "I"){  # handle
-				#my $handler = Wx::JPEGHandler->new();
+			if ($panelType eq "I"){  # Image panels start with I
 				$content=~s/^\s+|\s+$//g;
+				if (! -e $content){ return; }
 			    my $image = Wx::Perl::Imagick->new($content);
 			    if ($image){
 			      my $bmp;    # used to hold the bitmap.
@@ -140,12 +157,24 @@ package GFrame;
 			      $image->Resize(geometry => $geom);
 			      $bmp = $image->ConvertToBitmap();
 			        if( $bmp->Ok() ) {
-                     $self->{"Image".$id}= Wx::StaticBitmap->new($self->{"subpanel".$id}, -1, $bmp);
+                     $self->{"Image".($id+1)}= Wx::StaticBitmap->new($self->{"subpanel".$id}, $id+1, $bmp);
                     }
 				 }
 				 else {"print failed to load image $content \n";}
 			 }
-
+			if ($panelType eq "T"){  # handle
+				$content=~s/^\s+|\s+$//g;
+				
+				$self->{"TextCtrl".($id+1)} = Wx::TextCtrl->new(
+                   $self->{"subpanel".$id}, 
+                   $id+1,
+                   $content, 
+                   wxDefaultPosition, 
+                   $size, 
+                   wxTE_MULTILINE|wxHSCROLL 
+                  );
+                $self->{"TextCtrl".($id+1)}->SetFont(Wx::Font->new(10, wxMODERN, wxNORMAL, wxNORMAL ));
+			 }
 		 }
    }
    
@@ -164,20 +193,101 @@ package GFrame;
     sub addPanel{
 	   push (@subpanels, shift);
    }
+   sub addStyle{
+	   my ($name,$style)=@_;
+	   $styles{$name}=$style;
+   }
    
    sub setImage{
-	   my ($self,$file,$id,$size)=@_;
-	    my $image = Wx::Perl::Imagick->new($file);
-			    if ($image){
-			      my $bmp;    # used to hold the bitmap.
-			      my $geom=${$size}[0]."x".${$size}[1]."!";
+	   my ($self,$file,$id)=@_;
+	   my $size=getPanelSize($self,$id);
+	   if ($size){
+	       my $image = Wx::Perl::Imagick->new($file);
+		   if ($image){
+			  my $bmp;    # used to hold the bitmap.
+			  my $geom=${$size}[0]."x".${$size}[1]."!";
 			      $image->Resize(geometry => $geom);
 			      $bmp = $image->ConvertToBitmap();
 			        if( $bmp->Ok() ) {
-                     $self->{"Image".$id}= Wx::StaticBitmap->new($self->{"subpanel".$id}, -1, $bmp);
+                     $self->{"Image".($id+1)}= Wx::StaticBitmap->new($self->{"subpanel".$id}, $id+1, $bmp);
                     }
 				 }
 				 else {"print failed to load image $file \n";}
+			 }
+		  else {print "Panel not found"}
+			 
 	   
    }
+   sub setScale{
+	   $winScale=shift;
+	   $font = Wx::Font->new(     3*$winScale,
+                                wxDEFAULT,
+                                wxNORMAL,
+                                wxNORMAL,
+                                0,
+                                "",
+                                wxFONTENCODING_DEFAULT);	   
+   }
+   
+   sub showFileSelectorDialog{
+	 
+     my ($self, $message,$load) = @_;
+     my $loadOptions=wxFD_OPEN|wxFD_FILE_MUST_EXIST|wxFD_CHANGE_DIR;
+     my $saveOptions=wxFD_SAVE|wxFD_CHANGE_DIR;
+     my $fd = Wx::FileDialog->new( $self, $message, ".", q{},
+				"All files|*|Data (*.dat)|*.dat",
+				$load?$loadOptions:$saveOptions,
+				wxDefaultPosition);
+    if ($fd->ShowModal == wxID_CANCEL) {
+      print "Data import cancelled\n";
+      return;
+    };
+    return $fd->GetPath;
+
+   };
+   
+   sub showDialog{
+	   my ($self, $title, $message,$response,$icon) = @_;
+	   my %responses=( YNC=>wxYES_NO|wxCANCEL|wxCENTRE,
+	                   YN =>wxYES_NO|wxCENTRE,
+	                   OK =>wxOK|wxCENTRE,
+	                   OKC=>wxOK|wxCANCEL|wxCENTRE );
+	                   
+	   my %icons= (  "!"=>wxICON_EXCLAMATION,
+	                 "?"=>wxICON_QUESTION,
+	                 "E"=>wxICON_ERROR,
+	                 "H"=>wxICON_HAND,
+	                 "I"=>wxICON_INFORMATION );
+	   $response=$response?$responses{$response}:wxOK|wxCENTRE;
+	   $icon=$icon?$icons{$icon}:wxICON_INFORMATION;
+	   my $answer= Wx::MessageBox( $message, 
+                       $title, 
+                       $response|$icon, 
+                       $self);
+       return (($answer==wxOK)||($answer==wxYES))
+	   
+   };
+   
+   sub getPanelSize{
+	   my ($self,$id)=@_;
+	   my $i=0; my $found=-1;
+	   while ($i<@subpanels){
+		   if ($subpanels[$i][0]==$id) {
+			   $found=$i;
+			   }
+		   $i++;
+	   }
+	   return ($found !=-1) ? $subpanels[$found][4]:0;
+	   
+   }
+   sub reSize{
+	   my ($self,$id,$newSize)=@_;
+	   
+   }
+   sub quit{
+	   my ($self) = @_;
+	   $self ->Close(1);
+   }
+	   
+   
   1;
