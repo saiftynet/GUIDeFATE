@@ -1,4 +1,4 @@
-#!/usr/bin/env perl 
+#!/usr/bin/env perl
 #A test script that  plays Rock Paper Scissors Lizard Spock
 #use GUIDeFATE (which in turn depends on Wx and Wx::Perl::Imagick)
 
@@ -15,7 +15,7 @@ my $window=<<END;
 | Scissors Lizard   |rock.jp|                    |
 | Spock.  Click     |g      |                    |
 | any button to     +-------+                    |
-| play              { Rock  }                    |
+| play              { Rock }                     |
 |                                                |
 |   +I------+                       +I------+    |
 |   |Spock.j|       +I------+       |paper.j|    |
@@ -28,7 +28,7 @@ my $window=<<END;
 |          |Lizard.|         |scissor|           |
 |          |jpg    |         |s.jpg  |           |
 |          +-------+         +-------+           |
-|          {Lizard }         {Scissrs}           |
+|          { Lizard }       { Scissors }         |
 |                                                |
 +------------------------------------------------+
 
@@ -57,31 +57,27 @@ $gui->MainLoop;
 
 #Subroutines called by clicking buttons
 #function names are btn<id>
-sub btn5 {  getResults("rock") ;   }
-sub btn10{  getResults("spock");   }
-sub btn11{  getResults("paper");   }
-sub btn15{  getResults("lizard");  }
-sub btn16{  getResults("scissors");}
+sub btn5 { getResults("rock") ;    }
+sub btn10{ getResults("spock");    }
+sub btn11{ getResults("paper");    }
+sub btn15{ getResults("lizard");   }
+sub btn16{ getResults("scissors"); }
 
 #Function described by u/choroba at reddit
-sub getResults{
-	my $player= shift;
-	my $computer=(keys %rpsls)[rand 5];
-	
+sub getResults {
+	my $player = shift;
+	my $computer = (keys %rpsls)[rand 5];
+
 	# setImage takes the Filename, id number of subpanel, and a pixel size (as a list)
-	$frame->setImage($rpsls{$computer}{file},9,[136,128]); 
+	$frame->setImage($rpsls{$computer}{file},9,[136,128]);
 
 	if ($rpsls{$player}{$computer}) {
-       $frame->{stattext12}->SetLabel("You $rpsls{$player}{$computer} me!");
-    }
-    elsif ($player eq $computer) {
-       $frame->{stattext12}->SetLabel("Draw");
-    }
-    else {
-       $frame->{stattext12}->SetLabel("I $rpsls{$computer}{$player} you!");
-    }
+    $frame->{stattext12}->SetLabel("You $rpsls{$player}{$computer} me!");
+  }
+  elsif ($player eq $computer) {
+    $frame->{stattext12}->SetLabel("Draw");
+  }
+  else {
+    $frame->{stattext12}->SetLabel("I $rpsls{$computer}{$player} you!");
+  }
 }
-
-
-
-
