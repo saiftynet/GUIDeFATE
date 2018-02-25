@@ -15,8 +15,9 @@ package GFtk;
    our $winWidth;
    our $winHeight;
    our $winTitle;
-   our $winScale=6.5;  
-
+   our $winScale=6.5; 
+ 
+   # these arrays will contain the widgets each as an arrayref of the parameters
    my @buttons=();
    my @textctrls=();
    my @stattexts=();
@@ -24,17 +25,17 @@ package GFtk;
    my @subpanels=();
    my %styles;
    
-
-
    sub new
    {
     my $class = shift;    
-    my $self = $class->SUPER::new(@_);  # call the superclass' constructor 
+    my $self = $class->SUPER::new(@_);  # call the superclass' constructor
+    $self -> title($winTitle);
+    $self -> geometry($winWidth."x".$winHeight);
       $frame = $self->Canvas(
-         -bg => 'lightgray',
+         -bg => 'lavender',
          -relief => 'sunken',
          -width => $winWidth,
-         -height => $winHeight*1.2)->pack(-expand => 1, -fill => 'both');
+         -height => $winHeight)->pack(-expand => 1, -fill => 'both');
       
       $frame ->fontCreate('medium',
              -family=>'arial',
@@ -43,7 +44,8 @@ package GFtk;
       setupContent($self,$frame);  #then add content
       return $self;
    };
-   
+
+# setupContent  sets up the initial content before Mainloop can be run.
    sub setupContent{
 	   my ($self, $canvas)=@_;
 	   
@@ -72,8 +74,9 @@ package GFtk;
 	   sub aBt{
 	    my ($self,$canvas, $id, $label, $location, $size, $action)=@_;
 	    $canvas->{"btn$id"}=$canvas->Button(-text => $label,
-	                         -width  => (${$size}[0]-20)/7.5,
+	                         -width  => (${$size}[0]-20)/8,
 	                         -height => ${$size}[1]/16,
+	                         -pady   => 1,
 	                         -command => $action);
 	    $canvas->createWindow(${$location}[0] ,${$location}[1],
 	                         -anchor => "nw",
@@ -82,7 +85,8 @@ package GFtk;
        sub aTC{
 		my ($self,$canvas, $id, $text, $location, $size, $action)=@_;
 		$canvas->{"txtctrl$id"}=$canvas->Entry(
-	                         -width  => ${$size}[0]/7);
+                             -bg => 'white',
+	                         -width  => (${$size}[0]+32)/8);
 	    $canvas->createWindow(${$location}[0] ,${$location}[1],
 	                         -anchor => "nw",
 	                         -window => $canvas->{"txtctrl$id"} );
@@ -148,6 +152,7 @@ package GFtk;
 				$content=~s/^\s+|\s+$//g;
 				$id++;
 				$canvas->{"TextCtrl$id"}=$canvas->Text(
+				             -bg => 'white',
 	                         -width  => (${$size}[0])/7,
 	                         -height => (${$size}[1]+12)/15);
 	            $canvas->{"TextCtrl$id"}->insert('end',$content);
@@ -159,55 +164,30 @@ package GFtk;
         
 	   
    }
-   
-   sub setLabel{
-	   my ($self,$text,$id)=@_;
-	   my $location=$stattexts[getItem($self,$id,\@stattexts)][2];
-	   $frame->delete($frame->{"stattext$id"});
-	   $frame->{"stattext$id"}=$frame->createText(${$location}[0] ,${$location}[1], 
-		                     -anchor => "nw",
-                             -text => $text,
-                             -font =>'medium'
-                 );
+
+      
+#functions for GUIDeFATE to load the widgets into the backend
+   sub addButton{
+	   push (@buttons,shift );
    }
-   
-   sub setImage{
-	   my ($self,$file,$id)=@_;
-	   my $location=getLocation($self,$id,\@subpanels);
-	   my $size=getSize($self,$id,\@subpanels);
-	   if ($size){
-	       my $image = Image::Magick->new;
-		   my $r = $image->Read("$file");
-		   if ($image){
-			  my $bmp;    # used to hold the bitmap.
-			  my $geom=${$size}[0]."x".${$size}[1]."!";
-			      $image->Scale(geometry => $geom);
-			      $bmp = ( $image->ImageToBlob(magick=>'jpg') )[0];
-			      $frame->{"image$id"}=$frame->createImage(${$location}[0],${$location}[1],
-			                             -anchor=>"nw",
-			                             -image => $frame->Photo(#"img$id",
-			                                     -format=>'jpeg',
-			                                     -data=>encode_base64($bmp) ));
-                    }
-				 else {"print failed to load image $file \n";}
-			 }
-		  else {print "Panel not found"}
-			 
-	   
+   sub addTextCtrl{
+	   push (@textctrls,shift );
    }
-   sub getValue{
-	   my ($self,$id)=@_;
-	   $frame->{"$id"}->get('1.0','end-1c');
+   sub addStatText{
+	   push (@stattexts,shift );
    }
-   sub setValue{
-	   my ($self,$id,$text)=@_;
-	   $frame->{"$id"}->delete('0.0','end');
-	   $frame->{"$id"}->insert("end",$text);	   
-   }   
-   sub appendValue{
-	   my ($self,$id,$text)=@_;
-	   $frame->{$id}->insert('end',$text);
-   }   
+   sub addMenuBits{
+	   push (@menu, shift);
+   }
+    sub addPanel{
+	   push (@subpanels, shift);
+   }
+   sub addStyle{
+	   my ($name,$style)=@_;
+	   $styles{$name}=$style;
+   }
+
+# Functions for internal use 
    sub getSize{
 	   my ($self,$id,$arrayRef)=@_;
 	   my $found=getItem($self,$id,$arrayRef);
@@ -222,6 +202,7 @@ package GFtk;
    }   
    sub getItem{
 	   my ($self,$id,$arrayRef)=@_;
+	   $id=~s/[^\d]//g;
 	   my $i=0; my $found=-1;
 	   while ($i<@$arrayRef){
 		   if ($$arrayRef[$i][0]==$id) {
@@ -231,18 +212,82 @@ package GFtk;
 	   }
 	   return $found;
    }
-   
-      
+
+   sub setScale{
+	   $winScale=shift;	   
+   };
+
+   sub getFrame{
+	   my $self=shift;
+	return $self;
+   };
+
+#  The functions for GUI Interactions
+#Static Text functions
+   sub setLabel{
+	   my ($self,$id,$text)=@_;
+	   my $location=$stattexts[getItem($self,$id,\@stattexts)][2];
+	   $frame->delete($frame->{"$id"});
+	   $frame->{"$id"}=$frame->createText(${$location}[0] ,${$location}[1], 
+		                     -anchor => "nw",
+                             -text => $text,
+                             -font =>'medium'
+                 );
+   }
+
+#Image functions
+   sub setImage{
+	   my ($self,$id,$file)=@_;
+	   my $location=getLocation($self,$id,\@subpanels);
+	   my $size=getSize($self,$id,\@subpanels);
+	   if ($size){
+	       my $image = Image::Magick->new;
+		   my $r = $image->Read("$file");
+		   if ($image){
+			  my $bmp;    # used to hold the bitmap.
+			  my $geom=${$size}[0]."x".${$size}[1]."!";
+			      $image->Scale(geometry => $geom);
+			      $bmp = ( $image->ImageToBlob(magick=>'jpg') )[0];
+			      $frame->{"$id"}=$frame->createImage(${$location}[0],${$location}[1],
+			                             -anchor=>"nw",
+			                             -image => $frame->Photo(#"img$id",
+			                                     -format=>'jpeg',
+			                                     -data=>encode_base64($bmp) ));
+                    }
+				 else {"print failed to load image $file \n";}
+			 }
+		  else {print "Panel not found"}
+			 
+	   
+   }
+
+#Text input functions
+  sub getValue{
+	   my ($self,$id)=@_;
+	   $frame->{"$id"}->get('1.0','end-1c');
+   }
+   sub setValue{
+	   my ($self,$id,$text)=@_;
+	   $frame->{"$id"}->delete('0.0','end');
+	   $frame->{"$id"}->insert("end",$text);	   
+   }   
+   sub appendValue{
+	   my ($self,$id,$text)=@_;
+	   $frame->{$id}->insert('end',$text);
+   }   
+
+#Message box, Fileselector and Dialog Boxes
    sub showFileSelectorDialog{
 	 
      my ($self, $message,$load) = @_;
+     my $filename;
      if ($load){
-		 my $filename = $self->getOpenFile( -title => $message,
+		 $filename = $self->getOpenFile( -title => $message,
 		 -defaultextension => '.txt', -initialdir => '.' );
 		 warn "Opened $filename\n";
 		 }
 	 else{
-		 my $filename = $self->getSaveFile( -title => $message,
+		 $filename = $self->getSaveFile( -title => $message,
          -defaultextension => '.txt', -initialdir => '.' );
          warn "Saved $filename\n";
 		 
@@ -267,37 +312,11 @@ package GFtk;
 	   my $answer=  $self->messageBox(
 	      -icon => $icon, -message => $message, -title => $title, -type => $response);
        return (($answer eq "Ok")||($answer eq "Yes"))
-	   
    };
    
-   sub addButton{
-	   push (@buttons,shift );
+# Quit
+   sub quit{
+	   my ($self) = @_;
+	   $self ->Close(1);
    }
-   sub addTextCtrl{
-	   push (@textctrls,shift );
-   }
-   sub addStatText{
-	   push (@stattexts,shift );
-   }
-   sub addMenuBits{
-	   push (@menu, shift);
-   }
-    sub addPanel{
-	   push (@subpanels, shift);
-   }
-   sub addStyle{
-	   my ($name,$style)=@_;
-	   $styles{$name}=$style;
-   }
-   
-   sub setScale{
-	   $winScale=shift;	   
-   };
-   
-   sub getFrame{
-	   my $self=shift;
-	return $self;
-   };
-
-
 1;

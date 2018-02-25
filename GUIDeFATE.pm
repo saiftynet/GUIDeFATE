@@ -189,12 +189,11 @@ sub convert{
   }
 }
 
-
-	
-
+1;
 =head1 GUIDeFATE
 
-GUIDeFATE  -  Grapghical User Interface Design From A Text Editor
+GUIDeFATE  -  Graphical User Interface Design From A Text Editor
+
 =head1 SYNOPSIS
 
     use GUIDeFATE qw<$frame>;
@@ -215,14 +214,14 @@ GUIDeFATE  -  Grapghical User Interface Design From A Text Editor
 
     END
 
-    GUIDeFATE::convert($window);
-    my $gui=GUIDeFATE->new();
-    $frame->{stattext21}->SetForegroundColour( Wx::Colour->new(255, 0, 0) );
+    my $gui=GUIDeFATE->new($window);
+    $frame=$gui->getFrame;
     $gui->MainLoop;
 
 =head1 REQUIRES
 
-Perl5.8.8, Exporter, Wx, Wx::Perl::Imagick
+Perl5.8.8, Exporter, Wx, Wx::Perl::Imagick (for Wx interface)
+Perl5.8.8, Exporter, Tk, Image::Imagick, Tk::JPEG, MIME::Base64 (for Tk interface)
 
 =head1 EXPORTS
 
@@ -240,13 +239,13 @@ as a string to GUIDeFATE and this is transformed into an Interactive Interface.
 
 =over 4
 
-=item GUIDeFATE::convert($window, $options)
+=item my $gui=GUIDeFATE->new($window, $backend, $options);
 
-Extracts dimensions and wdigets in a window from the etxual representation
+Extracts dimensions and wdigets in a window from the textual representation
 
-=item new GUIDeFATE("wx")
+=item my $frame=$gui->getFrame;
 
-Creates and returns a new Application using a previously converted frame
+Returns reference to the frame for both abstracted and backend specific functions 
 
 =back
 
@@ -256,8 +255,6 @@ Saif Ahmed, SAIFTYNET { at } gmail.com
 
 =head1 SEE ALSO
 
-Wx, Wx::Perl::Imagick
+L<Wx>, L<Tk>, L<Image::Magick>, L<Wx::Perl::Magick>,
 
 =cut
-
-1;
