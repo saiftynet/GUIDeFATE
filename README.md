@@ -72,8 +72,8 @@ This produces something like ![Calculator Screenshot](https://github.com/saiftyn
 
 Of course this is at a very early stage, and I have only implemented buttons, static text and text control widgets.  More will come.Suggestions welcome. 
 
-EDIT> have implemented Menu and image subpanels at version 0.0.2
-EDIT> have implemeted Multiline text control from version 0.0.3
-EDIT> have implemented enough logic to program simple apps from version 0.04 (new version numbering system
-EDIT> Have uploaded to CPAN, including pod documentation from version 0.05
+* EDIT> have implemented Menu and image subpanels at version 0.0.2
+* EDIT> have implemeted Multiline text control from version 0.0.3
+* EDIT> have implemented enough logic to program simple apps from version 0.04 (new version numbering system
+* EDIT> Have uploaded to CPAN, including pod documentation from version 0.05
 
