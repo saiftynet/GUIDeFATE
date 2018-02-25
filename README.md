@@ -11,7 +11,7 @@ Sure there are clever things like wxGlade, and QT Designer etc.  These are tools
 
 # So how might this work?
 
-The user uses a text editor to design the window. Not new of course...text editors have had to be used to describe windows when other graphical representation methods were not possible.  As this is already a two dimensional data, it should be possible to convert this into an actual graphical interface through an interpreter.  The developer simply has to draw the interface in text and then program the interaction that is required.
+The user uses a text editor to design the window. Not new of course...text editors have had to be used to describe windows when other graphical representation methods were not possible.  As this is already a two dimensional data, it should be possible to convert this into an actual graphical interface through an interpreter.  The developer simply has to draw the interface in text and then program the interaction that is required.  From version 0.06 multiple backends may be supported.  
 
 # Textual Representation of a Graphical Interface
 
@@ -64,8 +64,7 @@ my $window=<<END;
 
 END
 
-GUIDeFATE::convert($window);
-my $gui=GUIDeFATE->new();
+my $gui=GUIDeFATE->new($window); # API changed at version 0.06
 $gui->MainLoop;
 ```
 This produces something like ![Calculator Screenshot](https://github.com/saiftynet/GUIDeFATE/blob/master/calculator%20screenshot.png)
@@ -74,4 +73,7 @@ This produces something like ![Calculator Screenshot](https://github.com/saiftyn
 Of course this is at a very early stage, and I have only implemented buttons, static text and text control widgets.  More will come.Suggestions welcome. 
 
 EDIT> have implemented Menu and image subpanels at version 0.0.2
+EDIT> have implemeted Multiline text control from version 0.0.3
+EDIT> have implemented enough logic to program simple apps from version 0.04 (new version numbering system
+EDIT> Have uploaded to CPAN, including pod documentation from version 0.05
 
