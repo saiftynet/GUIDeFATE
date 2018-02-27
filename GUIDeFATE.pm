@@ -255,6 +255,6 @@ Saif Ahmed, SAIFTYNET { at } gmail.com
 
 =head1 SEE ALSO
 
-L<Wx>, L<Tk>, L<Image::Magick>, L<Wx::Perl::Magick>,
+L<Wx>, L<Tk>, L<Image::Magick>, L<Wx::Perl::Imagick>,
 
 =cut
