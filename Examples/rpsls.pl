@@ -1,10 +1,11 @@
 #!/usr/bin/env perl 
 #A test script that  plays Rock Paper Scissors Lizard Spock
-#use GUIDeFATE (which in turn depends on Wx and Wx::Perl::Imagick)
+#use GUIDeFATE 
 
 use strict;
 use warnings;
-use GUIDeFATE qw<$frame>;
+use lib"../lib/";
+use GUIDeFATE;
 
 my $window=<<END;
 +------------------------------------------------+
@@ -51,34 +52,35 @@ my %rpsls = (rock     => {scissors => 'crush',
                           rock     => 'vaporize',
                           file     => 'Spock.jpg'});
 
-GUIDeFATE::convert($window, "v");
-my $gui=GUIDeFATE->new();
+my $backend=$ARGV[0];
+my $gui=GUIDeFATE->new($window,$backend,"v");
+my $frame=$gui->getFrame;
 $gui->MainLoop;
 
 #Subroutines called by clicking buttons
 #function names are btn<id>
-sub btn5 {  getResults("rock") ;   }
-sub btn10{  getResults("spock");   }
-sub btn11{  getResults("paper");   }
-sub btn15{  getResults("lizard");  }
-sub btn16{  getResults("scissors");}
+sub btn6 {  getResults("rock") ;   }
+sub btn14{  getResults("spock");   }
+sub btn15{  getResults("paper");   }
+sub btn21{  getResults("lizard");  }
+sub btn22{  getResults("scissors");}
 
 #Function described by u/choroba at reddit
 sub getResults{
 	my $player= shift;
 	my $computer=(keys %rpsls)[rand 5];
 	
-	# setImage takes the Filename, id number of subpanel, and a pixel size (as a list)
-	$frame->setImage($rpsls{$computer}{file},9,[136,128]); 
+	# setImage takes the Filename, id number of subpanel
+	$frame->setImage("Image12",$rpsls{$computer}{file}); 
 
 	if ($rpsls{$player}{$computer}) {
-       $frame->{stattext12}->SetLabel("You $rpsls{$player}{$computer} me!");
+       $frame->setLabel("stattext16","You $rpsls{$player}{$computer} me!");
     }
     elsif ($player eq $computer) {
-       $frame->{stattext12}->SetLabel("Draw");
+       $frame->setLabel("stattext16","Draw");
     }
     else {
-       $frame->{stattext12}->SetLabel("I $rpsls{$computer}{$player} you!");
+       $frame->setLabel("stattext16","I $rpsls{$computer}{$player} you!");
     }
 }
 
