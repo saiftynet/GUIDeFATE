@@ -1,5 +1,9 @@
 package GFtk;
-
+   use strict;
+   use warnings;
+   
+   our $VERSION = '0.065';
+   
    use parent qw(Tk::MainWindow);
    
    use Tk::JPEG;
@@ -24,6 +28,8 @@ package GFtk;
    my @menu=();
    my @subpanels=();
    my %styles;
+   
+   my $lastMenuLabel;  #bug workaround in menu generator may be needed for submenus
    
    sub new
    {
@@ -59,7 +65,7 @@ package GFtk;
 		   aST($self,$canvas,@$stattxt)
 	   }
 	   if (scalar @menu){   #menu exists
-		  $self->configure(-menu => my $self ->{"menubar"} = $self->Menu);
+		  $self->configure(-menu => $self ->{"menubar"} = $self->Menu);
 		  my $currentMenu;
 		  foreach my $menuBits (@menu){ 
 			  $currentMenu=aMB($self,$frame,$currentMenu,@$menuBits)
@@ -84,12 +90,12 @@ package GFtk;
         }
        sub aTC{
 		my ($self,$canvas, $id, $text, $location, $size, $action)=@_;
-		$canvas->{"txtctrl$id"}=$canvas->Entry(
+		$canvas->{"textctrl$id"}=$canvas->Entry(
                              -bg => 'white',
 	                         -width  => (${$size}[0]+32)/8);
 	    $canvas->createWindow(${$location}[0] ,${$location}[1],
 	                         -anchor => "nw",
-	                         -window => $canvas->{"txtctrl$id"} );
+	                         -window => $canvas->{"textctrl$id"} );
         }
        sub aST{
 		my ($self,$canvas, $id, $text, $location)=@_;
@@ -130,7 +136,6 @@ package GFtk;
 			 my ($self,$canvas, $id, $panelType, $content, $location, $size)=@_;
 			
 			if ($panelType eq "I"){  # Image panels start with I
-				$content=~s/^\s+|\s+$//g;
 				if (! -e $content){ return; }
 				no warnings;   # sorry about that...suppresses a "Useless string used in void context"
 			    my $image = Image::Magick->new;
@@ -149,7 +154,6 @@ package GFtk;
 				 else {"print failed to load image $content \n";}
 			 }
 			if ($panelType eq "T"){  
-				$content=~s/^\s+|\s+$//g;
 				$id++;
 				$canvas->{"TextCtrl$id"}=$canvas->Text(
 				             -bg => 'white',
@@ -264,7 +268,9 @@ package GFtk;
 #Text input functions
   sub getValue{
 	   my ($self,$id)=@_;
-	   $frame->{"$id"}->get('1.0','end-1c');
+	   if ($id =~/TextCtrl/){return $frame->{$id}->get('1.0','end-1c'); }
+	   else {return $frame->{$id}->get(); }
+	   
    }
    sub setValue{
 	   my ($self,$id,$text)=@_;

@@ -3,7 +3,7 @@ package GFwx;
    use strict;
    use warnings;
    
-   our $VERSION = '0.06';
+   our $VERSION = '0.065';
 
    use parent qw(Wx::App);              # Inherit from Wx::App
    use Exporter 'import';
