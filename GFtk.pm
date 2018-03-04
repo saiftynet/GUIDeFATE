@@ -2,16 +2,17 @@ package GFtk;
    use strict;
    use warnings;
    
-   our $VERSION = '0.065';
+   our $VERSION = '0.07';
    
    use parent qw(Tk::MainWindow);
    
    use Tk::JPEG;
+   use Tk::BrowseEntry;
    use Image::Magick;
    use MIME::Base64;
    
    use Exporter 'import';   
-   our @EXPORT_OK      = qw<addButton addStatText addTextCtrl addMenuBits addPanel setScale $frame $winScale $winWidth $winHeight $winTitle>;
+   our @EXPORT_OK      = qw<addButton addStatText addTextCtrl addMenuBits addPanel  addCombo  addVar setScale $frame $winScale $winWidth $winHeight $winTitle>;
    our $frame;
    
    our $winX=30;
@@ -27,6 +28,9 @@ package GFtk;
    my @stattexts=();
    my @menu=();
    my @subpanels=();
+   my @combos=();
+   my %iVars=();     #vars for interface operation (e.g. 
+   my %oVars=();      #vars for interface creation (e.g. list of options)
    my %styles;
    
    my $lastMenuLabel;  #bug workaround in menu generator may be needed for submenus
@@ -76,11 +80,14 @@ package GFtk;
 	   foreach my $sp (@subpanels){
 		   aSP($self,$canvas,@$sp);
 	   }
+	   foreach my $cb (@combos){
+		   aCB($self,$canvas,@$cb);
+	   }
 	   
 	   sub aBt{
 	    my ($self,$canvas, $id, $label, $location, $size, $action)=@_;
 	    $canvas->{"btn$id"}=$canvas->Button(-text => $label,
-	                         -width  => (${$size}[0]-20)/8,
+	                         -width  => ${$size}[0]/6.68-4,
 	                         -height => ${$size}[1]/16,
 	                         -pady   => 1,
 	                         -command => $action);
@@ -105,6 +112,29 @@ package GFtk;
                              -font =>'medium'
                  );
         }
+        sub aCB{  #adapted from http://www.perlmonks.org/?node_id=799673
+		   my ($self,$canvas, $id, $label, $location, $size, $action)=@_;
+		   if (defined $oVars{$label}){
+	        my @strings2 = split(",",$oVars{$label});
+	        $iVars{"combo$id"}=$strings2[0];
+	        $canvas->{"combo$id"}=$canvas->BrowseEntry(
+	             -variable    => \($iVars{"combo$id"}),
+				 -listheight => scalar @strings2, 
+				 -listwidth  => (${$size}[0]-20)/2,
+				 -browsecmd => $action);
+		    foreach (@strings2){ $canvas->{"combo$id"}->insert("end",$_);}
+			$canvas->{"cont$id"}=$canvas->{"combo$id"}->Subwidget('slistbox')->Subwidget('scrolled');#??
+			
+			$canvas->createWindow(${$location}[0] ,${$location}[1],
+	             -width  => (${$size}[0]-20)*1.5,
+	             -height => ${$size}[1], 
+	                         -anchor => "nw",
+	                         -window =>$canvas->{"combo$id"});
+			}
+		 
+		 else {print "Combo options not defined for 'combo$id' with label $label\n"}
+	        
+	   }
         sub aMB{
 	     my ($self,$canvas,$currentMenu, $id, $label, $type, $action)=@_;
 	     if (($lastMenuLabel) &&($label eq $lastMenuLabel)){return $currentMenu} # bug workaround 
@@ -190,6 +220,13 @@ package GFtk;
 	   my ($name,$style)=@_;
 	   $styles{$name}=$style;
    }
+   sub addCombo{
+	   push (@combos, shift);
+   }
+   sub addVar{
+	   my ($varName,$value)=@_;
+	   $oVars{$varName}=$value;
+   }
 
 # Functions for internal use 
    sub getSize{
@@ -269,7 +306,12 @@ package GFtk;
   sub getValue{
 	   my ($self,$id)=@_;
 	   if ($id =~/TextCtrl/){return $frame->{$id}->get('1.0','end-1c'); }
-	   else {return $frame->{$id}->get(); }
+	   else {
+	      if (exists $iVars{$id}){
+			  return $iVars{$id}
+		  }
+	      else{ return   $frame->{$id}->get(); }
+	  }
 	   
    }
    sub setValue{
@@ -323,6 +365,6 @@ package GFtk;
 # Quit
    sub quit{
 	   my ($self) = @_;
-	   $self ->Close(1);
+	   $self ->destroy;
    }
 1;

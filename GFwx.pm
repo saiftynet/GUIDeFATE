@@ -3,13 +3,13 @@ package GFwx;
    use strict;
    use warnings;
    
-   our $VERSION = '0.065';
+   our $VERSION = '0.07';
 
    use parent qw(Wx::App);              # Inherit from Wx::App
    use Exporter 'import';
-   use GFwxFrame qw<addButton addStatText addTextCtrl addMenuBits addPanel setScale>;
+   use GFwxFrame qw<addButton addStatText addTextCtrl addMenuBits addPanel addCombo addVar setScale>;
    
-   our @EXPORT_OK      = qw<addButton addStatText addTextCtrl addMenuBits addPanel setScale $frame $winScale $winWidth $winHeight $winTitle>;
+   our @EXPORT_OK      = qw<addButton addStatText addTextCtrl addMenuBits addPanel addCombo addVar setScale $frame $winScale $winWidth $winHeight $winTitle>;
    our $frame;
    
    our $winX=30;

@@ -3,18 +3,18 @@ package GFwxFrame;
    use strict;
    use warnings;
 
-   our $VERSION = '0.065';
+   our $VERSION = '0.07';
    
    use Exporter 'import';
-   our @EXPORT_OK      = qw<addButton addStatText addTextCtrl addMenuBits addPanel setScale>;
+   our @EXPORT_OK      = qw<addButton addStatText addTextCtrl addMenuBits addPanel addCombo addVar setScale>;
    
    use Wx qw(wxMODERN wxTE_PASSWORD wxTE_PROCESS_ENTER wxDEFAULT wxNORMAL
           wxFONTENCODING_DEFAULT wxTE_MULTILINE wxHSCROLL wxDefaultPosition wxFD_SAVE
           wxYES wxFD_OPEN wxFD_FILE_MUST_EXIST wxFD_CHANGE_DIR wxID_CANCEL
           wxYES_NO wxCANCEL wxOK  wxCENTRE  wxICON_EXCLAMATION  wxICON_HAND 
-          wxICON_ERROR  wxICON_QUESTION  wxICON_INFORMATION);
+          wxICON_ERROR  wxICON_QUESTION  wxICON_INFORMATION wxCB_DROPDOWN);
           
-   use Wx::Event qw( EVT_BUTTON EVT_TEXT_ENTER EVT_UPDATE_UI EVT_MENU);
+   use Wx::Event qw( EVT_BUTTON EVT_TEXT_ENTER EVT_UPDATE_UI EVT_MENU EVT_COMBOBOX);
    use Wx::Perl::Imagick;                 #for image panels
    
    use base qw(Wx::Frame); # Inherit from Wx::Frame
@@ -25,6 +25,9 @@ package GFwxFrame;
    my @stattexts=();
    my @menu=();
    my @subpanels=();
+   my @combos=();
+   my %iVars=();     #vars for interface operation (e.g. 
+   my %oVars=();                #vars for interface
    my %styles;
    
    my $lastMenuLabel;  #bug workaround in menu generator
@@ -63,6 +66,14 @@ package GFwxFrame;
 	   foreach my $stattxt (@stattexts){
 		   aST($self,$panel,@$stattxt)
 	   }
+
+	   foreach my $sp (@subpanels){
+		   aSP($self,$panel,@$sp);
+	   }
+	   foreach my $cb (@combos){
+		   aCB($self,$panel,@$cb);
+	   }
+	   	   
 	   if (scalar @menu){   #menu exists
 		   $self ->{"menubar"} = Wx::MenuBar->new();
 		   $self->SetMenuBar($self ->{"menubar"});
@@ -73,10 +84,17 @@ package GFwxFrame;
 	       # a bug seems to make a menuhead to be also ia menuitem---
 
 	   }
-	   foreach my $sp (@subpanels){
-		   aSP($self,$panel,@$sp);
-	   }
 	   
+	   sub aCB{
+		   my ($self,$panel, $id, $label, $location, $size, $action)=@_;
+		   if (defined $oVars{$label}){
+	         my @strings2 = split(",",$oVars{$label});
+	         $self->{"combo".$id}= Wx::ComboBox->new($panel, $id, $strings2[0],$location, Wx::Size->new($$size[0], $$size[1]),\@strings2,wxCB_DROPDOWN);
+	         EVT_COMBOBOX( $self, $id, $action);
+		 }
+		 else {print "Combo options not defined for 'combo$id' with label $label\n"}
+	   }
+	   	   
 	   sub aMB{
 	     my ($self,$panel,$currentMenu, $id, $label, $type, $action)=@_;
 	     if (($lastMenuLabel) &&($label eq $lastMenuLabel)){return $currentMenu} # bug workaround 
@@ -199,6 +217,13 @@ package GFwxFrame;
    sub addStyle{
 	   my ($name,$style)=@_;
 	   $styles{$name}=$style;
+   }
+   sub addCombo{
+	   push (@combos, shift);
+   }
+   sub addVar{
+	   my ($varName,$value)=@_;
+	   $oVars{$varName}=$value;
    }
 
 # Functions for internal use 

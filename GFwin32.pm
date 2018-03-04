@@ -2,7 +2,7 @@ package GFwin32;
    use strict;
    use warnings;
    
-   our $VERSION = '0.065';
+   our $VERSION = '0.07';
    
    use Win32::GUI;
 
@@ -29,6 +29,7 @@ package GFwin32;
    my @stattexts=();
    my @menu=();
    my @subpanels=();
+   my @combos=();
    my %styles;   # styles is a future mod that allows widgets to be styled
    my $lastMenuLabel;  #bug workaround in menu generator may be needed for submenus
    
@@ -192,6 +193,10 @@ package GFwin32;
 	   my ($name,$style)=@_;
 	   $styles{$name}=$style;
    }
+   sub addCombo{
+	   push (@combos, shift);
+   }
+
 
 # Functions for internal use uses the arrays to get the parameters for the widgets...leave alone
    sub getSize{

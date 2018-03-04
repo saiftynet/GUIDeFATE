@@ -3,7 +3,7 @@ package GUIDeFATE;
    use strict;
    use warnings;
    
-   our $VERSION = '0.065';
+   our $VERSION = '0.07';
    
    use Exporter 'import';
    
@@ -21,26 +21,37 @@ package GUIDeFATE;
 
 sub new{
 	my ($class,$textGUI,$target,$assist)=@_;
-	if ((!$target)||($target=~/wx/i)){
+	if ((!$target)||($target=~/^wx/i)){
 		$target="wx";
-		eval " use GFwx qw<addButton addStatText addTextCtrl addMenuBits addPanel setScale
+		eval " use GFwx qw<addButton addStatText addTextCtrl addMenuBits addPanel addCombo addVar setScale
 		           \$frame \$winScale \$winWidth \$winHeight \$winTitle>;";
 		convert($textGUI,$assist);
 		return GFwx->new(); ;
 	}
-	elsif ($target =~m/tk/i){
-		eval " use GFtk qw<addButton addStatText addTextCtrl addMenuBits addPanel setScale 
+	elsif ($target =~m/^gtk/i){
+		$target="gtk";
+		eval " use GFgtk qw<addButton addStatText addTextCtrl addMenuBits addPanel addCombo addVar setScale MainLoop
 		           \$frame \$winScale \$winWidth \$winHeight \$winTitle>;";
-		convert($textGUI, $target);
+		convert($textGUI, $assist);
+		return GFgtk->new(); 
+		
+	}	
+	elsif ($target =~m/^tk/i){
+		$target="tk";
+		eval " use GFtk qw<addButton addStatText addTextCtrl addMenuBits addPanel addCombo addVar setScale 
+		           \$frame \$winScale \$winWidth \$winHeight \$winTitle>;";
+		convert($textGUI, $assist);
 		return GFtk->new(); 
+		
 	}
-	elsif ($target =~m/win32/i){
-		eval " use GFwin32 qw<addButton addStatText addTextCtrl addMenuBits addPanel setScale 
+	elsif ($target =~m/^win32/i){
+		$target="win32";
+		eval " use GFwin32 qw<addButton addStatText addTextCtrl addMenuBits addPanel addCombo addVar setScale 
 		           \$frame \$winScale \$winWidth \$winHeight \$winTitle>;";
-		convert($textGUI, $target);
+		convert($textGUI, $assist);
 		return GFwin32->new(); 
 	}
-	
+
 }
 
 
@@ -49,9 +60,9 @@ sub convert{
 	my @lines=(split /\n/ ,$textGUI) ;
 	if (!$assist){$assist="q"};
 		           
-	my $verbose= $assist=~/v/;
-	my $debug= $assist=~/d/;
-	my $auto= $assist=~/a/;
+	my $verbose= $assist=~/^v/i;
+	my $debug= $assist=~/^d/i;
+	my $auto= $assist=~/^a/i;
 	
 	if (!exists &{"setScale"}){print "Error exists in GF$target\n"; return;}
 	setScale($winScale);  # makes scaling in the two modules match
@@ -96,7 +107,15 @@ sub convert{
 			};    
 		}
 		
-		
+		while ($line =~m/(\^([A-z]+)\s*\^)/g){ #ComboBoxes
+			my $ps=length($`);my $label=$2; my $len=length ($label);$label=~s/^(\s+)|(\s+)$//g;
+			$line=~s/(\^([A-z]+)\s*\^)/" " x length($1)/e;
+			$log= "combobox calls function &combo$bid\n"; ##
+			if ($verbose){ print $log; }
+			if ($auto){ $autoGen.=makeSub("combo$bid", "combobox with data from \@$label"); }
+			addCombo([$bid,$label,[$winScale*($ps*2-1),$winScale*$l*4],[$winScale*($len*2+3),$winScale*4], \&{"main::combo".$bid}]);
+			$bid++;
+		}
 		while ($line =~m/(\{([^}]*)\})/g){   # buttons are made from { <label> } 
 			my $ps=length($`);my $label=$2; my $len=length ($label);$label=~s/^(\s+)|(\s+)$//g;
 			$log= "Button with label '$label' calls function &btn$bid\n"; ##
@@ -115,7 +134,7 @@ sub convert{
 			$bid++;
 			$line=~s/(\[([^\]]+)\])/" " x length($1)/e;     #remove text controls replacing with spaces
 		}
-		if ($line !~ m/\+/){
+		if ($line !~ m/^\+/){
 		  my $tmp=$line;
 		  $tmp=~s/(\[([^\]]+)\])|(\{([^}]*)\})/" " x length $1/ge;    
 		  $tmp=~s/^(\|)|(\|)$//g;                                     #remove starting and ending border
@@ -124,7 +143,7 @@ sub convert{
 			  $log= "Static text '".$tmp."'  with id stattext$bid\n"; ##
 			  if ($verbose){ print $log; }
 			  if ($auto){ $autoGen.="#".$log; }
-		      $line=~m/$tmp/;my $ps=length($`);
+		      $line=~m/\Q$tmp\E/;my $ps=length($`);
 		      addStatText([$bid++, $tmp,[$winScale*($ps*2-1),$winScale*$l*4]]);
 		  }
 	     }
@@ -134,28 +153,37 @@ sub convert{
 	
 	my $mode="";
 	while ($l++<=scalar(@lines)){
-		next if ((!$lines[$l]) || ($lines[$l] eq "")||($lines[$l]=~m/^#/));
-		if ($lines[$l]=~/menu/i){
+		my $line=$lines[$l];
+		if ((!$line) || ($line eq "")||($line=~/^#/)){
+			$mode="";next;
+			}
+		elsif ($line=~/menu/i){
 			$log="Menu found\n"; ##
 			if ($verbose){ print $log; }
 			if ($auto){ $autoGen.="#".$log; }
 			$mode="menu";
-			next;};
+			next;}
+		elsif($line=~/^([A-z]+=)/){
+			chomp $line;
+			my ($varName,$value)=split(/=/,$line,2);
+			$log="var ' $varName ' has value ' $value '\n"; ##
+			addVar($varName,$value);
+		}
 		
 		if($mode eq "menu"){
-			if ($lines[$l]=~/^\-([A-z0-9].*)/i){
+			if ($line=~/^\-([A-z0-9].*)/i){
 				$log= "Menuhead $1 found\n"; ##
 				if ($verbose){ print $log; }
 				if ($auto){ $autoGen.="#".$log; }
 				addMenuBits([$bid++, $1, "menuhead", undef]);
 				}
-			elsif($lines[$l]=~/^\-{2}([A-z0-9].*)\;radio/i){
+			elsif($line=~/^\-{2}([A-z0-9].*)\;radio/i){
 				$log= "Menu $1  as radio found, calls function &menu$bid \n";##
 				if ($verbose){ print $log; }
 				if ($auto){ $autoGen.="#".$log.makeSub("menu$bid"); }
 				addMenuBits([$bid, $1, "radio", \&{"main::menu".$bid++}]);
 				}
-			elsif($lines[$l]=~/^\-{2}([A-z0-9].*)\;check/i){
+			elsif($line=~/^\-{2}([A-z0-9].*)\;check/i){
 				$log= "Menu $1 as check found, calls function &menu$bid \n";##
 				if ($verbose){ print $log; }
 				if ($auto){ $autoGen.="#".$log.makeSub("menu$bid"); }
@@ -167,14 +195,14 @@ sub convert{
 				if ($auto){ $autoGen.="#".$log.makeSub("menu$bid"); }
 				addMenuBits([$bid++, "", "separator",""]);
 				}
-		    elsif($lines[$l]=~/^\-{2}([A-z0-9].*)/i){
+		    elsif($line=~/^\-{2}([A-z0-9].*)/i){
 				$log= "Menu $1 found, calls function &menu$bid \n";##
 				if ($verbose){ print $log; }
 				if ($auto){ $autoGen.="#".$log.makeSub("menu$bid"); }
 				}
 				addMenuBits([$bid, $1, "normal", \&{"main::menu".$bid++}]);
 				}
-		    elsif($lines[$l]=~/^\-{3}([A-z0-9].*)/i){
+		    elsif($line=~/^\-{3}([A-z0-9].*)/i){
 				$log= "SubMenu $1 found\n";##
 				}
 		}
@@ -187,7 +215,7 @@ sub convert{
 	
 	sub makeSub{
 	  my ($subName,$trigger)=@_;
-	  return "sub $subName #called using $trigger {\n  # subroutione code goes here\n   };\n\n";
+	  return "sub $subName {#called using $trigger\n  # subroutione code goes here\n   };\n\n";
     }
 
 
