@@ -15,7 +15,7 @@ The user uses a text editor to design the window. Not new of course...text edito
 
 # Textual Representation of a Graphical Interface
 
-A simple hellow world
+A simple hello world
 ```
 +------------------+
 |T Message         |
@@ -68,6 +68,15 @@ my $gui=GUIDeFATE->new($window); # API changed at version 0.06
 $gui->MainLoop;
 ```
 This produces something like ![Calculator Screenshot](https://github.com/saiftynet/GUIDeFATE/blob/master/calculator%20screenshot.png)
+
+From Version 7 Three backends are supported. Wx, Tk and Gtk.  These have different prerequisites.
+
+* Perl5.8.8, Exporter, Wx, Wx::Perl::Imagick (for Wx interface)   OR
+* Perl5.8.8, Exporter, Tk, Image::Imagick, Tk::JPEG, MIME::Base64 (for Tk interface)  OR
+* Perl5.8.8, Exporter, Glib, Gtk (for Gtk interface)
+
+
+
 
 
 Of course this is at a very early stage, and I have only implemented buttons, static text and text control widgets.  More will come.Suggestions welcome. 
