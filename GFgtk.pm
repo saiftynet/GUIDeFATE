@@ -111,11 +111,14 @@ package GFgtk;
 	          $iVars{"combo$id"}=$strings2[0];
 			  $canvas->{"combo$id"}=Gtk3::ComboBoxText->new();
 			  foreach (@strings2){ $canvas->{"combo$id"}->append_text($_);}
-			  $canvas->{"combo$id"}->signal_connect(changed => $action);
+			  $canvas->{"combo$id"}->set_active (0);
+			  $canvas->{"combo$id"}->signal_connect(changed => sub{
+				  $iVars{"combo$id"}=$canvas->{"combo$id"}->get_active_text;
+				  &$action});
 	          $canvas->put($canvas->{"combo$id"},${$location}[0] ,${$location}[1]);
 	       }
 	       else {print "Combo options not defined for 'combo$id' with label $label\n"}
-	        
+	              
 	   }
         sub aMB{
 	     my ($self,$canvas,$currentMenu, $id, $label, $type, $action)=@_;
