@@ -64,7 +64,9 @@ my $window=<<END;
 
 END
 
-my $gui=GUIDeFATE->new($window); # API changed at version 0.06
+my $gui=GUIDeFATE->new($window [$backend],[$assis]); # API changed at version 0.06
+                                         # $backend is one of Wx(Default), Tk or Gtk
+                                         # $assist is one or  "q" (quiet, default), "v" (verbose) or "a" for Autogenerate
 $gui->MainLoop;
 ```
 This produces something like ![Calculator Screenshot](https://github.com/saiftynet/GUIDeFATE/blob/master/calculator%20screenshot.png)
