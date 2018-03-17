@@ -2,7 +2,7 @@ package GFtemplate;
    use strict;
    use warnings;
    
-   our $VERSION = '0.061';
+   our $VERSION = '0.08';
    
    use parent qw(Backend::MainWindow); ##
 

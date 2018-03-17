@@ -2,13 +2,13 @@ package GFgtk;
    use strict;
    use warnings;
    
-   our $VERSION = '0.07';
+   our $VERSION = '0.08';
    
    use Glib ':constants';   # load Glib and import useful constants
    use Gtk3 '-init';        # load Gtk3 module and initialize it
   # use parent qw(Gtk3::Window);
    use Exporter 'import';   
-   our @EXPORT_OK      = qw<addButton addStatText addTextCtrl addMenuBits addPanel  addCombo  addVar setScale MainLoop $frame $winScale $winWidth $winHeight $winTitle>;
+   our @EXPORT_OK      = qw<addWidget addVar setScale MainLoop $frame $winScale $winWidth $winHeight $winTitle>;
    our $frame;
    
    our $winX=30;
@@ -19,12 +19,7 @@ package GFgtk;
    our $winScale=6.5; 
  
    # these arrays will contain the widgets each as an arrayref of the parameters
-   my @buttons=();
-   my @textctrls=();
-   my @stattexts=();
-   my @menu=();
-   my @subpanels=();
-   my @combos=();
+   my @widgets=();
    my %iVars=();     #vars for interface operation (e.g. 
    my %oVars=();      #vars for interface creation (e.g. list of options)
    my %styles;
@@ -36,7 +31,7 @@ package GFgtk;
     my $class = shift; 
     my $self={};   
     bless( $self, $class );
-    $self->{window}= Gtk3::Window->new;  # call the superclass' constructor
+    $self->{window}= Gtk3::Window->new;  
     $self->{window}->signal_connect(destroy => sub { Gtk3::main_quit; });
     $self->{window}->resize($winWidth,$winHeight);
     $self->{window} -> set_title($winTitle);
@@ -57,31 +52,26 @@ package GFgtk;
 # setupContent  sets up the initial content before Mainloop can be run.
    sub setupContent{
 	   my ($self, $canvas)=@_;
-	   
-	   foreach my $button  (@buttons){
-		   aBt($self, $canvas, @$button)
-	   }
-	   foreach my $textctrl (@textctrls){
-		   aTC($self,$canvas,@$textctrl)
-	   }
-	   foreach my $stattxt (@stattexts){
-		   aST($self,$canvas,@$stattxt)
-	   }
-	   foreach my $sp (@subpanels){
-		   aSP($self,$canvas,@$sp);
-	   }
-	   foreach my $cb (@combos){
-		   aCB($self,$canvas,@$cb);
-	   }
-	   if (scalar @menu){   #menu exists
-		  $self ->{"menubar"} = Gtk3::MenuBar->new;
-		  $canvas->put($self ->{"menubar"},0,0);
-		  my $currentMenu;
-		  foreach my $menuBits (@menu){ 
-			  $currentMenu=aMB($self,$frame,$currentMenu,@$menuBits)
+	   $self ->{"menubar"}=undef;
+	   my $currentMenu;
+	   foreach my $widget (@widgets){
+		   my @params=@$widget;
+		   my $wtype=shift @params;
+		   if ($wtype eq "btn")             {aBt($self, $canvas, @params);}
+		   elsif ($wtype eq "textctrl")     {aTC($self, $canvas, @params);}
+		   elsif ($wtype eq "stattext")     {aST($self, $canvas, @params);}
+		   elsif ($wtype eq "sp")           {aSP($self, $canvas, @params);}
+		   elsif ($wtype eq "combo")        {aCB($self, $canvas, @params);}
+		   elsif ($wtype eq "sp")           {aSP($self, $canvas, @params);}
+		   elsif ($wtype eq "mb")
+		                   {
+							   if (! $self->{"menubar"}){
+							      $self ->{"menubar"} = Gtk3::MenuBar->new;
+		                          $canvas->put($self ->{"menubar"},0,0);
+		                          }
+	                          $currentMenu=aMB($self,$canvas,$currentMenu,@params)
 	       }
 	   }
-
 	   
 	   sub aBt{
 	    my ($self,$canvas, $id, $label, $location, $size, $action)=@_;
@@ -118,7 +108,7 @@ package GFgtk;
 	          $canvas->put($canvas->{"combo$id"},${$location}[0] ,${$location}[1]);
 	       }
 	       else {print "Combo options not defined for 'combo$id' with label $label\n"}
-	              
+	        
 	   }
         sub aMB{
 	     my ($self,$canvas,$currentMenu, $id, $label, $type, $action)=@_;
@@ -157,7 +147,6 @@ package GFgtk;
 				if (! -e $content){ return; }
 				my $pixbuf = Gtk3::Gdk::Pixbuf->new_from_file($content);
 				my $scaled = $pixbuf->scale_simple(${$size}[0],${$size}[1], 'GDK_INTERP_HYPER');
-				print $id."\n";
 				$canvas->{"Image".$id} = Gtk3::Image->new();
 				$canvas->{"Image".$id}->set_from_pixbuf($scaled);
 				$canvas->put($canvas->{"Image".$id},${$location}[0] ,${$location}[1]);					
@@ -180,27 +169,12 @@ package GFgtk;
 
       
 #functions for GUIDeFATE to load the widgets into the backend
-   sub addButton{
-	   push (@buttons,shift );
-   }
-   sub addTextCtrl{
-	   push (@textctrls,shift );
-   }
-   sub addStatText{
-	   push (@stattexts,shift );
-   }
-   sub addMenuBits{
-	   push (@menu, shift);
-   }
-    sub addPanel{
-	   push (@subpanels, shift);
+   sub addWidget{
+	   push (@widgets,shift );
    }
    sub addStyle{
 	   my ($name,$style)=@_;
 	   $styles{$name}=$style;
-   }
-   sub addCombo{
-	   push (@combos, shift);
    }
    sub addVar{
 	   my ($varName,$value)=@_;
@@ -209,23 +183,23 @@ package GFgtk;
 
 # Functions for internal use 
    sub getSize{
-	   my ($self,$id,$arrayRef)=@_;
-	   my $found=getItem($self,$id,$arrayRef);
-	   return ( $found!=-1) ? $$arrayRef[$found][4]:0;
+	   my ($self,$id)=@_;
+	   my $found=getItem($self,$id);
+	   return ( $found!=-1) ? $widgets[$found][5]:0;
 	   
    }
    sub getLocation{
-	   my ($self,$id,$arrayRef)=@_;
-	   my $found=getItem($self,$id,$arrayRef);
-	   return ( $found!=-1) ? $$arrayRef[$found][3]:0;
+	   my ($self,$id)=@_;
+	   my $found=getItem($self,$id);
+	   return ( $found!=-1) ? $widgets[$found][4]:0;
 	   
    }   
    sub getItem{
-	   my ($self,$id,$arrayRef)=@_;
+	   my ($self,$id)=@_;
 	   $id=~s/[^\d]//g;
 	   my $i=0; my $found=-1;
-	   while ($i<@$arrayRef){
-		   if ($$arrayRef[$i][0]==$id) {
+	   while ($i<@widgets){
+		   if ($widgets[$i][1]==$id) {
 			   $found=$i;
 			   }
 		   $i++;
@@ -253,8 +227,8 @@ package GFgtk;
    sub setImage{
 	   my ($self,$id,$file)=@_;
 	   my $canvas=$self->{panel};
-	   my $location=getLocation($self,$id,\@subpanels);
-	   my $size=getSize($self,$id,\@subpanels);
+	   my $location=getLocation($self,$id);
+	   my $size=getSize($self,$id);
 	   if ($size){
 	       if (! -e $file){ print "$file not found\n"; return; }
 				my $pixbuf = Gtk3::Gdk::Pixbuf->new_from_file($file);

@@ -2,7 +2,7 @@ package GFtk;
    use strict;
    use warnings;
    
-   our $VERSION = '0.07';
+   our $VERSION = '0.08';
    
    use parent qw(Tk::MainWindow);
    
@@ -12,7 +12,7 @@ package GFtk;
    use MIME::Base64;
    
    use Exporter 'import';   
-   our @EXPORT_OK      = qw<addButton addStatText addTextCtrl addMenuBits addPanel  addCombo  addVar setScale $frame $winScale $winWidth $winHeight $winTitle>;
+   our @EXPORT_OK      = qw<addWidget addVar setScale $frame $winScale $winWidth $winHeight $winTitle>;
    our $frame;
    
    our $winX=30;
@@ -23,12 +23,7 @@ package GFtk;
    our $winScale=6.5; 
  
    # these arrays will contain the widgets each as an arrayref of the parameters
-   my @buttons=();
-   my @textctrls=();
-   my @stattexts=();
-   my @menu=();
-   my @subpanels=();
-   my @combos=();
+   my @widgets=();
    my %iVars=();     #vars for interface operation (e.g. 
    my %oVars=();      #vars for interface creation (e.g. list of options)
    my %styles;
@@ -58,32 +53,26 @@ package GFtk;
 # setupContent  sets up the initial content before Mainloop can be run.
    sub setupContent{
 	   my ($self, $canvas)=@_;
-	   
-	   foreach my $button  (@buttons){
-		   aBt($self, $canvas, @$button)
-	   }
-	   foreach my $textctrl (@textctrls){
-		   aTC($self,$canvas,@$textctrl)
-	   }
-	   foreach my $stattxt (@stattexts){
-		   aST($self,$canvas,@$stattxt)
-	   }
-	   if (scalar @menu){   #menu exists
-		  $self->configure(-menu => $self ->{"menubar"} = $self->Menu);
-		  my $currentMenu;
-		  foreach my $menuBits (@menu){ 
-			  $currentMenu=aMB($self,$frame,$currentMenu,@$menuBits)
+	   $self ->{"menubar"}=undef;
+	   my $currentMenu;
+	   foreach my $widget (@widgets){
+		   my @params=@$widget;
+		   my $wtype=shift @params;
+		   if ($wtype eq "btn")             {aBt($self, $canvas, @params);}
+		   elsif ($wtype eq "textctrl")     {aTC($self, $canvas, @params);}
+		   elsif ($wtype eq "stattext")     {aST($self, $canvas, @params);}
+		   elsif ($wtype eq "sp")           {aSP($self, $canvas, @params);}
+		   elsif ($wtype eq "combo")        {aCB($self, $canvas, @params);}
+		   elsif ($wtype eq "sp")           {aSP($self, $canvas, @params);}
+		   elsif ($wtype eq "mb")
+		                   {
+							   if (! $self->{"menubar"}){
+							       $self->configure(-menu => $self ->{"menubar"} = $self->Menu);
+		                          }
+	                          $currentMenu=aMB($self,$canvas,$currentMenu,@params)
 	       }
-	       # a bug seems to make a menuhead to be also ia menuitem---
+	   }
 
-	   }
-	   foreach my $sp (@subpanels){
-		   aSP($self,$canvas,@$sp);
-	   }
-	   foreach my $cb (@combos){
-		   aCB($self,$canvas,@$cb);
-	   }
-	   
 	   sub aBt{
 	    my ($self,$canvas, $id, $label, $location, $size, $action)=@_;
 	    $canvas->{"btn$id"}=$canvas->Button(-text => $label,
@@ -201,27 +190,12 @@ package GFtk;
 
       
 #functions for GUIDeFATE to load the widgets into the backend
-   sub addButton{
-	   push (@buttons,shift );
-   }
-   sub addTextCtrl{
-	   push (@textctrls,shift );
-   }
-   sub addStatText{
-	   push (@stattexts,shift );
-   }
-   sub addMenuBits{
-	   push (@menu, shift);
-   }
-    sub addPanel{
-	   push (@subpanels, shift);
+   sub addWidget{
+	   push (@widgets,shift );
    }
    sub addStyle{
 	   my ($name,$style)=@_;
 	   $styles{$name}=$style;
-   }
-   sub addCombo{
-	   push (@combos, shift);
    }
    sub addVar{
 	   my ($varName,$value)=@_;
@@ -230,23 +204,23 @@ package GFtk;
 
 # Functions for internal use 
    sub getSize{
-	   my ($self,$id,$arrayRef)=@_;
-	   my $found=getItem($self,$id,$arrayRef);
-	   return ( $found!=-1) ? $$arrayRef[$found][4]:0;
+	   my ($self,$id)=@_;
+	   my $found=getItem($self,$id);
+	   return ( $found!=-1) ? $widgets[$found][5]:0;
 	   
    }
    sub getLocation{
-	   my ($self,$id,$arrayRef)=@_;
-	   my $found=getItem($self,$id,$arrayRef);
-	   return ( $found!=-1) ? $$arrayRef[$found][3]:0;
+	   my ($self,$id)=@_;
+	   my $found=getItem($self,$id);
+	   return ( $found!=-1) ? $widgets[$found][4]:0;
 	   
    }   
    sub getItem{
-	   my ($self,$id,$arrayRef)=@_;
+	   my ($self,$id)=@_;
 	   $id=~s/[^\d]//g;
 	   my $i=0; my $found=-1;
-	   while ($i<@$arrayRef){
-		   if ($$arrayRef[$i][0]==$id) {
+	   while ($i<@widgets){
+		   if ($widgets[$i][1]==$id) {
 			   $found=$i;
 			   }
 		   $i++;
@@ -267,7 +241,7 @@ package GFtk;
 #Static Text functions
    sub setLabel{
 	   my ($self,$id,$text)=@_;
-	   my $location=$stattexts[getItem($self,$id,\@stattexts)][2];
+	   my $location=$widgets[getItem($self,$id)][3];
 	   $frame->delete($frame->{"$id"});
 	   $frame->{"$id"}=$frame->createText(${$location}[0] ,${$location}[1], 
 		                     -anchor => "nw",
@@ -279,8 +253,8 @@ package GFtk;
 #Image functions
    sub setImage{
 	   my ($self,$id,$file)=@_;
-	   my $location=getLocation($self,$id,\@subpanels);
-	   my $size=getSize($self,$id,\@subpanels);
+	   my $location=getLocation($self,$id,\@widgets);
+	   my $size=getSize($self,$id,\@widgets);
 	   if ($size){
 	       my $image = Image::Magick->new;
 		   my $r = $image->Read("$file");
