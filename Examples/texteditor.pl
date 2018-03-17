@@ -4,24 +4,24 @@
 
 use strict;
 use warnings;
-use GUIDeFATE qw<$frame>;
+use GUIDeFATE;
 
 my $window=<<END;
-+--------------------------------------+
-|T  Test Minimalist Text Editor        |
-+M-------------------------------------+
-|+T------------------------------------+
-||text editor                          |
-||                                     |
-||                                     |
-||                                     |
-||                                     |
-||                                     |
-||                                     |
-||                                     |
-|+-------------------------------------+
-|                                      |
-+--------------------------------------+
++---------------------------------------+
+|T  Test Minimalist Text Editor         |
++M--------------------------------------+
+|+T------------------------------------+|
+||text editor                          ||
+||                                     ||
+||                                     ||
+||                                     ||
+||                                     ||
+||                                     ||
+||                                     ||
+||                                     ||
+|+-------------------------------------+|
+|                                       |
++---------------------------------------+
 
 Menu
 -File
@@ -32,14 +32,15 @@ Menu
 
 END
 
-my $backend=$ARGV[0];
-my $gui=GUIDeFATE->new($window,$backend);
-my $frame=$gui->getFrame;
+my $backend=$ARGV[0]?$ARGV[0]:"wx";
+my $assist=$ARGV[1]?$ARGV[1]:"q";
+my $gui=GUIDeFATE->new($window,$backend,$assist);
+my $frame=$gui->getFrame||$gui;
 $gui->MainLoop;
 
 sub menu4{
-	if($gui->getFrame()->showDialog("Sure?","This will wipe existing text...proceed?","OKC","!")){
-	   $gui->getFrame()->{TextCtrl1}->SetValue("");
+	if($frame->showDialog("Sure?","This will wipe existing text...proceed?","OKC","!")){
+	   $frame->setValue("TextCtrl1","");
    }
 }
 sub menu5{
@@ -55,7 +56,7 @@ sub menu5{
   }
 }
 sub menu6{
-	my $file= $gui->getFrame()->showFileSelectorDialog("Save file",0);
+	my $file= $frame->showFileSelectorDialog("Save file",0);
 	if (open(my $fh, '>', $file)) {
        print $fh  $frame->getValue("TextCtrl1");
        close $fh

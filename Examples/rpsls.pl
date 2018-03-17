@@ -52,9 +52,11 @@ my %rpsls = (rock     => {scissors => 'crush',
                           rock     => 'vaporize',
                           file     => 'Spock.jpg'});
 
-my $backend=$ARGV[0];
-my $gui=GUIDeFATE->new($window,$backend,"v");
-my $frame=$gui->getFrame;
+
+my $backend=$ARGV[0]?$ARGV[0]:"wx";
+my $assist=$ARGV[1]?$ARGV[1]:"q";
+my $gui=GUIDeFATE->new($window,$backend,$assist);
+my $frame=$gui->getFrame|| $gui;
 $gui->MainLoop;
 
 #Subroutines called by clicking buttons

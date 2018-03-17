@@ -25,12 +25,14 @@ bends=Wx,Tk,Gtk,Qt,Win32
 optns=Quiet,Verbose,Assist
 
 END
+
 my $preLine=($^O=~/Win/)?"START ":"";
 my $postLine=($^O=~/Win/)?"":" &";
+
 my $backend=$ARGV[0]?$ARGV[0]:"wx";
 my $assist=$ARGV[1]?$ARGV[1]:"q";
 my $gui=GUIDeFATE->new($window,$backend,$assist);
-my $frame=$gui->getFrame;
+my $frame=$gui->getFrame||$gui;
 $gui->MainLoop;
 
 sub combo0{
