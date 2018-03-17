@@ -76,6 +76,7 @@ From Version 7 Three backends are supported. Wx, Tk and Gtk.  These have differe
 * Perl5.8.8, Exporter, Wx, Wx::Perl::Imagick (for Wx interface)   OR
 * Perl5.8.8, Exporter, Tk, Image::Imagick, Tk::JPEG, MIME::Base64 (for Tk interface)  OR
 * Perl5.8.8, Exporter, Glib, Gtk (for Gtk interface)
+* Perl5.8.8, Exporter, QtCore4, QtGui4 (for Qt interface) from KDE
 
 ## Widgets
 
