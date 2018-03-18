@@ -2,7 +2,7 @@ package GFqt;
    use strict;
    use warnings;
    
-   our $VERSION = '0.08';
+   our $VERSION = '0.081';
 
 use QtCore4;
 use QtGui4;
@@ -61,7 +61,6 @@ use QtCore4::slots
 sub mapAction{
 	my $widgetIndex=getItem(shift);
 	my @widget=@{$widgets[$widgetIndex]};
-	print join ",", @widget;
 	my $wType=shift @widget;
 	if ($widgetIndex !=-1){
 		if     ($wType eq "mb")   { &{$widget[3]};}
@@ -143,7 +142,6 @@ sub mapAction{
 			   $canvas->{$currentMenu}->addSeparator();
 		   }
 		   else{
-			   #print "MenuItem $label \n";
 			   $self->{"menu".$id."Act"}=Qt::Action($self->tr($label), $self);
 			   $self->connect($self->{"menu".$id."Act"}, SIGNAL 'triggered()', $self->{SigMan}, SLOT 'map()');
 			   $self->{SigMan}->setMapping($self->{"menu".$id."Act"}, "menu".$id);
@@ -244,7 +242,6 @@ sub mapAction{
 #Text input functions
   sub getValue{
 	   my ($id)=@_;
-	   print $id;
 	   if ($id=~/TextCtrl/){ return $frame->{$id}->toPlainText() }
 	   elsif ($id=~/textctrl/){ return $frame->{$id}->text();}
 	   elsif ($id=~/combo/){ return $frame->{$id}->currentText();}
@@ -273,7 +270,7 @@ sub mapAction{
 							}
 							
 	  else{
-           $fileName = Qt::FileDialog::getSabveFileName($dialog,
+           $fileName = Qt::FileDialog::getSaveFileName($dialog,
                                 $dialog->tr("Save file"),
                                 $message,
                                 $dialog->tr('All Files (*)') );
