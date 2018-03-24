@@ -1,0 +1,11 @@
+This is a test environment for those who wnat to test it GF Win32 interface without installing GUIDeFATE.
+
+Prereuisites: -
+
+* perl (e.g. ActiveState Perl)
+* Win32::GUI
+* Image::Magick
+
+Unpack folder.
+
+Use the Executioner in the scripts folder to launch other example scripts, currently only a calculator is supplied, a text editor, and rpsls are provided
