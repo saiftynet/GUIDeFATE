@@ -71,7 +71,7 @@ $gui->MainLoop;
 ```
 This produces something like ![Calculator Screenshot](https://github.com/saiftynet/GUIDeFATE/blob/master/calculator%20screenshot.png)
 
-From Version 7 Three backends are supported. Wx, Tk and Gtk.  These have different prerequisites.
+From Version 0.08 Four backends are supported. Wx, Tk, Gtk and Qt.  These have different prerequisites.
 
 * Perl5.8.8, Exporter, Wx, Wx::Perl::Imagick (for Wx interface)   OR
 * Perl5.8.8, Exporter, Tk, Image::Imagick, Tk::JPEG, MIME::Base64 (for Tk interface)  OR
