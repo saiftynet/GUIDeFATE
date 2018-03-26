@@ -11,7 +11,7 @@ use Image::Magick;
 use File::Copy;
 
 my %IMCommands;
-open my $in, '<', "IMCommands.pl" or die $!;
+open my $in, '<', "IMCommands.hsh" or die $!;
 {   local $/;   
     %IMCommands = eval <$in>;
 }
