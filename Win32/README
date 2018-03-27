@@ -2,12 +2,12 @@ This is a test environment for those who wnat to test it GF Win32 interface with
 
 Prerequisites: -
 
-* perl (e.g. ActiveState Perl)
+* perl (e.g. Strawberry Perl)
 * Win32::GUI
 * Image::Magick
 
-I used Starwvberry perl and the ImageMagick that comes when you ppd install Image::Magick.
-I tried Image Magick v7x from the website and failed to get that to work.
+I used Strawberry perl and the ImageMagick that comes when you ppd install Image::Magick.
+According to [ActiveState ppm index](http://code.activestate.com/ppm/PerlMagick/) you need PerlMagick, and version 6.89 of Image Magick.  The latest versions of Image Magick (7.x I have not been able to get working)
 I also failed to get Win32::GUI::DIBitamp which is why you need Image Majick (to allow multiple formats of images. ) Image Magick is used to resize Image, Save as Bitmap into a temp file(GFtmp.bmp, and load that into the application.  
 
 Use this preferably without having installed GUIDeFATE to tes it properly
