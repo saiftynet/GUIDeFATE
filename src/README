@@ -9,6 +9,8 @@ work currently with Gtk, Wx and Tk.
 Perl5.8.8, Exporter, Wx, Wx::Perl::Imagick (for Wx interface)
 Perl5.8.8, Exporter, Tk, Image::Imagick, Tk::JPEG, MIME::Base64 (for Tk interface)
 Perl5.8.8, Exporter, Glib, Gtk (for Gtk interface)
+Perl5.8.8, Exporter, QtCore4 QtGUI4 (for Qt interface)
+Perl5.8.8, Exporter, Win32::GUI and Imager (for Win32 interface)
 
 Designing a graphical User interface requires knowledge of things like
 toolkit libraries, platform context etc.  At least I think it does.  I
@@ -91,8 +93,11 @@ my $window=<<END;
 END
 
 
-my $gui=GUIDeFATE->new($window);
-$gui->MainLoop;
+my $backend="wx";            # this can be wx,tk,gtk, win32, qt, html etc
+my $assist="q";              #this can be (q)uiet, (v)erbose, (a)utogenerate
+my $gui=GUIDeFATE->new($window,$backend,$assist);
+my $frame=$gui->getFrame()||$gui;
+$gui->MainLoop();
 
 This produces something like 
 https://github.com/saiftynet/GUIDeFATE/blob/master/calculator%20screenshot.png
