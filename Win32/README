@@ -4,9 +4,10 @@ Prerequisites: -
 
 * perl (e.g. Strawberry Perl)
 * Win32::GUI
-* Image::Magick
+* Imager (use version of GFWin32 that works with Imager...rename that to GFWin32.pm  OR
+* Image::Magick I couldnt get this to work with ActiveState Perl but works iwth Strawberry Perl
 
-I used Strawberry perl and the ImageMagick that comes when you ppd install Image::Magick.
+I had used Strawberry perl and the ImageMagick that comes when you ppd install Image::Magick.
 According to [ActiveState ppm index](http://code.activestate.com/ppm/PerlMagick/) you need PerlMagick, and version 6.89 of Image Magick.  The latest versions of Image Magick (7.x I have not been able to get working)
 I also failed to get Win32::GUI::DIBitamp which is why you need Image Majick (to allow multiple formats of images. ) Image Magick is used to resize Image, Save as Bitmap into a temp file(GFtmp.bmp, and load that into the application.  
 
