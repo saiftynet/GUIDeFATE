@@ -1,0 +1,13 @@
+GUIDeFATE.pod
+lib/GFgtk.pm
+lib/GFhtml.pm
+lib/GFqt.pm
+lib/GFtemplate.pm
+lib/GFtk.pm
+lib/GFwin32.pm
+lib/GFwx.pm
+lib/GUIDeFATE.pm
+License.txt
+Makefile.PL
+MANIFEST			This list of files
+README
