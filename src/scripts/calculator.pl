@@ -5,7 +5,6 @@
 
 use strict;
 use warnings;
-use lib "../lib/";
 use GUIDeFATE;
 
 my $window=<<END;
@@ -28,7 +27,7 @@ END
 my $result=0;
 my $acc="";
 
-my $backend=$ARGV[0]?$ARGV[0]:"win32";
+my $backend=$ARGV[0]?$ARGV[0]:"wx";
 my $assist=$ARGV[1]?$ARGV[1]:"q";
 my $gui=GUIDeFATE->new($window,$backend,$assist);
 my $frame=$gui->getFrame()||$gui;

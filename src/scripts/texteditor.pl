@@ -3,7 +3,6 @@
 #use GUIDeFATE (which in turn depends on Wx)
 
 use strict;
-use lib "../lib/";
 use warnings;
 use GUIDeFATE;
 
@@ -33,7 +32,7 @@ Menu
 
 END
 
-my $backend=$ARGV[0]?$ARGV[0]:"win32";
+my $backend=$ARGV[0]?$ARGV[0]:"wx";
 my $assist=$ARGV[1]?$ARGV[1]:"q";
 my $gui=GUIDeFATE->new($window,$backend,$assist);
 my $frame=$gui->getFrame||$gui;
@@ -60,7 +59,7 @@ sub menu6{
 	my $file= $frame->showFileSelectorDialog("Save file",0);
 	if (open(my $fh, '>', $file)) {
        print $fh  $frame->getValue("TextCtrl1");
-       close $fh;
+       close $fh
        }
     }
     

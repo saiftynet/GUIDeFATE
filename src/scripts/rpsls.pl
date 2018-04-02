@@ -4,7 +4,7 @@
 
 use strict;
 use warnings;
-use lib "../lib/";
+use lib"../lib/";
 use GUIDeFATE;
 
 my $window=<<END;
@@ -23,7 +23,7 @@ my $window=<<END;
 |   |pg     |       |sister.|       |pg     |    |
 |   +-------+       |jpg    |       +-------+    |
 |   { Spock }       +-------+       { Paper }    |
-|                  ....I am ready....            |
+|                  I am ready                    |
 |                                                |
 |          +I------+         +I------+           |
 |          |Lizard.|         |scissor|           |
@@ -53,7 +53,7 @@ my %rpsls = (rock     => {scissors => 'crush',
                           file     => 'Spock.jpg'});
 
 
-my $backend=$ARGV[0]?$ARGV[0]:"win32";
+my $backend=$ARGV[0]?$ARGV[0]:"wx";
 my $assist=$ARGV[1]?$ARGV[1]:"q";
 my $gui=GUIDeFATE->new($window,$backend,$assist);
 my $frame=$gui->getFrame|| $gui;
@@ -76,13 +76,13 @@ sub getResults{
 	$frame->setImage("Image12",$rpsls{$computer}{file}); 
 
 	if ($rpsls{$player}{$computer}) {
-       $frame->setLabel("stattext16",'You '.$rpsls{$player}{$computer}.' me!');
+       $frame->setLabel("stattext16","You $rpsls{$player}{$computer} me!");
     }
     elsif ($player eq $computer) {
        $frame->setLabel("stattext16","Draw");
     }
     else {
-       $frame->setLabel("stattext16",'I '.$rpsls{$computer}{$player}.' you!');
+       $frame->setLabel("stattext16","I $rpsls{$computer}{$player} you!");
     }
 }
 

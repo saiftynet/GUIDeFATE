@@ -24,7 +24,7 @@ my $window=<<END;
 |T  Image Magick GUI                                     |
 +M-------------------------------------------------------+
 |+T--------------++I------------------------------------+|
-||#script;       ||Spock.jpg                            ||
+||#script;       ||ImageMagick.png                      ||
 ||               ||                                     ||
 ||               ||                                     ||
 ||               ||                                     ||
@@ -64,7 +64,7 @@ my $workingDir="tmp";
 unless (-e $workingDir and -d $workingDir){mkdir $workingDir};
 
 
-my $backend=$ARGV[0]?$ARGV[0]:"win32";
+my $backend=$ARGV[0]?$ARGV[0]:"gtk";
 my $assist=$ARGV[1]?$ARGV[1]:"q";
 my $gui=GUIDeFATE->new($window,$backend,$assist);
 my $frame=$gui->getFrame||$gui;
@@ -187,7 +187,7 @@ sub makePopUp{
 	my $command=shift;
 	if ($frame->showDialog($command,$IMCommands{$command}{Description}, "OKC" , "I") ){
 		my $params=$IMCommands{$command}{Parameters};
-		$params=~s/(([a-z]+=>[^{,]+,)|([a-z]+=>\{[^}]+}),)/ $1\n/g;  
+		$params=~s/(([a-z]+=>[^{,]+,)|([a-z]+=>{[^}]+}),)/ $1\n/g;  
 		$frame->appendValue("TextCtrl1","\n$command(\n$params\n);\n");
 	}
 	
