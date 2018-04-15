@@ -1,5 +1,5 @@
 # GFweb and GFhtml
-This is an experminetal module with the objective of converting a desktop app created using GUIDeFATE into a web app.  The application will: -
+This is an experimental module with the objective of converting a desktop app created using GUIDeFATE into a web app.  The application will: -
 
 1. Create a websocket server listening currently to localhost at port 8085
 2. Generate a client application which it will lauunch immediately in a browser
