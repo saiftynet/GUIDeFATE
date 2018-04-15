@@ -1,0 +1,195 @@
+<html>	  
+<title>Calculator ./calculator.pl </title>
+  <head>
+<style>
+ul.menubar {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #333;
+}
+
+.menuhead {
+    float: left;
+}
+
+.menuhead a, .dropbtn {
+    display: inline-block;
+    color: white;
+    text-align: center;
+    padding: 1px 3px;
+    text-decoration: none;
+}
+
+li.menuhead a:hover, .dropdown:hover .dropbtn {
+    background-color: red;
+}
+
+.menuhead .dropdown {
+    display: inline-block;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+.dropdown-content a {
+    color: black;
+    padding: 1px 3x;
+    text-decoration: none;
+    display: block;
+    text-align: left;
+}
+
+.dropdown-content a:hover {background-color: #f1f1f1}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+</style>
+  <script>
+	  
+var ws;
+var logWin;
+var start=new Date();
+function WebSocketStart()
+  {  
+    logWin=window.open("","Logs", target="_blank", "height=400, width=250, left=0, top=0, resizable=yes, toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=no, copyhistory=no");
+    logWin.document.write("<h1>GUIDeFATE Websocket Log opened</h1><br>\n");
+    logWin.blur();
+    window.focus();
+     
+      
+    if ("WebSocket" in window) {
+      ws = new WebSocket("ws://localhost:8085");
+      
+      ws.onopen = function(){ log("red","Web App Started")};
+				
+      ws.onmessage = function (evt)  { 
+		var received_msg = evt.data;
+		log("blue",received_msg);
+        parseMessage(received_msg);
+      };
+      
+	  ws.onclose = function(){  console.log("Connection is closed...");  };
+	}
+    else { log("blue","WebSocket NOT supported by your Browser!"); }  };
+   
+    function send(msg){
+        log("red",msg); 
+		ws.send(msg);
+		return false;
+	}
+	
+// The handful of commands are parsed here and results reported back to server
+function parseMessage(msg){
+   if  (msg.indexOf("Mess")==0){return};
+   var actionRE=/^action=([^&]*)&/;
+   var IDRE=/&id=([^&]*)&?/;
+   var valueRE=/&value=([\s\S]*)$/;
+   var action=actionRE.exec(msg);
+   var id=IDRE.exec(msg);
+   var value=valueRE.exec(msg);
+   log("brown",action+"<br>"+id + "<br>"+value);
+
+
+
+   if (!id[1] || ! document.getElementById(id[1]) ){
+      log("green","no item with ID '"+id[1] +"'");
+      //send ("Error:no item with ID '"+id[1] +"'")
+   }
+   else{ 
+    switch (action[1]){
+     case "getValue":
+          log("green", "client replies to getValue  " + id[1]+ " with result :" +document.getElementById(id[1]).value);
+          send ("ID="+id[1]+"&Value="+document.getElementById(id[1]).value);
+     break;
+     case "setValue":
+          document.getElementById(id[1]).value=value[1];
+          log("green", "Success:"+id[1]+" now has value "+document.getElementById(id[1]).value);
+          send ("ID="+id[1]+"&Value="+document.getElementById(id[1]).value);
+     break;
+     case "appendValue":
+          document.getElementById(id[1]).value+=value[1];
+          log("green", "Success:"+id[1]+" now has value "+document.getElementById(id[1]).value);
+          send ("ID="+id[1]+"&Value="+document.getElementById(id[1]).value);
+     break;
+     case "setLabel":
+          document.getElementById(id[1]).innerHTML=value[1];
+          log("green", "Success:"+id[1]+" now has text.. "+document.getElementById(id[1]).innerHTML);
+     break;
+     case "setImage":
+          document.getElementById(id[1]).src=value[1];
+          log("green", "Success:"+id[1]+" now has src.. "+value[1]);
+     
+     break;
+     case "showFileSelector":
+     
+     
+     break;
+     case "showDialog":
+     
+     
+     break;
+     default:
+       log ("teal","unrecognised command "+action[1])
+      }   
+    }
+};
+
+function log(colour, message){
+    logWin.document.write("<p style='margin:0;color:"+colour+"'>"+message+"</p>\n");
+}
+
+
+function act(command,label){
+  if (typeof window[command] === "function") {
+    window[strOfFunction](label);
+   }
+  else{
+   console.log("Sending to server Function="+ command + "&Label="+encodeURIComponent(label))
+   send("Function="+ command + "&Label="+encodeURIComponent(label))
+  }
+}
+
+ window.onbeforeunload = function() {
+    websocket.onclose = function () {}; // disable onclose handler first
+    websocket.close()
+    }	  
+</script>
+  </head>
+<body  onload="javascript:WebSocketStart()">
+<div id=window style="position:relative;width:325px;height:234px">
+<input id=textctrl0  style="position:absolute;left:32.5px;top:26px;width:253.5px;height:26px;" value="" onchange='act("textctrl0",this.value)'>
+<input id=btn1 type=button style="position:absolute;left:32.5px;top:52px;width:58.5px;height:26px;" value="sqr" onclick='act("btn1","sqr")'>
+<input id=btn2 type=button style="position:absolute;left:97.5px;top:52px;width:58.5px;height:26px;" value="pi" onclick='act("btn2","pi")'>
+<input id=btn3 type=button style="position:absolute;left:162.5px;top:52px;width:58.5px;height:26px;" value="C" onclick='act("btn3","C")'>
+<input id=btn4 type=button style="position:absolute;left:227.5px;top:52px;width:58.5px;height:26px;" value="AC" onclick='act("btn4","AC")'>
+<input id=btn5 type=button style="position:absolute;left:32.5px;top:78px;width:58.5px;height:26px;" value="1" onclick='act("btn5","1")'>
+<input id=btn6 type=button style="position:absolute;left:97.5px;top:78px;width:58.5px;height:26px;" value="2" onclick='act("btn6","2")'>
+<input id=btn7 type=button style="position:absolute;left:162.5px;top:78px;width:58.5px;height:26px;" value="3" onclick='act("btn7","3")'>
+<input id=btn8 type=button style="position:absolute;left:227.5px;top:78px;width:58.5px;height:26px;" value="+" onclick='act("btn8","+")'>
+<input id=btn9 type=button style="position:absolute;left:32.5px;top:104px;width:58.5px;height:26px;" value="4" onclick='act("btn9","4")'>
+<input id=btn10 type=button style="position:absolute;left:97.5px;top:104px;width:58.5px;height:26px;" value="5" onclick='act("btn10","5")'>
+<input id=btn11 type=button style="position:absolute;left:162.5px;top:104px;width:58.5px;height:26px;" value="6" onclick='act("btn11","6")'>
+<input id=btn12 type=button style="position:absolute;left:227.5px;top:104px;width:58.5px;height:26px;" value="-" onclick='act("btn12","-")'>
+<input id=btn13 type=button style="position:absolute;left:32.5px;top:130px;width:58.5px;height:26px;" value="7" onclick='act("btn13","7")'>
+<input id=btn14 type=button style="position:absolute;left:97.5px;top:130px;width:58.5px;height:26px;" value="8" onclick='act("btn14","8")'>
+<input id=btn15 type=button style="position:absolute;left:162.5px;top:130px;width:58.5px;height:26px;" value="9" onclick='act("btn15","9")'>
+<input id=btn16 type=button style="position:absolute;left:227.5px;top:130px;width:58.5px;height:26px;" value="*" onclick='act("btn16","*")'>
+<input id=btn17 type=button style="position:absolute;left:32.5px;top:156px;width:58.5px;height:26px;" value="." onclick='act("btn17",".")'>
+<input id=btn18 type=button style="position:absolute;left:97.5px;top:156px;width:58.5px;height:26px;" value="0" onclick='act("btn18","0")'>
+<input id=btn19 type=button style="position:absolute;left:162.5px;top:156px;width:58.5px;height:26px;" value="=" onclick='act("btn19","=")'>
+<input id=btn20 type=button style="position:absolute;left:227.5px;top:156px;width:58.5px;height:26px;" value="/" onclick='act("btn20","/")'>
+<div id=stattext21 style="position:absolute;left:32.5px;top:182px">made with GUIdeFATE</div>
+<div id=stattext22 style="position:absolute;left:32.5px;top:208px">and happy things</div>
+</div>
+</body>
+</html>
