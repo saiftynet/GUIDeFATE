@@ -1,11 +1,11 @@
-## GFweb and GFhtml
+# GFweb and GFhtml
 This is an experminetal module with the objective of converting a desktop app created using GUIDeFATE into a web app.  The application will: -
 
 1. Create a websocket server listening currently to localhost at port 8085
 2. Generate a client application which it will lauunch immediately in a browser
 3. Also produce a pop up window logging the messaging and processing of the messages
 
-## Prerequisites:
+# Prerequisites:
 1. Popups must be eenabled for the app to work (this is obliatory ofr this iteration, but will become optional)
 2. The application needs to be started from a terminal in the folder containing all the dependent files.
 3.  The only dependencies are 1) Net::WebSocket::Server nd 2) a Websocket capable browser (e.g Chrome)
