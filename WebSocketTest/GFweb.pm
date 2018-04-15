@@ -149,7 +149,7 @@ package GFweb;
 		if (defined $oVars{$label}){
 			 my @strings2 = split(",",$oVars{$label}); # extract the defined options
 	         $self->{content}.="<select id=combo$id style=\"position:absolute;left:".${$location}[0]."px;top:".${$location}[1]."px;".
-	                  "width:".${$size}[0]."px;height:".${$size}[1]."px;\" value=\"".$strings2[0]."\" onchange=\'act(\"textctrl$id\",this.value)\'>\n";
+	                  "width:".${$size}[0]."px;height:".${$size}[1]."px;\" value=\"".$strings2[0]."\" onchange=\'act(\"combo$id\",this.value)\'>\n";
 		     foreach (@strings2){
 				 $self->{content}.="  <option>$_</option>\n";
 			 }
@@ -264,27 +264,19 @@ package GFweb;
 #Text input functions
   sub getValue{
 	   my ($self,$id)=@_;
-		 $msgFlags{$id}=0;
 	     $connection->send_utf8("action=getValue&id=$id");
-	     my $count=0;
-         while ($count<2){
-			 if (! $msgFlags{$id}) {
-			 sleep(1);
-			 $count++;
-		 }
-      }
-	  return $iVars{$id};
+	     $connection->send_utf8("action=getValue&id=$id");
+       return $iVars{$id};
    }
    
    sub setValue{
 	   my ($self,$id,$text)=@_;
 	   $connection->send_utf8("action=setValue&id=$id&value=$text");
-  
+	   $iVars{$id}=$text;
    }   
    sub appendValue{
 	   my ($self,$id,$text)=@_;
 	   $connection->send_utf8("action=appendValue&id=$id&value=$text");
- 
    }   
 
 #Message box, Fileselector and Dialog Boxes
