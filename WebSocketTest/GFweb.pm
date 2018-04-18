@@ -426,7 +426,7 @@ function parseMessage(msg){
     switch (action[1]){
      case "getValue":
           log("green", "client replies to getValue  " + id[1]+ " with result :" +document.getElementById(id[1]).value);
-          send ("ID="+id[1]+"&Value='"+document.getElementById(id[1]).value)+"'";
+          send ("ID="+id[1]+"&Value='"+document.getElementById(id[1]).value+"'");
      break;
      case "setValue":
           document.getElementById(id[1]).value=value[1];
