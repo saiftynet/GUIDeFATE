@@ -87,7 +87,9 @@ package GFweb;
 	  }
 	  elsif ($hash{ID}) {
 		$msgFlags{$hash{ID}}=1;
-		$iVars{$hash{ID}}=$hash{Value}?$hash{Value}:"";
+		my $tmp=$hash{Value};
+		$tmp=~s/^'|'$//;
+		$iVars{$hash{ID}}=$tmp;
 		#$conn->send_utf8( "Server stores ".$hash{ID}. " the value ".$hash{Value});
 	  }
     }
@@ -281,14 +283,15 @@ package GFweb;
 
 #Message box, Fileselector and Dialog Boxes
    sub showFileSelectorDialog{
-	 
      my ($self, $message,$load,$filter) = @_;
      my $filename;
-
+     $connection->send_utf8("action=showFileSelector&id=fileSelector&value=$load");
+     sleep(3);
      return $filename;
    };
    sub showDialog{
 	   my ($self, $title, $message,$response,$icon) = @_;
+	   $connection->send_utf8("action=showDialog&id=dialog&value=$message");
 
    };
    
@@ -297,6 +300,10 @@ package GFweb;
 	   my $self=shift;
    }
    
+   sub DESTROY {
+	   my $self=shift;
+	   $self->{webapp}->shutdown();
+   }
    
   sub css{
 	  return <<ENDCSS
@@ -410,15 +417,16 @@ function parseMessage(msg){
 
 
 
-   if (!id[1] || ! document.getElementById(id[1]) ){
-      log("green","no item with ID '"+id[1] +"'");
-      //send ("Error:no item with ID '"+id[1] +"'")
+   if (!id || !id[1]) {
+      
+        log("green","NO ID or no item with ID '"+id[1] +"'");
+      //send ("Error:NO ID or no item with ID '"+id[1] +"'")
    }
    else{ 
     switch (action[1]){
      case "getValue":
           log("green", "client replies to getValue  " + id[1]+ " with result :" +document.getElementById(id[1]).value);
-          send ("ID="+id[1]+"&Value="+document.getElementById(id[1]).value);
+          send ("ID="+id[1]+"&Value='"+document.getElementById(id[1]).value)+"'";
      break;
      case "setValue":
           document.getElementById(id[1]).value=value[1];
@@ -440,11 +448,14 @@ function parseMessage(msg){
      
      break;
      case "showFileSelector":
-     
-     
+     alert(1);
+       var fs=document.createElement("input");
+       fs.id="fileSelector";
+       fs.type="file";
+       fs.click();
      break;
      case "showDialog":
-     
+        alert
      
      break;
      default:
@@ -459,11 +470,14 @@ function log(colour, message){
 
 
 function act(command,label){
-  if (typeof window[command] === "function") {
+  if (typeof window[command] === "function") {  //these are functions internal to the javascript engine or in the external javascrpt file
     window[strOfFunction](label);
    }
   else{
-   console.log("Sending to server Function="+ command + "&Label="+encodeURIComponent(label))
+   if (command.match(/textctrl|combo/)){
+      var content=(document.getElementId(command).value!="")?document.getElementId(command).value:"EmptyString"
+      send("ID="+ command + "&Value="+content)
+   }
    send("Function="+ command + "&Label="+encodeURIComponent(label))
   }
 }
