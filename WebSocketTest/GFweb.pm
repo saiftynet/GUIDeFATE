@@ -16,48 +16,56 @@ package GFweb;
    our $winWidth;
    our $winHeight;
    our $winTitle="title";
-   our $winScale=6.5; 
+   our $winScale=6.5;
  
    # these arrays will contain the widgets each as an arrayref of the parameters
    my @widgets=();
    my %iVars=();      #vars for interface operation (e.g. state of interface)
    my %oVars=();      #vars for interface creation (e.g. list of options)
    my %styles;
+   our $webApp;
    my %msgFlags;
+   my %dialogDispatch;   # dispatch table for dialog actions
+   my $uploadFileName;
    
    my $lastMenuLabel;  #bug workaround in menu generator may be needed for submenus
    
    sub new
    {
     my $class = shift; 
+    my $port=shift || 8085;
     my $self={};   
     bless( $self, $class );
-    $self->{header}=header();
-    $self->{header}.="<title>$winTitle $0 </title>\n";
-    $self->{content}="<div id=window style=\"position:relative;width:$winWidth"."px;height:$winHeight"."px\">\n";
-    setupContent($self,$self->{content});
-    
-    $self->{html}=$self->{header};
+    $self->{html}=$self->header();
+    $self->{html}.="<title>$winTitle $0 </title>\n";
     $self->{html}.= "  <head>\n<style>\n".css()."</style>\n";
     $self->{html}.= "  <script>\n".js()."</script>\n";
+    
     if (-e "$0.js"){  $self->{html}.= "  <script type=\"text/javascript\" src=\"$0.js\"></script>\n";}
-    $self->{html}.= "  </head>\n<body  onload=\"javascript:WebSocketStart()\">\n";
+    $self->{html}.= "  </head>\n<body>\n<div style=\"width:$winWidth"."px;height:$winHeight"."px\">\n";
+    $self->{content}="<div id=window style=\"position:relative;width:$winWidth"."px;height:$winHeight"."px\">\n";
+    setupContent($self,$self->{content});
     $self->{html}.=$self->{content};
+    $self->{html}.=dialogBoxDiv();
     if ($self->{menubar}){ $self->{html}.= $self->{menubar} . "\n<br>\n";}
-    $self->{html}.= "</div>\n</body>\n</html>";
+    $self->{html}.= "\n</div>\n</body>\n</html>";
     
     my $filename = $0.".html";
     open(my $fh, '>', $filename) or die "Could not open file '$filename' $!";
     print $fh $self->{html};
     close $fh; 
     
-    $self->{webapp}= Net::WebSocket::Server->new(
-        listen => 8085,
+    $webApp= Net::WebSocket::Server->new(
+        listen => $port,
         on_connect => sub {
             (my $serv, $connection) = @_;
             $connection->on(
                 utf8 => sub {
-					parseMessage(@_); },
+					parseMessage(@_);
+				},
+				binary => sub {
+                    parseBinary(@_);
+                },
             );
         },
     );
@@ -72,7 +80,7 @@ package GFweb;
 	  elsif ($^O =~/Win/){ system("start .\\".$htmlFile."\n"); }
 	  else{ system("open ./".$htmlFile." &\n"); }
 	  
-	 $self->{webapp}->start;
+	  $webApp->start;
 
   }
   
@@ -82,8 +90,15 @@ package GFweb;
     if ($message=~/^[A-z]*=/){
 	  my %hash = map{split /\=/, $_,2}(split /\&/, $message,3);
 	  if($hash{Function}) {
-		mapAction($hash{Function});
-		#$conn->send_utf8( "Server executes ".$hash{Function})
+		  if ($hash{Function} eq "Dialog"){  # function from Dialog buttons
+			  &{$dialogDispatch{$hash{Label}}}; 
+		  }
+		  elsif ($hash{Function} eq "FileLoaded"){  # function from file selector
+			  
+		  }
+		  else {                           # function triggered by widgets
+			  mapAction($hash{Function});
+		  }
 	  }
 	  elsif ($hash{ID}) {
 		$msgFlags{$hash{ID}}=1;
@@ -93,10 +108,30 @@ package GFweb;
 		#$conn->send_utf8( "Server stores ".$hash{ID}. " the value ".$hash{Value});
 	  }
     }
+    elsif ($message=~/^File follows:(.*)\n/){       # Get ready to receive file
+		$uploadFileName=$1;
+		if (! -d "dataFiles") {mkdir "dataFiles";}  # ensure upload directory exists
+		unlink "dataFiles/$uploadFileName";         # delete file if already exists
+		$conn->send_utf8( "Binary data expected: Ready to receive $uploadFileName \n"); # Announce ready to receive binary Data
+	}
+	elsif ($message=~/^File ends:(.*)\n/){
+		$conn->send_utf8( "Message Binary data upload complete:\n");
+		if (defined $dialogDispatch{File}){ #Funtion to run after file has been downloaded
+			 &{$dialogDispatch{File}}($1);  
+			 }  
+		$uploadFileName=undef;
+	}
   }
   
+  sub parseBinary{
+	  my($conn, $binary)=@_;
+	  open(my $fh, '>>', "dataFiles/$uploadFileName") or die "Could not open file 'dataFiles/$uploadFileName' $!";
+	  print $fh $binary;
+	  close $fh;
+	  $conn->send_utf8( "Binary data received: -(". (length $binary). " bytes inserted into $uploadFileName)\n");
+  }
   
-  sub mapAction{
+  sub mapAction{   # maps id of widget with action on change
 	my $item=shift;
 	my $widgetIndex=getItem(undef,$item);
 	my @widget=@{$widgets[$widgetIndex]};
@@ -113,6 +148,7 @@ package GFweb;
 	   my ($self, $canvas)=@_;      # pass both object as well as the frame element
 	   $self ->{"menubar"}=undef;   # menu not yet defined
 	   my $currentMenu;             # undefined menu
+	   
 	   foreach my $widget (@widgets){  # read each widget data and call gnerator
 		   my @params=@$widget;
 		   my $wtype=shift @params;
@@ -131,6 +167,8 @@ package GFweb;
 	         }
 	   } 
 	   if ($self->{"menubar"}) { $self->{"menubar"}.="</div>\n</li>\n</ul></div>"; }
+	   
+	   $self->{content}.="\n</div>\n";
 	   
 	   sub aBt{      
 	    my ($self,$canvas, $id, $label, $location, $size, $action)=@_;# Button generator
@@ -239,12 +277,19 @@ package GFweb;
 	   }
 	   return $found;
    }
-
+  
+   sub dialogAction{
+	   my ($self,$name,$action)=@_;
+	   $dialogDispatch{$name}=$action;
+	   
+   }
    sub setScale{
 	   $winScale=shift;	   
    };
 
    sub getFrame{
+	   my $self=shift;
+	   return $self;
 	   
    };
 
@@ -283,16 +328,12 @@ package GFweb;
 
 #Message box, Fileselector and Dialog Boxes
    sub showFileSelectorDialog{
-     my ($self, $message,$load,$filter) = @_;
-     my $filename;
-     $connection->send_utf8("action=showFileSelector&id=fileSelector&value=$load");
-     sleep(3);
-     return $filename;
+     my ($self, $message,$load,$file) = @_;
+     $connection->send_utf8("action=showFileSelector&id=fileSelector&value=$load#$message#$file");
    };
    sub showDialog{
 	   my ($self, $title, $message,$response,$icon) = @_;
-	   $connection->send_utf8("action=showDialog&id=dialog&value=$message");
-
+	   $connection->send_utf8("action=showDialog&id=dialog&value=$icon#$response#$title#$message");
    };
    
 # Quit
@@ -301,8 +342,7 @@ package GFweb;
    }
    
    sub DESTROY {
-	   my $self=shift;
-	   $self->{webapp}->shutdown();
+	   $webApp->shutdown();
    }
    
   sub css{
@@ -358,6 +398,24 @@ li.menuhead a:hover, .dropdown:hover .dropbtn {
     display: block;
 }
 
+.dialogBox{
+   width:$winWidth;
+   height:$winHeight;
+   background-color:grey;
+   opacity: 0.5;
+}
+
+.buttonBox{	
+	width: 400px;
+    height: 100px;
+	background-color:lightgrey;
+	position:relative;
+    left:0; right:0;
+    top:20%; bottom:0;
+	margin:auto;
+}
+
+
 ENDCSS
 
   }
@@ -375,16 +433,21 @@ END
 var ws;
 var logWin;
 var start=new Date();
+var binaryBuffer;
+
 function WebSocketStart()
   {  
-    logWin=window.open("","Logs", target="_blank", "height=400, width=250, left=0, top=0, resizable=yes, toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes, resizable=no, copyhistory=no");
-    logWin.document.write("<h1>GUIDeFATE Websocket Log opened</h1><br>\\n");
-    logWin.blur();
-    window.focus();
+    logWin=window.open('','Logs', target='_blank', 'toolbar= 0, scrollbars = 1, statusbar = 0,menubar=0,resizable=0,height=500,width=433');
+   if (logWin){ logWin.document.write("<h1>GUIDeFATE Websocket Log opened</h1><br>\\n");
+      logWin.blur();
+      window.focus();
+    }
      
       
     if ("WebSocket" in window) {
       ws = new WebSocket("ws://localhost:8085");
+      
+      ws.binaryType = "blob";
       
       ws.onopen = function(){ log("red","Web App Started")};
 				
@@ -404,9 +467,20 @@ function WebSocketStart()
 		return false;
 	}
 	
+	function sendBinary(msg){
+        log("red","sending binary data"); 
+		ws.send(msg);
+		return false;
+	}
+	
+	
 // The handful of commands are parsed here and results reported back to server
 function parseMessage(msg){
-   if  (msg.indexOf("Mess")==0){return};
+   if  (msg.indexOf("Mess")==0){return;}  //do nothing with informational messages
+   else if(msg.indexOf("Binary")==0){
+      binaryBuffer.sendNext();
+   return;
+   }
    var actionRE=/^action=([^&]*)&/;
    var IDRE=/&id=([^&]*)&?/;
    var valueRE=/&value=([\\s\\S]*)\$/;
@@ -448,15 +522,33 @@ function parseMessage(msg){
      
      break;
      case "showFileSelector":
-     alert(1);
-       var fs=document.createElement("input");
-       fs.id="fileSelector";
-       fs.type="file";
-       fs.click();
+       var dlg=(value[1]).split("#")
+       log("green","showing File Selector, Load/Save "+dlg[0] + ", Message "+dlg[1] + ", File "+dlg[2]) 
+       document.getElementById("dialogTitle").innerHTML="<strong>File Operation</strong>";
+       document.getElementById("dialogMessage").innerHTML=dlg[1]+"<br>";
+       document.getElementById("dialogButtons").innerHTML="";
+       if (dlg[0]=="1") {addFileButton();}
+       else  {
+          document.getElementById("dialogMessage").innerHTML+="<em>Right click to Download and save-as desired</em><br>";
+          document.getElementById("dialogMessage").innerHTML+="<a href='dataFiles/"+dlg[2] +"' download>DOWNLOAD "+dlg[2]+" </a>"
+       }
+       addDialogButton("Dialog","Cancel");
+       alert(document.getElementById("dialogBox").innerHTML)
+       hideDiv("window");
+       showDiv("dialogBox");
      break;
      case "showDialog":
-        alert
-     
+        var dlg=(value[1]).split("#")
+        log("green","showing Dialog with Icon "+dlg[0] + ", Response "+dlg[1] + ", Title "+dlg[2] + ", Message "+dlg[3]);
+        document.getElementById("dialogTitle").innerHTML=dlg[2];
+        document.getElementById("dialogMessage").innerHTML=dlg[3]+"<br>";
+        document.getElementById("dialogButtons").innerHTML="";
+        if (dlg[1].indexOf("O")!=-1) addDialogButton("Dialog","OK");
+        if (dlg[1].indexOf("Y")!=-1) addDialogButton("Dialog","Yes");
+        if (dlg[1].indexOf("N")!=-1) addDialogButton("Dialog","No");
+        if (dlg[1].indexOf("C")!=-1) addDialogButton("Dialog","Cancel");
+        hideDiv("window");
+        showDiv("dialogBox");
      break;
      default:
        log ("teal","unrecognised command "+action[1])
@@ -464,8 +556,28 @@ function parseMessage(msg){
     }
 };
 
+
+//object that stores a binary file data and send is 64000 bytes at a time
+function BinaryBuffer(blob){
+   this.data=blob;
+   this.name=blob.name;
+   this.size=blob.size;
+   this.sendIndex=0;
+   
+   this.sendNext=function(){
+      var endIndex=this.sendIndex+64000;
+      if (endIndex>this.size)
+          { endIndex=this.size };
+      if (this.sendIndex<this.size)
+          {sendBinary(this.data.slice(this.sendIndex,endIndex) );
+           this.sendIndex+=64000}
+      else 
+           { send("File ends:"+this.name+"\\n")      }   
+   }
+}
+
 function log(colour, message){
-    logWin.document.write("<p style='margin:0;color:"+colour+"'>"+message+"</p>\\n");
+   if(logWin) logWin.document.write("<p style='margin:0;color:"+colour+"'>"+message+"</p>\\n");
 }
 
 
@@ -473,19 +585,87 @@ function act(command,label){
   if (typeof window[command] === "function") {  //these are functions internal to the javascript engine or in the external javascrpt file
     window[strOfFunction](label);
    }
-  else{
-   if (command.match(/textctrl|combo/)){
-      var content=(document.getElementId(command).value!="")?document.getElementId(command).value:"EmptyString"
-      send("ID="+ command + "&Value="+content)
+   else if (command=="UploadFile"){  //label contains a blob the file
+     binaryBuffer=new BinaryBuffer(label);
+     send("Sending File with size "+binaryBuffer.size+"\\n");
+     send("File follows:"+binaryBuffer.name+"\\n");
    }
-   send("Function="+ command + "&Label="+encodeURIComponent(label))
-  }
+   else{
+     if (command.match(/textctrl|combo/i)){   // for text ctrls and combos send ID and value/content
+        var content=(document.getElementId(command).value!="")?document.getElementId(command).value:"EmptyString"
+        send("ID="+ command + "&Value='"+content + "'")
+      }
+    send("Function="+ command + "&Label="+encodeURIComponent(label)) //for buttons and menu items send ID and label
+   }
 }
 
+ function addFileButton(){
+    var btn=document.createElement("input");
+    btn.type="file";
+    btn.onchange=function(){
+        act("UploadFile",this.files[0]);
+        hideDiv("dialogBox");
+        showDiv("window");
+       }
+    document.getElementById("dialogButtons").appendChild(btn);
+ }
+ function addDialogButton(command,label){
+    var btn=document.createElement("input");
+    btn.type="button";
+    btn.value=label;
+    btn.command=command;
+    btn.onclick=function(){
+        hideDiv("dialogBox");
+        showDiv("window");
+        act(this.command,this.value);
+       }
+    document.getElementById("dialogButtons").appendChild(btn);
+ }
+ 
+ //functions to hide and show divs by ID
+ function hideDiv(id){
+   document.getElementById(id).style.visibility="hidden";
+   document.getElementById(id).style.display="none";
+ }
+ function showDiv(id){
+   document.getElementById(id).style.visibility="visible";
+   document.getElementById(id).style.display="block";
+ }
+ 
+ 
  window.onbeforeunload = function() {
     websocket.onclose = function () {}; // disable onclose handler first
     websocket.close()
-    }	  
+    }	
+    
+ window.onload=function(){
+   window.resizeTo($winWidth,$winHeight);
+   hideDiv("dialogBox");
+   WebSocketStart();
+ 
+ }  
+ 
+ 
+END
+
+  
+
+}
+
+
+sub dialogBoxDiv{
+	  return <<END
+   <!-Container for Dialog Box-->
+   <div id=dialogBox class=dialogBox>
+      <div id=dialogButtonBox class=buttonBox>
+       <center>
+          <div id=dialogTitle></div>
+          <div id=dialogMessage></div>
+          <div id=dialogButtons></div>
+        </center>
+      </div>
+   
+   </div>	  	  
 END
 
 }
