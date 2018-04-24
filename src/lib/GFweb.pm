@@ -237,7 +237,6 @@ package GFweb;
 			 }
 		 }
    }
-
       
 #functions for GUIDeFATE to load the widgets into the backend
    sub addWidget{
@@ -533,7 +532,6 @@ function parseMessage(msg){
           document.getElementById("dialogMessage").innerHTML+="<a href='dataFiles/"+dlg[2] +"' download>DOWNLOAD "+dlg[2]+" </a>"
        }
        addDialogButton("Dialog","Cancel");
-       alert(document.getElementById("dialogBox").innerHTML)
        hideDiv("window");
        showDiv("dialogBox");
      break;
@@ -647,8 +645,6 @@ function act(command,label){
  
  
 END
-
-  
 
 }
 
