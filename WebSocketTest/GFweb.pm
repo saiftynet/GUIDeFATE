@@ -24,6 +24,9 @@ package GFweb;
    my %oVars=();      #vars for interface creation (e.g. list of options)
    my %styles;
    our $webApp;
+   our $host;
+   our $port;
+   our $debug;
    my %msgFlags;
    my %dialogDispatch;   # dispatch table for dialog actions
    my $uploadFileName;
@@ -33,7 +36,14 @@ package GFweb;
    sub new
    {
     my $class = shift; 
-    my $port=shift || 8085;
+    $port=shift || 8085;
+    $debug=shift;
+    $debug=$debug ? 1:0;
+    if ($port =~/:/) {
+		($host,$port)=split(":",$port)
+	}
+	else {$host="localhost"};
+	
     my $self={};   
     bless( $self, $class );
     $self->{html}=$self->header();
@@ -81,7 +91,6 @@ package GFweb;
 	  else{ system("open ./".$htmlFile." &\n"); }
 	  
 	  $webApp->start;
-
   }
   
    sub parseMessage{
@@ -237,7 +246,6 @@ package GFweb;
 			 }
 		 }
    }
-
       
 #functions for GUIDeFATE to load the widgets into the backend
    sub addWidget{
@@ -339,6 +347,7 @@ package GFweb;
 # Quit
    sub quit{
 	   my $self=shift;
+	   $webApp->shutdown()
    }
    
    sub DESTROY {
@@ -434,18 +443,21 @@ var ws;
 var logWin;
 var start=new Date();
 var binaryBuffer;
+var logWin=$debug;
 
 function WebSocketStart()
   {  
-    logWin=window.open('','Logs', target='_blank', 'toolbar= 0, scrollbars = 1, statusbar = 0,menubar=0,resizable=0,height=500,width=433');
-   if (logWin){ logWin.document.write("<h1>GUIDeFATE Websocket Log opened</h1><br>\\n");
-      logWin.blur();
-      window.focus();
-    }
+   if (logWin){
+      logWin=window.open('','Logs', target='_blank', 'toolbar=0,scrollbars=1,statusbar=0,menubar=0,resizable=0,height=500,width=433');
+      if (logWin){ logWin.document.write("<h1>GUIDeFATE Websocket Log opened</h1><br>\\n");
+         logWin.blur();
+          window.focus();
+       }
+   }
      
       
     if ("WebSocket" in window) {
-      ws = new WebSocket("ws://localhost:8085");
+      ws = new WebSocket("ws://$host:$port");
       
       ws.binaryType = "blob";
       
@@ -457,7 +469,7 @@ function WebSocketStart()
         parseMessage(received_msg);
       };
       
-	  ws.onclose = function(){  console.log("Connection is closed...");  };
+	  ws.onclose = function(){  log("red","Connection is closed...");  };
 	}
     else { log("blue","WebSocket NOT supported by your Browser!"); }  };
    
@@ -533,7 +545,6 @@ function parseMessage(msg){
           document.getElementById("dialogMessage").innerHTML+="<a href='dataFiles/"+dlg[2] +"' download>DOWNLOAD "+dlg[2]+" </a>"
        }
        addDialogButton("Dialog","Cancel");
-       alert(document.getElementById("dialogBox").innerHTML)
        hideDiv("window");
        showDiv("dialogBox");
      break;
@@ -647,8 +658,6 @@ function act(command,label){
  
  
 END
-
-  
 
 }
 
