@@ -73,10 +73,13 @@ This produces something like ![Calculator Screenshot](https://github.com/saiftyn
 
 From Version 0.08 Four backends are supported. Wx, Tk, Gtk and Qt.  These have different prerequisites.
 
-* Perl5.8.8, Exporter, Wx, Wx::Perl::Imagick (for Wx interface)   OR
-* Perl5.8.8, Exporter, Tk, Image::Magick, Tk::JPEG, MIME::Base64 (for Tk interface)  OR
+* Perl5.8.8, Exporter, Wx, Wx::Perl::Imagick (for Wx interface)
+* Perl5.8.8, Exporter, Tk, Image::Magick, Tk::JPEG, MIME::Base64 (for Tk interface)
 * Perl5.8.8, Exporter, Glib, Gtk (for Gtk interface)
-* Perl5.8.8, Exporter, QtCore4, QtGui4 (for Qt interface) from KDE
+* Perl5.8.8, Exporter, QtCore4, QtGui4 (for Qt interface)
+* Perl5.8.8, Exporter, Win32, Imager (for Win32 interface)
+* Perl5.8.8, Exporter (for HTML interface)
+* Perl5.8.8, Exporter, Net::WebSocket::Server (for WebSocket interface)
 
 ## Widgets
 
