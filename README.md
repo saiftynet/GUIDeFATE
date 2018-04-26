@@ -79,7 +79,7 @@ From Version 0.08 Four backends are supported. Wx, Tk, Gtk and Qt.  These have d
 * Perl5.8.8, Exporter, QtCore4, QtGui4 (for Qt interface)
 * Perl5.8.8, Exporter, Win32, Imager (for Win32 interface)
 * Perl5.8.8, Exporter (for HTML interface)
-* Perl5.8.8, Exporter, Net::WebSocket::Server (for WebSocket interface)
+* Perl5.8.8, Exporter, Net::WebSocket::Server (for [WebSocket interface](https://github.com/saiftynet/GUIDeFATE/wiki/WebSocket-Applications) )
 
 ## Widgets
 
