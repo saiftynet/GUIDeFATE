@@ -9,8 +9,14 @@ package GFweb;
    our $frame;
    
    use Net::WebSocket::Server;
+   use IO::Socket::PortState qw(check_ports);  # requiredso that multiple listeners are not attempted
    our $connection;
-   
+   our $clientFileName; 
+   our $webApp;
+   our $host;
+   our $port;  
+   our $serverRunning=0; 
+     
    our $winX=30;
    our $winY=30;
    our $winWidth;
@@ -23,19 +29,25 @@ package GFweb;
    my %iVars=();      #vars for interface operation (e.g. state of interface)
    my %oVars=();      #vars for interface creation (e.g. list of options)
    my %styles;
-   our $webApp;
-   our $host;
-   our $port;
+
    our $debug;
    my %msgFlags;
    my %dialogDispatch;   # dispatch table for dialog actions
    my $uploadFileName;
+
    
    my $lastMenuLabel;  #bug workaround in menu generator may be needed for submenus
    
    sub new
    {
     my $class = shift; 
+    
+    # Allow the host and the port for the server to be defined by main::
+    # for web app creation this is an extra parameter added in the GUIDeFATE::new
+    # Allows
+    # my $gui=GUIDeFATE->new($window,"web","q", 8085);
+    # my $gui=GUIDeFATE->new($window,"web","q", "localhost:8085");
+    
     $port=shift || 8085;
     $debug=shift;
     $debug=$debug ? 1:0;
@@ -44,9 +56,27 @@ package GFweb;
 	}
 	else {$host="localhost"};
 	
+	
+	# applications attemting to run with a used port will cause a
+	# "Failed to listen error.This just finds the next available port.
+	my $portAvailable = 0;        	                              
+	 while(!$portAvailable){      
+		   my %ports = (          # required for check_hosts from IO::Socket::PortState
+	        tcp => {
+	          $port => {}, 
+	        }
+	      );
+	      my $timeout=10;
+	      my $host_hr = check_ports($host, $timeout, \%ports);       # check the ports
+	      $portAvailable = $host_hr->{tcp}{$port}{open} ? 0:1;       # if already open
+	      $port++;
+	 }     
+	 $port--;
+    	
     my $self={};   
     bless( $self, $class );
     $self->{html}=$self->header();
+    
     $self->{html}.="<title>$winTitle $0 </title>\n";
     $self->{html}.= "  <head>\n<style>\n".css()."</style>\n";
     $self->{html}.= "  <script>\n".js()."</script>\n";
@@ -59,13 +89,20 @@ package GFweb;
     $self->{html}.=dialogBoxDiv();
     if ($self->{menubar}){ $self->{html}.= $self->{menubar} . "\n<br>\n";}
     $self->{html}.= "\n</div>\n</body>\n</html>";
-    
-    my $filename = $0.".html";
-    open(my $fh, '>', $filename) or die "Could not open file '$filename' $!";
-    print $fh $self->{html};
-    close $fh; 
-    
-    $webApp= Net::WebSocket::Server->new(
+
+    $clientFileName = "$0$port.html";
+      open(my $fh, '>', $clientFileName) or die "Could not open file '$clientFileName' $!";
+      print $fh $self->{html};
+      close $fh; 
+           
+    return $self;
+   };
+   
+  sub MainLoop{ #activate UI
+	  my $self=shift;
+
+	 
+	 $webApp= Net::WebSocket::Server->new(  # unless webserver active create one
         listen => $port,
         on_connect => sub {
             (my $serv, $connection) = @_;
@@ -76,21 +113,16 @@ package GFweb;
 				binary => sub {
                     parseBinary(@_);
                 },
-            );
-        },
-    );
-    
-    return $self;
-   };
-   
-  sub MainLoop{ #activate UI
-	  my $self=shift;
-	  my $htmlFile=$0.".html";
-	  if ($^O =~/linux/){ system("xdg-open ./".$htmlFile."  &\n"); }
-	  elsif ($^O =~/Win/){ system("start .\\".$htmlFile."\n"); }
-	  else{ system("open ./".$htmlFile." &\n"); }
+             );
+          },
+      );
 	  
-	  $webApp->start;
+	  
+	  if ($^O =~/linux/){ system("xdg-open ./".$clientFileName."  2> /dev/null &\n"); }  # for Linux
+	  elsif ($^O =~/Win/){ system("start .\\".$clientFileName."\n"); }      # for windows?
+	  else{ system("open ./".$clientFileName." &\n"); }                     # for Macs?
+
+		  $webApp->start(); 
   }
   
    sub parseMessage{
@@ -346,12 +378,10 @@ package GFweb;
    
 # Quit
    sub quit{
-	   my $self=shift;
-	   $webApp->shutdown()
+	  $webApp->shutdown();
    }
    
    sub DESTROY {
-	   $webApp->shutdown();
    }
    
   sub css{
@@ -589,6 +619,7 @@ function BinaryBuffer(blob){
 
 function log(colour, message){
    if(logWin) logWin.document.write("<p style='margin:0;color:"+colour+"'>"+message+"</p>\\n");
+   else { console.log(message) }
 }
 
 
@@ -656,6 +687,10 @@ function act(command,label){
  
  }  
  
+  window.onfocus=function(){
+   WebSocketStart();
+ 
+ }  
  
 END
 
