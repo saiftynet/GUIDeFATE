@@ -3,7 +3,7 @@ package GFwxFrame;
    use strict;
    use warnings;
 
-   our $VERSION = '0.09';
+   our $VERSION = '0.10';
    
    use Exporter 'import';
    our @EXPORT = qw<addWidget addVar setScale>;
@@ -339,7 +339,7 @@ package GFwx;
 
    use parent qw(Wx::App);              # Inherit from Wx::App
    use Exporter 'import';
-   import GFwxFrame qw<addWidget addVar setScale>;
+   GFwxFrame->import(qw<addWidget addVar setScale>);
    
    our @EXPORT  = qw<addWidget addVar setScale $frame $winScale $winWidth $winHeight $winTitle>;
    our $frame;

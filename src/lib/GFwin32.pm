@@ -2,11 +2,10 @@ package GFwin32;
    use strict;
    use warnings;
    
-   our $VERSION = '0.09';
+   our $VERSION = '0.10';
    
    use Win32::GUI;
-   #use Win32::GUI::DIBitmap;
-   use Image::Magick;
+   use Imager;
 
    use Exporter 'import';     ##somefunctions are always passed back to GUIDeFATE.pm
    our @EXPORT  = qw<addWidget addVar setScale MainLoop $frame $winScale $winWidth $winHeight $winTitle>;
@@ -173,13 +172,12 @@ package GFwin32;
 				-foreground => [0,0,0],
                 -pos   => $location,
                 );
-                $self->{"Image$id"}->SetImage( new Win32::GUI::Bitmap("GFtmp.bmp") );
+               # $self->{"Image$id"}->SetImage( new Win32::GUI::Bitmap("GFtmp.bmp") );
 				if (-e $content){
-			     my $image = Image::Magick->new;
-				 my $r =  $image->Read("$content"); warn $r if $r; 
-			     my $geom=${$size}[0]."x".${$size}[1]."!";
-			     $r = $image->Scale(geometry => $geom); warn $r if $r; 
-			     $r = $image->Write("BMP2:GFtmp.bmp"); warn $r if $r; 
+			     my $image = Imager->new;
+				 $image->read(file=>"$content"); 
+			     my $newimg = $image->scale(xpixels=>${$size}[0], ypixels=>${$size}[1],type=>'nonprop');
+			     $newimg->write(file=>"GFtmp.bmp");
 			     $self->{"Image$id"}->SetImage( new Win32::GUI::Bitmap("GFtmp.bmp") );
 			   }
 		     }
@@ -266,12 +264,11 @@ package GFwin32;
 	   my ($self,$id,$file)=@_;
 	   my $size=getSize($self,$id,\@widgets);
 	   my $location=getLocation($self,$id,\@widgets);
-       my $image = Image::Magick->new;
-	   my $r =  $image->Read("$file"); warn $r if $r; 
-	   my $geom=${$size}[0]."x".${$size}[1]."!";
-	   $r = $image->Scale(geometry => $geom); warn $r if $r; 
-	   $r = $image->Write("BMP2:GFtmp.bmp"); warn $r if $r;
-	   $self->{$id}->SetImage( new Win32::GUI::Bitmap("GFtmp.bmp") );
+       my $image = Imager->new;
+       $image->read(file=>"$file");
+       my $newimg = $image->scale(xpixels=>${$size}[0], ypixels=>${$size}[1],type=>'nonprop');
+       $newimg->write(file=>"GFtmp.bmp");
+	   $self->{"$id"}->SetImage( new Win32::GUI::Bitmap("GFtmp.bmp") );;
    };
 
 #Text input functions

@@ -2,7 +2,7 @@ package GFgtk;
    use strict;
    use warnings;
    
-   our $VERSION = '0.09';
+   our $VERSION = '0.10';
    
    use Glib ':constants';   # load Glib and import useful constants
    use Gtk3 '-init';        # load Gtk3 module and initialize it

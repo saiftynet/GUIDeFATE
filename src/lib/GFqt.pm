@@ -2,7 +2,7 @@ package GFqt;
    use strict;
    use warnings;
    
-   our $VERSION = '0.09';
+   our $VERSION = '0.10';
 
 use QtCore4;
 use QtGui4;
@@ -61,9 +61,7 @@ use QtCore4::slots
 sub mapAction{
 	my $item=shift;
 	my $widgetIndex=getItem($item);
-	print "finding function for $item\n";
 	my @widget=@{$widgets[$widgetIndex]};
-	print join(", ",@widget)."\n";
 	my $wType=shift @widget;
 	if ($widgetIndex !=-1){
 		if     ($wType eq "mb")   { &{$widget[3]};}
@@ -111,7 +109,7 @@ sub mapAction{
 		   $canvas->{"stattext$id"}->setGeometry(${$location}[0],${$location}[1],32*length $text,24);
         }
        sub aCB{  
-		   my ($self,$canvas, $id, $label, $location)=@_;
+		   my ($self,$canvas, $id, $label, $location,$size,$action)=@_;
 		   $canvas->{"combo$id"}=Qt::ComboBox;
 		   if (defined $oVars{$label}){
 	         my @strings2 = split(",",$oVars{$label});
@@ -119,7 +117,7 @@ sub mapAction{
 				 $canvas->{"combo$id"}->addItem($_);
 			 }
 			 $canvas->{"combo$id"}->setParent($canvas);
-		     $canvas->{"combo$id"}->setGeometry(${$location}[0],${$location}[1], 80,32);
+		     $canvas->{"combo$id"}->setGeometry(${$location}[0],${$location}[1],${$size}[0],${$size}[1]);
 		     $self->connect($canvas->{"combo".$id}, SIGNAL 'currentIndexChanged(int)', $self->{SigMan}, SLOT 'map()');
 		     $self->{SigMan}->setMapping($canvas->{"combo".$id}, "combo".$id);
 
