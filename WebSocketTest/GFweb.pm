@@ -80,14 +80,13 @@ package GFweb;
     $self->{html}.="<title>$winTitle $0 </title>\n";
     $self->{html}.= "  <head>\n<style>\n".css()."</style>\n";
     $self->{html}.= "  <script>\n".js()."</script>\n";
-    
     if (-e "$0.js"){  $self->{html}.= "  <script type=\"text/javascript\" src=\"$0.js\"></script>\n";}
     $self->{html}.= "  </head>\n<body>\n<div style=\"width:$winWidth"."px;height:$winHeight"."px\">\n";
     $self->{content}="<div id=window style=\"position:relative;width:$winWidth"."px;height:$winHeight"."px\">\n";
     setupContent($self,$self->{content});
     $self->{html}.=$self->{content};
     $self->{html}.=dialogBoxDiv();
-    if ($self->{menubar}){ $self->{html}.= $self->{menubar} . "\n<br>\n";}
+    
     $self->{html}.= "\n</div>\n</body>\n</html>";
 
     $clientFileName = "$0$port.html";
@@ -101,8 +100,8 @@ package GFweb;
   sub MainLoop{ #activate UI
 	  my $self=shift;
 
-	 
-	 $webApp= Net::WebSocket::Server->new(  # unless webserver active create one
+	 # create new server 
+	 $webApp= Net::WebSocket::Server->new(  
         listen => $port,
         on_connect => sub {
             (my $serv, $connection) = @_;
@@ -202,13 +201,13 @@ package GFweb;
 		   elsif ($wtype eq "mb")
 		      {
 				if (! $self->{"menubar"}){
-					$self ->{"menubar"} = "<div style=\"width:$winWidth"."px;height:16px;\">\n<ul class=menubar>";
+					$self ->{"menubar"} = " <div style=\"width:$winWidth"."px;height:16px;\">\n  <ul class=menubar>\n";
 		            }
 	            $currentMenu=aMB($self,$canvas,$currentMenu,@params)
 	         }
 	   } 
-	   if ($self->{"menubar"}) { $self->{"menubar"}.="</div>\n</li>\n</ul></div>"; }
-	   
+	   if ($self->{"menubar"}) { $self->{"menubar"}.="       </div>\n   </li>\n  </ul>\n </div>"; }
+	   if ($self->{menubar}){ $self->{content}.= $self->{menubar} . "\n<br>\n";}
 	   $self->{content}.="\n</div>\n";
 	   
 	   sub aBt{      
@@ -244,9 +243,9 @@ package GFweb;
 	     if (($lastMenuLabel) &&($label eq $lastMenuLabel)){return $currentMenu} # bug workaround 
 	     else {$lastMenuLabel=$label};	                                         # in menu generator
 	     if ($type eq "menuhead"){
-			   if (defined $currentMenu){$canvas.="</div></li>";}
+			   if (defined $currentMenu){$canvas.="      </div>\n    </li>";}
 			   $currentMenu="menu".$id;
-			   $self ->{"menubar"}.="<li class=\"menuhead dropdown\">\n<a  id=menu$id class=\"dropbtn\">$label</a>\n<div class=\"dropdown-content\">\n";
+			   $self ->{"menubar"}.="    <li class=\"menuhead dropdown\">\n     <a  id=menu$id class=\"dropbtn\">$label</a>\n       <div class=\"dropdown-content\">\n";
 		   }
 		   elsif ($type eq "radio"){
 			   
@@ -259,7 +258,7 @@ package GFweb;
 		   }
 		   else{
 			   if($currentMenu!~m/$label/){
-				$self ->{"menubar"}.="<a href=# id=menu$id class=menuitem  onclick=\'act(\"menu$id\",\"$label\")\'>$label</a>\n"  			     
+				$self ->{"menubar"}.="         <a href=# id=menu$id class=menuitem  onclick=\'act(\"menu$id\",\"$label\")\'>$label</a>\n"  			     
 			 }
 		   }
 		   return $currentMenu;
@@ -382,6 +381,7 @@ package GFweb;
    }
    
    sub DESTROY {
+	   unlink $clientFileName
    }
    
   sub css{
@@ -687,6 +687,7 @@ function act(command,label){
  
  }  
  
+ // this allows the websocket to restart incase focus was lost by starting another listener
   window.onfocus=function(){
    WebSocketStart();
  
