@@ -2,44 +2,20 @@
 #A test script that calls the test files in scripts folder
 #uses GUIDeFATE (which in turn depends on Wx or Tk)
 
+# For experimental purposes, before installlation use a 
+# set this to where the GUIDeFATE moduels are...
+my $lib='../lib/';
 use lib '../lib/';
 use strict;
 use warnings;
 use GUIDeFATE;
 
+# an external program that returns a list of available backends
+# that work. The Gtk module always generates errors so added
+# manually but not guaranteed to work unless setup is ok
+my $backends=`perl -I$lib GFModules.pl`;
+$backends.=",Gtk";
 
-my @workingModules;
-BEGIN {
-	eval {
-            eval "use GUIDeFATE" or die; 
-        };
-     if ($@ && $@ =~ /GUIDeFATE/) {
-            print " GUIDeFATE not installed\n";
-            exit;
-        }
-    # contains list of modules reuired for each backend
-    # in order of preference
-    foreach my $module ( qw/ GFwin32 GFwx GFtk  GFqt GFhtml/ ) {
-        eval {
-            eval "use $module" or die; 
-        };
-        if ($@ && $@ =~ /$module/) {
-            print " $module not installed\n";
-        }
-        else {
-			print " $module found\n";
-			my $m=$module;
-			$m=~s/^GF//;
-			push (@workingModules, ucfirst $m);
-			}
-    }
-    if (! $workingModules[0]){ # at least one module works
-		print "no working GFxx modules intalled";
-		exit;
-		};
-}
-my $backends=join(",",@workingModules);
-print "carrying on with $backends";
 
 my $window=<<END;
 +--------------------------------------+
@@ -56,7 +32,7 @@ my $window=<<END;
 +--------------------------------------+
 
 
-bends=$backends,Gtk
+bends=$backends
 optns=Quiet,Verbose,Assist
 
 END
@@ -64,7 +40,7 @@ END
 my $preLine=($^O=~/Win/)?"START ":"";
 my $postLine=($^O=~/Win/)?"":" &";
 
-my $backend=$ARGV[0]?$ARGV[0]:$workingModules[0];
+my $backend=$ARGV[0]?$ARGV[0]:(split(",",$backends))[0];
 my $assist=$ARGV[1]?$ARGV[1]:"q";
 my $gui=GUIDeFATE->new($window,$backend,$assist);
 my $frame=$gui->getFrame||$gui;
@@ -79,37 +55,37 @@ sub combo1{
 
 sub btn3 #called using button with label Calculator                       
   {
-  system("$preLine perl -I../lib/ calculator.pl $backend $assist $postLine");
+  system("$preLine perl -I$lib -I /lin/GUIdeFATE/ calculator.pl $backend $assist $postLine");
    };
 sub btn4 #called using button with label Rock Paper Scissors Lizard Spock 
   {
-  system("$preLine perl -I../lib/ rpsls.pl $backend $assist $postLine");
+  system("$preLine perl -I$lib rpsls.pl $backend $assist $postLine");
   };
 
 sub btn5 #called using button with label GUI Gnuplotter                   
   {
-  system("$preLine perl -I../lib/ GUIgnuplot.pl $backend $assist $postLine");
+  system("$preLine perl -I$lib GUIgnuplot.pl $backend $assist $postLine");
    };
 
 sub btn6 #called using button with label GUI Gnuplotter                   
   {
-  system("$preLine perl -I../lib/ texteditor.pl $backend $assist $postLine");
+  system("$preLine perl -I$lib texteditor.pl $backend $assist $postLine");
    };
 
 sub btn7 #called using button with label  Text editor                     
   {
-  system("$preLine perl -I../lib/ ImageMagickGUI.pl $backend $assist $postLine");
+  system("$preLine perl -I$lib  ImageMagickGUI.pl $backend $assist $postLine");
    };
 sub btn8 #called using button with label Executioner                       
   {
-  system("$preLine perl -I../lib/ Executioner.pl $backend $assist $postLine");
+  system("$preLine perl -I$lib Executioner.pl $backend $assist $postLine");
    };
 
 sub textctrl10
    {
-	system("$preLine perl -I../lib/ ". $frame->getValue("textctrl10") . " $backend $assist $postLine");
+	system("$preLine perl -I$lib ". $frame->getValue("textctrl10") . " $backend $assist $postLine");
    };
 sub btn9 #called using button with label Executioner                       
   {
-  system("$preLine perl -I../lib/ ". $frame->getValue("textctrl10") . " $backend $assist $postLine");
+  system("$preLine perl -I$lib ". $frame->getValue("textctrl10") . " $backend $assist $postLine");
    };
