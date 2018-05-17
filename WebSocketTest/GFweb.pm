@@ -16,6 +16,7 @@ package GFweb;
    our $host;
    our $port;  
    our $serverRunning=0; 
+   our @msgQueue=();
      
    our $winX=30;
    our $winY=30;
@@ -105,6 +106,7 @@ package GFweb;
         listen => $port,
         on_connect => sub {
             (my $serv, $connection) = @_;
+            
             $connection->on(
                 utf8 => sub {
 					parseMessage(@_);
@@ -120,6 +122,8 @@ package GFweb;
 	  if ($^O =~/linux/){ system("xdg-open ./".$clientFileName."  2> /dev/null &\n"); }  # for Linux
 	  elsif ($^O =~/Win/){ system("start .\\".$clientFileName."\n"); }      # for windows?
 	  else{ system("open ./".$clientFileName." &\n"); }                     # for Macs?
+	  
+	  
 
 		  $webApp->start(); 
   }
@@ -127,7 +131,19 @@ package GFweb;
    sub parseMessage{
 	my($conn, $message)=@_;
 	$conn->send_utf8( "Message received by server: - $message\n");
-    if ($message=~/^[A-z]*=/){
+	
+    if ($message=~/Client is ready/){
+		
+		foreach (@msgQueue){ # send messages that were quede until client ready
+				$conn->send_utf8($_);
+				select(undef, undef, undef, 0.05);
+			}
+		if (exists &{'main::init'}){ # after client loaded application actions
+			my $s = \&{'main::init'};
+            $s->();
+		}
+	}
+    elsif ($message=~/^[A-z]*=/){
 	  my %hash = map{split /\=/, $_,2}(split /\&/, $message,3);
 	  if($hash{Function}) {
 		  if ($hash{Function} eq "Dialog"){  # function from Dialog buttons
@@ -143,7 +159,7 @@ package GFweb;
 	  elsif ($hash{ID}) {
 		$msgFlags{$hash{ID}}=1;
 		my $tmp=$hash{Value};
-		$tmp=~s/^'|'$//;
+		$tmp=~s/^'|'$//g;
 		$iVars{$hash{ID}}=$tmp;
 		#$conn->send_utf8( "Server stores ".$hash{ID}. " the value ".$hash{Value});
 	  }
@@ -177,11 +193,11 @@ package GFweb;
 	my @widget=@{$widgets[$widgetIndex]};
 	my $wType=shift @widget;
 	if ($widgetIndex !=-1){
-		if     ($wType eq "mb")   { &{$widget[3]};}
+		if     ($wType eq "mb")   { &{$widget[3]};}  
 		elsif  ($wType eq "btn")  { &{$widget[4]};}
 		elsif  ($wType eq "combo")  { &{$widget[4]};}
-	}
-}
+	}	
+   }
 
 # setupContent  sets up the initial content before Mainloop can be run.
    sub setupContent{
@@ -333,36 +349,55 @@ package GFweb;
    };
 
 #  The functions for GUI Interactions
-#Static Text functions
+# Static Text functions
+# GUI interactions are over the connection...but if connection not yet 
+# active, these are queued   
+
+   sub sendIfConnected{
+	   my $msg=shift;
+	   if ($connection){
+		    $connection->send_utf8($msg);
+		    select(undef, undef, undef, 0.25);
+	   }
+	   else{
+		   push @msgQueue, $msg;
+	   }
+   }
+
    sub setLabel{
 	   my ($self,$id,$text)=@_;
-	   $connection->send_utf8("action=setLabel&id=$id&value=$text");
+	  sendIfConnected("action=setLabel&id=$id&value=$text");
 	   
    }
 
 #Image functions
    sub setImage{
 	 my ($self,$id,$file)=@_;
-	 $connection->send_utf8("action=setImage&id=$id&value=$file");
+	 sendIfConnected("action=setImage&id=$id&value=$file");
 
    }
 
 #Text input functions
   sub getValue{
 	   my ($self,$id)=@_;
-	     $connection->send_utf8("action=getValue&id=$id");
-	     $connection->send_utf8("action=getValue&id=$id");
+	   $msgFlags{$id}=0;
+	   sendIfConnected("action=getValue&id=$id");
+	   foreach (0..4){
+		  last if $msgFlags{$id};
+		  select(undef, undef, undef, 0.1);
+	   }
+	   $msgFlags{$id}=0;
        return $iVars{$id};
    }
    
    sub setValue{
 	   my ($self,$id,$text)=@_;
-	   $connection->send_utf8("action=setValue&id=$id&value=$text");
+	   sendIfConnected("action=setValue&id=$id&value=$text");
 	   $iVars{$id}=$text;
    }   
    sub appendValue{
 	   my ($self,$id,$text)=@_;
-	   $connection->send_utf8("action=appendValue&id=$id&value=$text");
+	   sendIfConnected("action=appendValue&id=$id&value=$text");
    }   
 
 #Message box, Fileselector and Dialog Boxes
@@ -470,20 +505,21 @@ END
 	  return <<END
 	  
 var ws;
-var logWin;
 var start=new Date();
 var binaryBuffer;
 var logWin=$debug;
+var blurred=0;
 
 function WebSocketStart()
   {  
-   if (logWin){
+   if (logWin==1){
       logWin=window.open('','Logs', target='_blank', 'toolbar=0,scrollbars=1,statusbar=0,menubar=0,resizable=0,height=500,width=433');
-      if (logWin){ logWin.document.write("<h1>GUIDeFATE Websocket Log opened</h1><br>\\n");
+   }
+   if (logWin){ logWin.document.write("<h1>GUIDeFATE Websocket Log opened</h1><br>\\n");
          logWin.blur();
           window.focus();
-       }
    }
+ 
      
       
     if ("WebSocket" in window) {
@@ -491,7 +527,10 @@ function WebSocketStart()
       
       ws.binaryType = "blob";
       
-      ws.onopen = function(){ log("red","Web App Started")};
+      ws.onopen = function(){
+         log("red","Web App Started");
+         send("Client is ready");
+         };
 				
       ws.onmessage = function (evt)  { 
 		var received_msg = evt.data;
@@ -634,7 +673,7 @@ function act(command,label){
    }
    else{
      if (command.match(/textctrl|combo/i)){   // for text ctrls and combos send ID and value/content
-        var content=(document.getElementId(command).value!="")?document.getElementId(command).value:"EmptyString"
+        var content=(document.getElementById(command).value!="")?document.getElementById(command).value:"EmptyString"
         send("ID="+ command + "&Value='"+content + "'")
       }
     send("Function="+ command + "&Label="+encodeURIComponent(label)) //for buttons and menu items send ID and label
@@ -688,9 +727,15 @@ function act(command,label){
  }  
  
  // this allows the websocket to restart incase focus was lost by starting another listener
+  window.onblur=function(){
+    blurred=1;
+  
+  }
   window.onfocus=function(){
-   WebSocketStart();
- 
+   if (blurred){
+      blurred=0;
+      WebSocketStart();
+  }
  }  
  
 END
