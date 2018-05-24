@@ -64,7 +64,7 @@ my $backend=$ARGV[0]?$ARGV[0]:"web";
 my $assist=$ARGV[1]?$ARGV[1]:"q";
 my $gui=GUIDeFATE->new($window,$backend,$assist);
 my $frame=$gui->getFrame()||$gui;
-
+#initiallise the GUI data, and load dtaset
 loadGenera();
 searchGenera();
 
@@ -109,7 +109,8 @@ sub btn19 {#called using button with label Explore
      if ($currentContext!~/Species/){
        createSpeciesList();
      }
-     else {
+     else {      # Explore toggles from Species view and Genus View
+                 # The following remembers the genus last viewed
 		 @results=@genusList;
 		 $currentItem=$currentGenus;
 		 $currentContext=$oldContext;
@@ -122,10 +123,10 @@ sub btn20 {#called using button with label >
    };
 
 sub btn21 {#called using button with label Wikipedia 
-  
+     #  Nothing when this button is clicked
    };
 
-sub createGeneraList{
+sub createGeneraList{  #  create a list of gnera from the plants Liste website if nothing cached.
 	my $url='http://www.theplantlist.org/1.1/browse/-/-/';
 	my $content = get $url;
 	$dateString="Data from: $day/$month/$year";
@@ -138,13 +139,15 @@ sub createGeneraList{
 		  if (length $line >3){ push @genera, $line;}
 	    }
 	}
+	
+	# the genera list to save having to get data from Plants list every time
 	open  my $fh, '>', "$dataFolder/genera.csv";
 	print $fh $dateString."\n";
-    print $fh join("\n",@genera);
-    close $fh;
+        print $fh join("\n",@genera);
+        close $fh;
 }
 
-sub loadGenera{
+sub loadGenera{ # Load genera from cache if available otherwise create this cache 
 	if (! -e "$dataFolder/genera.csv"){
 	   createGeneraList();
      }
