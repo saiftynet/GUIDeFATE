@@ -2,7 +2,7 @@ package GFtk;
    use strict;
    use warnings;
    
-   our $VERSION = '0.10';
+   our $VERSION = '0.11';
    
    use parent qw(Tk::MainWindow);
    
@@ -179,7 +179,7 @@ package GFtk;
 	                         -width  => (${$size}[0])/7,
 	                         -height => (${$size}[1]+12)/15);
 	            $canvas->{"TextCtrl$id"}->insert('end',$content);
-	             $canvas->createWindow(${$location}[0] ,${$location}[1],
+	            $canvas->createWindow(${$location}[0] ,${$location}[1],
 	                         -anchor => "nw",
 	                         -window => $canvas->{"TextCtrl$id"});
 			 }

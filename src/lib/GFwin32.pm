@@ -2,7 +2,7 @@ package GFwin32;
    use strict;
    use warnings;
    
-   our $VERSION = '0.10';
+   our $VERSION = '0.11';
    
    use Win32::GUI;
    use Imager;

@@ -2,7 +2,7 @@ package GFhtml;
    use strict;
    use warnings;
    
-   our $VERSION = '0.10';
+   our $VERSION = '0.11';
 
    use Exporter 'import';   
    our @EXPORT      = qw<addWidget addVar setScale MainLoop $frame $winScale $winWidth $winHeight $winTitle>;

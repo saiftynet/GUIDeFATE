@@ -3,7 +3,7 @@ package GUIDeFATE;
    use strict;
    use warnings;
    
-   our $VERSION = '0.10';
+   our $VERSION = '0.11';
    
    use Exporter 'import';
    
@@ -31,7 +31,7 @@ sub new{
 		$target="gtk";
 		die "Failed to load Gtk backend: $@" unless eval { require GFgtk} ; GFgtk->import;
 		convert($textGUI, $assist);
-		return GUIDeFATE::GFgtk->new(); 
+		return GFgtk->new(); 
 		
 	}	
 	elsif ($target =~m/^tk/i){
@@ -111,7 +111,7 @@ sub convert{
 			$fh++;
 			if ($ps  && ($fh-2)) {
 				$content=~s/^\s+|\s+$//g;
-				$log="SubPanel '$panelType' Id $bid found position  $ps height $fh width $fl at row $l with content $content \n";##
+				$log="SubPanel '$panelType' Id ".($bid+1)." found position  $ps height $fh width $fl at row $l with content $content \n";##
 				if ($verbose){ print $log; }
 				if ($auto){ $autoGen.="#".$log; }
 				addWidget(["sp",$bid,$panelType,$content,[$winScale*($ps*2-1),$winScale*$l*4],[$winScale*($fl*2+3),$winScale*$fh*4]]);
@@ -153,11 +153,15 @@ sub convert{
 		  $tmp=~s/^(\|)|(\|)$//g;                                     #remove starting and ending border
 		  $tmp=~s/^(\s+)|(\s+)$//g;                                   #remove spaces                                 
 		  if (length $tmp){
-			  $log= "Static text '".$tmp."'  with id stattext$bid\n"; ##
-			  if ($verbose){ print $log; }
-			  if ($auto){ $autoGen.="#".$log; }
-		      $line=~m/\Q$tmp\E/;my $ps=length($`);
-		      addWidget(["stattext",$bid++, $tmp,[$winScale*($ps*2-1),$winScale*$l*4]]);
+			  my @texts=split(/\s{2,}/,$tmp); # two or more spaces means different static text
+			  foreach my $stxt (@texts){
+			    $log= "Static text '".$stxt."'  with id stattext$bid\n"; ##
+			    if ($verbose){ print $log; }
+			    if ($auto){ $autoGen.="#".$log; }
+		        $line=~m/\Q$stxt\E/;my $ps=length($`);
+		        $line=~s/(\Q$stxt\E)/" " x length($1)/e;
+		        addWidget(["stattext",$bid++, $stxt,[$winScale*($ps*2-1),$winScale*$l*4]]);
+			  }
 		  }
 	     }
 		$l++;		
@@ -269,8 +273,9 @@ GUIDeFATE  -  Graphical User Interface Design From A Text Editor
     END
 
     my $gui=GUIDeFATE->new($window,[$backend],[$assist]); # API changed at version 0.06
-    # $backend is one of Wx(Default), Tk or Gtk
-    # $assist is one or  "q" (quiet, default), "v" (verbose), "d" for debug (websocket) or "a" for Autogenerate
+    # $backend is one of Wx(Default), Tk, Qt, Web, HTML, Win32 or Gtk
+    # $assist is one or  "q" (quiet, default), "v" (verbose),
+    # "d" for debug (websocket) or "a" for Autogenerate
     
     $frame=$gui->getFrame||$gui;
     $gui->MainLoop;
@@ -322,7 +327,10 @@ and server parts can be directed to use a particular port/host
 
 $port can be a port number (default 8085), or "<host>:<port>" e.g.
 "example.com:8085" (default host is localhost) or possibly (untested)
-an SSL socket.
+an SSL socket.  The port requested is not always the port used: if
+the port for listening is not available, then the port number is
+incremented until a free port is found.
+
 
 or
 

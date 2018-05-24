@@ -3,7 +3,7 @@ package GFwxFrame;
    use strict;
    use warnings;
 
-   our $VERSION = '0.10';
+   our $VERSION = '0.11';
    
    use Exporter 'import';
    our @EXPORT = qw<addWidget addVar setScale>;
@@ -361,6 +361,9 @@ package GFwx;
                                    [$winWidth,$winHeight]     # size [$winWidth, $winHeight]
                                   );
        $self->SetTopWindow($frame);    # Define the toplevel window
+       
+
+       
        $frame->Show(1);                # Show the frame
    }
    

@@ -2,7 +2,7 @@ package GFgtk;
    use strict;
    use warnings;
    
-   our $VERSION = '0.10';
+   our $VERSION = '0.11';
    
    use Glib ':constants';   # load Glib and import useful constants
    use Gtk3 '-init';        # load Gtk3 module and initialize it
@@ -220,6 +220,7 @@ package GFgtk;
    sub setLabel{
 	   my ($self,$id,$text)=@_;
 	   $self->{panel}->{$id}->set_label($text);
+	   $self->{panel}->{$id}->set_markup('<span size="xx-large" >'.$text.'</span>');
    }
 
 #Image functions
