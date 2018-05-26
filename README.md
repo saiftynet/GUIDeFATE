@@ -15,7 +15,7 @@ The user uses a text editor to design the window. Not new of course...text edito
 
 # Textual Representation of a Graphical Interface
 
-A simple [hello world](https://github.com/saiftynet/GUIDeFATE/blob/master/helloworld.png)
+A simple [hello world](https://github.com/saiftynet/GUIDeFATE/blob/master/images/helloworld.png)
 ```
 +------------------+
 |T Message         |
