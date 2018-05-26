@@ -11,11 +11,11 @@ Sure there are clever things like wxGlade, and QT Designer etc.  These are tools
 
 # So how might this work?
 
-The user uses a text editor to design the window. Not new of course...text editors have had to be used to describe windows when other graphical representation methods were not possible.  As this is already a two dimensional data, it should be possible to convert this into an actual graphical interface through an interpreter.  The developer simply has to draw the interface in text and then program the interaction that is required.  From version 0.06 multiple backends may be supported.  
+The user uses a text editor to design the window. Not new of course...text editors have had to be used to describe windows when other graphical representation methods were not possible.  As this is already a two dimensional data, it should be possible to convert this into an actual graphical interface through an interpreter.  The developer simply has to draw the interface in text and then program the interaction that is required.  From version 0.06 multiple backends are supported, version 0.11 has 7 backends.  For more details and working examples see the [wiki](https://github.com/saiftynet/GUIDeFATE/wiki)
 
 # Textual Representation of a Graphical Interface
 
-A simple hello world
+A simple [hello world](https://github.com/saiftynet/GUIDeFATE/blob/master/helloworld.png)
 ```
 +------------------+
 |T Message         |
