@@ -46,7 +46,7 @@ Menu
 --Open
 --Save Script
 --Quit
--Image
+-Image36
 --Draw
 --Save SVG
 --Save PNG
@@ -153,9 +153,11 @@ sub btn9{
 }
 sub btn10{
 	$frame->setValue("TextCtrl13","");
-	$test->execBlock(['clear"', 'svgout simplelogo','refresh']);
+	$test->execBlock(['clear', 'svgout simplelogo','refresh']);
 }
 sub btn11{
+	$frame->setValue("TextCtrl13","");
+	$test->execBlock(['reset', 'svgout simplelogo','refresh']);	
 	
 }
 
@@ -231,15 +233,16 @@ clear; center
 arc=230
 steps=7
 segMax=30   ; segMin=10
-petalsMin=5 ; petalsMax=9
-maxX=600    ; minX=100
-maxY=600    ; minY=100
+petalsMin=5 ; petalsMax=15
+maxX=700    ; minX=100
+maxY=800    ; minY=300
 
 repeat 30{
   seg=segMin+int(rand(segMax))
-  petals=petalsMin+int(rand(petalsMax))
+  petals=petalsMin+randint(petalsMax-petalsMin)
   colour random
-  move minX+int(rand(maxX)),minY+int(rand(maxY))
+  move minX+randint(maxX-minX),>
+       minY+randint(maxY-minY)
   flower
 }
 

@@ -14,7 +14,7 @@ use GUIDeFATE;
 # that work. The Gtk module always generates errors so added
 # manually but not guaranteed to work unless setup is ok
 my $backends=`perl -I$lib GFModules.pl`;
-$backends.=",Gtk";
+$backends.=",Gtk,Gtk2";
 
 
 my $window=<<END;
@@ -25,15 +25,19 @@ my $window=<<END;
 |  {Calculator                      }  |
 |  {Rock Paper Scissors Lizard Spock}  |
 |  {GUI Gnuplotter                  }  |
-|  { Text editor                    }  |
+|  {Text editor                     }  |
 |  {Image Magick GUI                }  |
-|  { Executioner (this)             }  |
+|  {The Plants List                 }  |
+|  {Screenshot                      }  |
+|  {Simple Logo                     }  |
+|  {Servo controller                }  |
+|  {Executioner (this)              }  |
 |  [                    ]{Execute   }  |
 +--------------------------------------+
 
 
 bends=$backends
-optns=Quiet,Verbose,Assist
+optns=Quiet,Verbose,Assist,Debug
 
 END
 
@@ -61,31 +65,43 @@ sub btn4 #called using button with label Rock Paper Scissors Lizard Spock
   {
   system("$preLine perl -I$lib rpsls.pl $backend $assist $postLine");
   };
-
 sub btn5 #called using button with label GUI Gnuplotter                   
   {
   system("$preLine perl -I$lib GUIgnuplot.pl $backend $assist $postLine");
    };
-
 sub btn6 #called using button with label GUI Gnuplotter                   
   {
   system("$preLine perl -I$lib texteditor.pl $backend $assist $postLine");
    };
-
 sub btn7 #called using button with label  Text editor                     
   {
   system("$preLine perl -I$lib  ImageMagickGUI.pl $backend $assist $postLine");
    };
 sub btn8 #called using button with label Executioner                       
   {
-  system("$preLine perl -I$lib Executioner.pl $backend $assist $postLine");
-   };
-
-sub textctrl10
-   {
-	system("$preLine perl -I$lib ". $frame->getValue("textctrl10") . " $backend $assist $postLine");
+  system("$preLine perl -I$lib plantslist.pl $backend $assist $postLine");
    };
 sub btn9 #called using button with label Executioner                       
   {
-  system("$preLine perl -I$lib ". $frame->getValue("textctrl10") . " $backend $assist $postLine");
+  system("$preLine perl -I$lib screenshot.pl $backend $assist $postLine");
+   };
+sub btn10 #called using button with label Executioner                       
+  {
+  system("$preLine perl -I$lib SimpleLogo.pl $backend $assist $postLine");
+   };
+sub btn11 #called using button with label Executioner                       
+  {
+  system("$preLine perl -I$lib Servocontroller.pl $backend $assist $postLine");
+   };
+sub btn12 #called using button with label Executioner                       
+  {
+  system("$preLine perl -I$lib Executioner.pl $backend $assist $postLine");
+   };
+sub textctrl14
+   {
+	system("$preLine perl -I$lib ". $frame->getValue("textctrl14") . " $backend $assist $postLine");
+   };
+sub btn13 #called using button with label Executioner                       
+  {
+  system("$preLine perl -I$lib ". $frame->getValue("textctrl14") . " $backend $assist $postLine");
    };

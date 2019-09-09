@@ -86,7 +86,8 @@ sub menu12{
 set terminal png size 2000,1600  font "Helvetica, 40"
 set output 'plotter.png'
 END
-	print GP $frame->getValue("TextCtrl1");
+	my $tmp=$frame->getValue("TextCtrl1");
+	print GP $tmp;
     
     close(GP);
     $frame->setImage("Image2","plotter.png")

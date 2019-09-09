@@ -13,8 +13,8 @@ my $window=<<END;
 +------------------------------------------------+
 |                                                |
 | Play Rock Paper   +I------+                    |
-| Scissors Lizard   |rock.jp|                    |
-| Spock.  Click     |g      |                    |
+| Scissors Lizard   |rock.bm|                    |
+| Spock. Click      |p      |                    |
 | any button to     +-------+                    |
 | play              { Rock  }                    |
 |                                                |
