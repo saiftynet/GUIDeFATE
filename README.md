@@ -75,7 +75,8 @@ From Version 0.10 seven backends are supported. Wx, Tk, Gtk, Qt, Win32, HTML, We
 
 * Perl5.8.8, Exporter, Wx, Wx::Perl::Imagick (for Wx interface)
 * Perl5.8.8, Exporter, Tk, Image::Magick, Tk::JPEG, MIME::Base64 (for Tk interface)
-* Perl5.8.8, Exporter, Glib, Gtk (for Gtk interface)
+* Perl5.8.8, Exporter, Glib, Gtk3 (for Gtk3 interface)
+* Perl5.8.8, Exporter, Glib, Gtk2 (for Gtk2 interface)
 * Perl5.8.8, Exporter, QtCore4, QtGui4 (for Qt interface)
 * Perl5.8.8, Exporter, Win32, Imager (for Win32 interface)
 * Perl5.8.8, Exporter (for HTML interface)
