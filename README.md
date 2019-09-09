@@ -96,4 +96,6 @@ Supported Widgets: -
 
 More will be made as time goes along
 
+NOTE:  Amajor change happens from version 0.13 onwards.  The Back-end modules (e.g. GFTk, GFWx, etc) will now reside in a folder called GUIDeFATE...this is reduce root namespace pollution making it easier to maintain.  This will be commited to CPAN in a few months.
+
 
