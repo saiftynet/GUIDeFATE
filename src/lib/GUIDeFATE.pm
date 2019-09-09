@@ -3,7 +3,7 @@ package GUIDeFATE;
    use strict;
    use warnings;
    
-   our $VERSION = '0.11';
+   our $VERSION = '0.13';
    
    use Exporter 'import';
    
@@ -21,47 +21,54 @@ package GUIDeFATE;
 
 sub new{
 	(my $class,my $textGUI,$target,my $assist, my $port)=@_;
+	 no warnings;
 	if ((!$target)||($target=~/^wx/i)){
 		$target="wx";
-		die "Failed to load Wx backend: $@" unless eval { require GFwx} ;  GFwx->import;
+		die "Failed to load Wx backend: $@" unless eval { require GUIDeFATE::GFwx} ;  GFwx->import;
 		convert($textGUI,$assist);
 		return  GFwx->new(); ;
 	}
+	elsif ($target =~m/^gtk2/i){## ADDED OPTION 'gtk2' FOR Gtk2 IN CASE USERS DONT HAVE Gtk3...
+      $target="gtk2";
+      die "Failed to load Gtk backend: $@" unless eval { require GUIDeFATE::GFgtk2} ; GFgtk2->import;
+      convert($textGUI, $assist);
+      return GFgtk2->new(); 
+    }
 	elsif ($target =~m/^gtk/i){
 		$target="gtk";
-		die "Failed to load Gtk backend: $@" unless eval { require GFgtk} ; GFgtk->import;
+		die "Failed to load Gtk backend: $@" unless eval {require GUIDeFATE::GFgtk} ; GFgtk->import;
 		convert($textGUI, $assist);
 		return GFgtk->new(); 
 		
 	}	
 	elsif ($target =~m/^tk/i){
 		$target="tk";
-		die "Failed to load Tk backend: $@" unless eval { require GFtk };  GFtk->import;
+		die "Failed to load Tk backend: $@" unless eval { require GUIDeFATE::GFtk };  GFtk->import;
 		convert($textGUI, $assist);
 		return GFtk->new(); 
 	}
 	elsif ($target =~m/^qt/i){
 		$target="qt";
-		die "Failed to load Qt backend: $@" unless eval  { require  GFqt }; GFqt->import;
+		die "Failed to load Qt backend: $@" unless eval  { require  GUIDeFATE::GFqt }; GFqt->import;
 		convert($textGUI, $assist);
 		my $qtWin=GFqt->new(); 
 		return $qtWin;
 	}
 	elsif ($target =~m/^win32/i){
 		$target="win32";
-		die "Failed to load Win32 backend: $@" unless eval { require GFwin32 };GFwin32->import;
+		die "Failed to load Win32 backend: $@" unless eval { require GUIDeFATE::GFwin32 };GFwin32->import;
 		convert($textGUI, $assist);
 		return GFwin32->new(); 
 	}
 	elsif ($target =~m/^html/i){
 		$target="html";
-		die "Failed to load HTML backend: $@" unless eval { require GFhtml }; GFhtml->import;
+		die "Failed to load HTML backend: $@" unless eval { require GUIDeFATE::GFhtml }; GFhtml->import;
 		convert($textGUI, $assist);
 		return GFhtml->new(); 
 	}
 	elsif ($target =~m/^web$/i){
 		$target="web"; 
-		die "Failed to load WebSocket backend: $@" unless eval {require GFweb }; GFweb->import;
+		die "Failed to load WebSocket backend: $@" unless eval {require GUIDeFATE::GFweb }; GFweb->import;
 		convert($textGUI, $assist);
 		return GFweb->new($port,($assist=~/d/i)); 
 	}
@@ -171,20 +178,28 @@ sub convert{
 	my $mode="";
 	while ($l++<=scalar(@lines)){
 		my $line=$lines[$l];
-		if ((!$line) || ($line eq "")||($line=~/^#/)){
-			$mode="";next;
+		if ((!$line) || ($line eq "")||($line=~/^#/)){  # remove blank and comment lines
+			$mode="";next;                              # menus end with a blank line
 			}
-		elsif ($line=~/menu/i){
+		elsif ($line=~/menu/i){                         # Start of menu found
 			$log="Menu found\n"; ##
 			if ($verbose){ print $log; }
 			if ($auto){ $autoGen.="#".$log; }
 			$mode="menu";
 			next;}
-		elsif($line=~/^([A-z]+=)/){
+		elsif($line=~/^([A-z]+=)/){                     # Variables defined (e.g. the contents of comboboxes)
 			chomp $line;
 			my ($varName,$value)=split(/=/,$line,2);
 			$log="var ' $varName ' has value ' $value '\n"; ##
 			addVar($varName,$value);
+		}
+		elsif($line=~/^timer\s+(\d+)\s+([a-z0-9]+)\s+(\d+)/i){
+			my ($interval,$function,$start)=($1,$2,$3);
+			$log="Timer with ID Timer$bid calls function $function every $interval ms; start is $start\n"; ##
+			if ($verbose){ print $log; }
+			if ($auto){ $autoGen.="#".$log.makeSub($function,"Function called by Timer$bid"); }
+			addTimer("Timer".$bid++,$interval,\&{"main::$function"},$start);
+			
 		}
 		
 		if($mode eq "menu"){
