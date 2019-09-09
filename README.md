@@ -92,7 +92,7 @@ Supported Widgets: -
 * ComboBoxes
 * Menu (partial)
 * Image panel
-* Timers also supported
+* [Timers](Timers) also supported
 
 More will be made as time goes along
 
