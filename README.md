@@ -13,6 +13,10 @@ Sure there are clever things like wxGlade, and QT Designer etc.  These are tools
 
 The user uses a text editor to design the window. Not new of course...text editors have had to be used to describe windows when other graphical representation methods were not possible.  As this is already a two dimensional data, it should be possible to convert this into an actual graphical interface through an interpreter.  The developer simply has to draw the interface in text and then program the interaction that is required.  From version 0.06 multiple backends are supported, version 0.11 has 7 backends.  For more details and working examples see the [wiki](https://github.com/saiftynet/GUIDeFATE/wiki)
 
+# So how do I use it?
+
+GUIDeFATE requires an available working backend with their relevant connecting Perl modules.  Different users will find different backends can be installed on their system.  For instance Wx may not install easily in Perl versions before 5.16 without a lot of effeort.  Tk installs relatively easily gnerally and Gtk, and Win32 (for windows machines) may be more easily installed.  Currently I dont feel it is robust enough for installation through CPAN...primarily because an attempt is made to install the backends which inariably fail because (e.g. Win32 is not available on Linux machines).  So what I would suggest is that you install the "experimental environment" in your working folder and use 'use lib <path_to_lib>;" in your code.  The exaple code that comes with the folder will probably be the best way to see how it works.
+
 # Textual Representation of a Graphical Interface
 
 A simple [hello world](https://github.com/saiftynet/GUIDeFATE/blob/master/images/helloworld.png)
