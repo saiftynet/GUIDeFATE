@@ -1,15 +1,17 @@
 GUIDeFATE.pod
-lib/GFgtk.pm
-lib/GFhtml.pm
-lib/GFqt.pm
-lib/GFtemplate.pm
-lib/GFtk.pm
-lib/GFwin32.pm
-lib/GFwx.pm
-lib/GFhtml.pm
-lib/GFweb.pm
+lib/Language/SIMPLE.pm
+lib/GUIDeFATE/GFgtk2.pm
+lib/GUIDeFATE/GFgtk.pm
+lib/GUIDeFATE/GFhtml.pm
+lib/GUIDeFATE/GFqt.pm
+lib/GUIDeFATE/GFtemplate.pm
+lib/GUIDeFATE/GFtk.pm
+lib/GUIDeFATE/GFwin32.pm
+lib/GUIDeFATE/GFwx.pm
+lib/GUIDeFATE/GFhtml.pm
+lib/GUIDeFATE/GFweb.pm
 lib/GUIDeFATE.pm
 License.txt
 Makefile.PL
-MANIFEST			This list of files
+MANIFEST.stub			This list of files
 README
