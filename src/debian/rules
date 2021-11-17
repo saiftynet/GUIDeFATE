@@ -1,0 +1,18 @@
+#!/usr/bin/make -f
+
+BUILD_ROOT=$(CURDIR)/debian/GUIDeFATE
+
+
+%:
+	dh $@
+
+override_dh_auto_install:
+	test -d $(BUILD_ROOT) && rm -rf $(BUILD_ROOT)
+	mkdir $(BUILD_ROOT)
+	perl Makefile.PL INSTALLDIRS=vendor # INSTALLDIRS=vendor tells perl that we are in a package
+	make manifest
+	make
+	make install SITEPREFIX=/usr DESTDIR=$(BUILD_ROOT)
+	# Remove useless files.
+	rm -f $(BUILD_ROOT)/usr/lib64/perl5/perllocal.pod
+	rm -f $(BUILD_ROOT)/usr/lib64/perl5/vendor_perl/auto/GUIDeFATE/.packlist

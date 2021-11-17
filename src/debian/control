@@ -1,0 +1,69 @@
+Source: libguidefate-perl
+Section: misc
+Priority: optional
+Maintainer: Saif Ahmed <saiftynet@gmail.com>
+Build-Depends: debhelper (>= 4.0.0)
+Standards-Version: 3.7.2.2
+
+Package: libguidefate-perl
+Architecture: all
+Depends: ${perl:Depends}, libguidefate-common-perl, libguidefate-win32, libguidefate-gtk2, libguidefate-gtk, libguidefate-wx, libguidefate-html, libguidefate-web, libguidefate-qt, libguidefate-tk
+Description: GUI Design From A Text Editor
+ GUIDeFATE enables the user to convert a textual representation into a Graphical
+ User Interface. It attempts to abstract out the underlying framework. A visually
+ recognisable pattern is passed as a string to GUIDeFATE and this is transformed
+ into an Interactive Interface.
+
+Package: libguidefate-common-perl
+Architecture: all
+Depends: ${perl:Depends}
+Description: Main GUIDeFATE perl module
+ Main GUIDeFATE perl module
+
+Package: libguidefate-win32
+Architecture: all
+Depends: ${perl:Depends}, libguidefate-common-perl
+Description: win32 GUIDeFATE plugin
+ win32 GUIDeFATE plugin
+
+Package: libguidefate-gtk2
+Architecture: all
+Depends: ${perl:Depends}, libguidefate-common-perl
+Description: gtk2 GUIDeFATE plugin
+ gtk2 GUIDeFATE plugin
+
+Package: libguidefate-gtk
+Architecture: all
+Depends: ${perl:Depends}, libguidefate-common-perl
+Description: gtk (v3) GUIDeFATE plugin
+ gtk (v3) GUIDeFATE plugin
+
+Package: libguidefate-wx
+Architecture: all
+Depends: ${perl:Depends}, libguidefate-common-perl
+Description: wx GUIDeFATE plugin
+ wx GUIDeFATE plugin
+
+Package: libguidefate-html
+Architecture: all
+Depends: ${perl:Depends}, libguidefate-common-perl
+Description: html GUIDeFATE plugin
+ html GUIDeFATE plugin
+
+Package: libguidefate-web
+Architecture: all
+Depends: ${perl:Depends}, libguidefate-common-perl
+Description: web socket GUIDeFATE plugin
+ web socket GUIDeFATE plugin
+
+Package: libguidefate-qt
+Architecture: all
+Depends: ${perl:Depends}, libguidefate-common-perl
+Description: qt4 GUIDeFATE plugin
+ qt4 GUIDeFATE plugin
+
+Package: libguidefate-tk
+Architecture: all
+Depends: ${perl:Depends}, libguidefate-common-perl
+Description: tk GUIDeFATE plugin
+ tk GUIDeFATE plugin
