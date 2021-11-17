@@ -7,7 +7,7 @@ Standards-Version: 3.7.2.2
 
 Package: libguidefate-perl
 Architecture: all
-Depends: ${perl:Depends}, libguidefate-common-perl, libguidefate-win32, libguidefate-gtk2, libguidefate-gtk, libguidefate-wx, libguidefate-html, libguidefate-web, libguidefate-qt, libguidefate-tk
+Depends: libguidefate-common-perl, libguidefate-win32, libguidefate-gtk2, libguidefate-gtk, libguidefate-wx, libguidefate-html, libguidefate-web, libguidefate-qt, libguidefate-tk
 Description: GUI Design From A Text Editor
  GUIDeFATE enables the user to convert a textual representation into a Graphical
  User Interface. It attempts to abstract out the underlying framework. A visually
