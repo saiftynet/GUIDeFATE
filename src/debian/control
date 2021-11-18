@@ -28,19 +28,19 @@ Description: win32 GUIDeFATE plugin
 
 Package: libguidefate-gtk2
 Architecture: all
-Depends: ${perl:Depends}, libguidefate-common-perl
+Depends: ${perl:Depends}, libguidefate-common-perl, libglib-perl, libgtk2-perl
 Description: gtk2 GUIDeFATE plugin
  gtk2 GUIDeFATE plugin
 
 Package: libguidefate-gtk
 Architecture: all
-Depends: ${perl:Depends}, libguidefate-common-perl
+Depends: ${perl:Depends}, libguidefate-common-perl, libglib-perl, libgtk3-perl
 Description: gtk (v3) GUIDeFATE plugin
  gtk (v3) GUIDeFATE plugin
 
 Package: libguidefate-wx
 Architecture: all
-Depends: ${perl:Depends}, libguidefate-common-perl
+Depends: ${perl:Depends}, libguidefate-common-perl, libwx-perl
 Description: wx GUIDeFATE plugin
  wx GUIDeFATE plugin
 
@@ -64,6 +64,6 @@ Description: qt4 GUIDeFATE plugin
 
 Package: libguidefate-tk
 Architecture: all
-Depends: ${perl:Depends}, libguidefate-common-perl
+Depends: ${perl:Depends}, libguidefate-common-perl, libanyevent-perl, libimage-magick-perl
 Description: tk GUIDeFATE plugin
  tk GUIDeFATE plugin
