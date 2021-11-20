@@ -99,8 +99,8 @@ my $gui=GUIDeFATE->new($window,$backend,$assist);
 my $frame=$gui->getFrame()||$gui;
 $gui->MainLoop();
 
-This produces something like 
-https://github.com/saiftynet/GUIDeFATE/blob/master/calculator%20screenshot.png
+This produces something like
+https://github.com/saiftynet/dummyrepo/blob/main/GUIDeFATE/calculator%20screenshot.png
 
 
 Of course this is at a very early stage, and I have only implemented
