@@ -1,0 +1,7 @@
+#!/usr/bin/make -f
+
+BUILD_ROOT=$(CURDIR)/debian/GUIDeFATE
+
+
+%:
+	dh $@
