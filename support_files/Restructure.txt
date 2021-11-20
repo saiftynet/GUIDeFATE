@@ -1,0 +1,28 @@
+Olivier Lahaye suggeted a restructure to enable easier installation
+
+a/ create a directory named support_files (or what ever matches the things that are not part of the package but that are still usefull)
+b/ move src/{Makefile.PL,debian,perl-GUIDeFATE.spec.in} to ./
+c/ move TestEnvironment to support files
+d/ move WXPerlImagick to support_files
+e/ move *.jpg *.png ./Images
+f/ move Images to support_files
+g/ Clean duplicates between ./Examples and ./src/scripts
+h/ not sure that Old Versions shouldbe in git repo. Maybe put that in packages? Note that you can tag your releases
+i/ src/license.txt is redundant with /LICENSE
+
+In My Humble Opinion (you decide), Ideally, once cleaned up, your repo should look like this in /
+
+Examples
+Support_files/WxPerlImagick
+Support_files/TestEnvironment
+SupportFiles/Win32. 
+(maybe handle that in Makefile.PL would be better: depending on OS, the correct file is chosen)
+Support_Files/Images
+
+LICENSE
+README.md
+INSTALL (from src/README keeping only install stuffs as the other parts are redundant with README.md)
+MANIFEST.stub (from src/MANIFEST.stub)
+Makefile.PM (from src)
+lib/* (from src)
+man/GUIDeFATE.pod (from src, needs MANIFEST.stub update)
