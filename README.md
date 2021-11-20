@@ -19,7 +19,7 @@ GUIDeFATE requires an available working backend with their relevant connecting P
 
 # Textual Representation of a Graphical Interface
 
-A simple [hello world](https://github.com/saiftynet/dummyrepo/blob/main/GUIDeFATE/helloworld.png)
+A simple ![hello world](https://github.com/saiftynet/dummyrepo/blob/main/GUIDeFATE/helloworld.png)
 ```
 +------------------+
 |T Message         |
