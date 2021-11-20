@@ -1,0 +1,403 @@
+   logoVars=>{
+	  version    =>  0.03,
+      dir        =>  180,
+      fmTLX      =>  0,
+      fmTLY      =>  0,
+      fmWidth    =>  1000,
+      fmHeight   =>  1000,
+      font       =>  "italic 40px sans-serif",
+      xPos       => 500,
+      yPos       => 500,
+      font       => {  family => "sans-serif",
+		               size   => "80px",
+		               style  => "italic",
+		               fill   => "black",
+		               rotate => 0,
+		               anchor => 'start',
+				   },
+      colour     => 'black',
+      thickness  => 3,
+      pen        => 1,
+      fill       => "",
+      mode       => "line",
+      minX       => 100,
+      minY       => 100,
+      maxX       => 100,
+      maxY       => 100, 
+      logs       => "",
+      svg        => "", 
+      targetName => 'svg',
+      layers     => {},
+      groups     => {},
+      clippaths  => {},
+      pointArray => [], 
+      directions => {  north      =>  180,
+		               east       =>   90,
+		               south      =>    0,
+		               west       =>  -90,
+		               northeast  =>  135,
+		               northwest   => -135,
+		               southeast  =>   45,
+		               southeast  =>  -45,
+				    },  
+   },
+
+   commands=>{
+      fd=>sub{
+        my $distance=shift;
+        $distance=evaluate($distance);
+        my $oldX=$extensions{logo}{logoVars}{xPos};
+        my $oldY=$extensions{logo}{logoVars}{yPos};
+        my $colour=$extensions{logo}{logoVars}{colour};
+        my $thickness=$extensions{logo}{logoVars}{thickness};
+        my $newX= sin($functions{rad}->($extensions{logo}{logoVars}{dir}))*$distance+$oldX ;
+        my $newY= cos($functions{rad}->($extensions{logo}{logoVars}{dir}))*$distance+$oldY;
+        
+        $extensions{logo}{commands}{minmax}->($newX,$newY);
+ 
+        $extensions{logo}{logoVars}{xPos}=$newX;
+        $extensions{logo}{logoVars}{yPos}=$newY;
+        
+        my $mode= $extensions{logo}{logoVars}{mode};
+        $oldX=int($oldX);$oldY=int($oldY);$newX=int($newX);$newY=int($newY);
+	    if ($mode=~ /(poly(gon|line))/){
+			$extensions{logo}{commands}{addpoints}->( " ".$newX.",".$newY." ");
+		}
+		elsif ($mode eq "path"){
+			if($extensions{logo}{logoVars}{pen}==1){
+			  $extensions{logo}{commands}{addpoints}->("L ".$newX.",".$newY." ");
+		    }			
+		}
+		else {
+           if($extensions{logo}{logoVars}{pen}==1){
+			  my $line=qq(<line x1="$oldX" y1="$oldY" x2="$newX" y2="$newY" style="stroke:$colour;stroke-width:$thickness" />\n);
+			  $extensions{logo}{logoVars}{svg}.=$line;
+		   }
+	    }	
+     },
+     
+     bk =>sub{
+		 my $distance=shift;
+		 $extensions{logo}{commands}{fd}("-1*".$distance)
+	 },
+     
+     forward=> sub{
+		 my $distance=shift;
+		 $extensions{logo}{commands}{fd}($distance);
+	 },
+     
+     backward=> sub{
+		 my $distance=shift;
+		 $extensions{logo}{commands}{fd}("-1*".$distance);
+	 },	
+	 
+     lt=>sub{
+        my $delta=shift;
+        $delta=   ($delta eq '')? 90:evaluate($delta);
+        $extensions{logo}{logoVars}{dir}+=$delta;  
+           
+     },
+     
+     left=> sub{
+		 my $delta=shift;
+		 $extensions{logo}{commands}{lt}($delta);
+	 },
+     
+     rt=>sub{
+        my $delta=shift;
+        $delta=   ($delta eq '')? 90:evaluate($delta);
+        $extensions{logo}{logoVars}{dir}-=$delta;     
+     },
+     
+     right=> sub{
+		 my $delta=shift;
+		 $extensions{logo}{commands}{rt}($delta);
+	 }, 
+	 
+	 addpoints=>sub{
+		 my $additions=shift;
+		 my @svglines=split ("\n", $extensions{logo}{logoVars}{svg});
+		 $svglines[-2].= $additions;
+		 $extensions{logo}{logoVars}{svg}=join("\n",@svglines)."\n"; 
+	 },
+ 
+     center => sub {
+		my $target=shift;
+		if ($target=~/all/){
+			$extensions{logo}{logoVars}{fmTLX}=($extensions{logo}{logoVars}{minX}+$extensions{logo}{logoVars}{maxX} - $extensions{logo}{logoVars}{fmWidth} )/2;
+			$extensions{logo}{logoVars}{fmTLY}=($extensions{logo}{logoVars}{minY}+$extensions{logo}{logoVars}{maxY} - $extensions{logo}{logoVars}{fmHeight})/2;
+			
+		}
+		else{
+            $extensions{logo}{logoVars}{xPos}=($extensions{logo}{logoVars}{fmWidth}  + $extensions{logo}{logoVars}{fmTLX})/2;
+            $extensions{logo}{logoVars}{yPos}=($extensions{logo}{logoVars}{fmHeight} + $extensions{logo}{logoVars}{fmTLY})/2;
+		}
+     },
+     
+     circle => sub {
+		 my $radius=shift;
+		 $radius=evaluate($radius);
+		 my ($x,$y)= (int ($extensions{logo}{logoVars}{xPos}), int($extensions{logo}{logoVars}{yPos}) );
+		 my $line="<circle cx=\"$x\" cy=\"$y\" r=\"$radius\"   ".
+		                                   "stroke=\"$extensions{logo}{logoVars}{colour}\" ".
+		                                   "stroke-width=\"$extensions{logo}{logoVars}{thickness}\" ".
+		                                   "fill=\"$extensions{logo}{logoVars}{fill}\" />\n";
+		 $extensions{logo}{logoVars}{svg}.=$line;
+	 },
+	  
+     clear=>sub{
+		logs("clear");
+        $extensions{logo}{logoVars}{svg}     = "";
+        $extensions{logo}{logoVars}{mode}    = "line ";
+        $extensions{logo}{logoVars}{fmTLX}   = 0;
+        $extensions{logo}{logoVars}{fmTLY}   = 0;
+        $extensions{logo}{logoVars}{fmWidth} = 1000;
+        $extensions{logo}{logoVars}{fmHeight}= 1000;
+        $extensions{logo}{logoVars}{minX}    = 500;
+        $extensions{logo}{logoVars}{minY}    = 500;
+        $extensions{logo}{logoVars}{maxX}    = 500;
+        $extensions{logo}{logoVars}{maxY}    = 500;
+        $extensions{logo}{logoVars}{xPos}    = 500;
+        $extensions{logo}{logoVars}{yPos}    = 500;
+     },
+     	 
+	 closepath=>sub{
+		 if ($extensions{logo}{logoVars}{mode} eq "path"){
+			my @svglines=split ("\n", $extensions{logo}{logoVars}{svg});
+			if ( $svglines[-2]!~/Z\s*$/i){ $svglines[-2].= " Z\n" ;
+			     $extensions{logo}{logoVars}{svg}=join("\n",@svglines)."\n";
+			}		
+		 }
+	 },
+     
+     colour =>sub{
+		my $colour=shift;
+		if ($colour =~m/random/){
+			$colour="rgb(".int(rand(256)).",".int(rand(256)).",".int(rand(256)).")";
+		}
+		$extensions{logo}{logoVars}{colour}=$colour;
+     },
+  
+     dir=>sub{
+        my $newDir=shift;
+        if (defined $extensions{logo}{logoVars}{directions}{$newDir}){
+			$extensions{logo}{logoVars}{dir}=$extensions{logo}{logoVars}{directions}{$newDir}
+		}
+        else {
+			$extensions{logo}{logoVars}{dir}=evaluate($newDir);
+		}
+     },
+     
+     drawTo=>sub{
+		 
+		 
+	 },
+     
+     font => sub{
+		 my  $params=shift;
+		 foreach (split(",",$params) ){
+		   $_=~/\s*([a-z]+)\s*=\s*(\S*)\s*$/;
+		   $extensions{logo}{logoVars}{font}{$1}=$2;
+	     }
+	 },
+     
+     group => sub{
+		 my $gpName  =  shift;
+		 $extensions{logo}{logoVars}{groups}{$targetName} ="group $gpName";
+		 $extensions{logo}{logoVars}{groups}{$gpName}  =    "";
+     },
+     
+     
+     
+     image => sub{
+		 qr{<image xlink:href="firefox.jpg" x="0" y="0" height="50px" width="50px"/>}
+	 },
+	 
+         
+     minmax=>sub{
+	   my ($newX,$newY)=@_;
+	   if ($newX>$extensions{logo}{logoVars}{maxX}) {
+		   $extensions{logo}{logoVars}{maxX}=int($newX);}
+       elsif ($newX<$extensions{logo}{logoVars}{minX}) {
+		   $extensions{logo}{logoVars}{minX}=int($newX);}; 
+       if ($newY>$extensions{logo}{logoVars}{maxY}) {
+		   $extensions{logo}{logoVars}{maxY}=int($newY);}
+       elsif ($newY<$extensions{logo}{logoVars}{minY}) {
+		   $extensions{logo}{logoVars}{minY}=int($newY);}
+	 },
+	      
+     move=>sub{
+	   my $newPos=shift;
+	   my ($x,$y)=split (",",$newPos);
+	   $x=evaluate($x); $y=evaluate($y);
+	   if ($extensions{logo}{logoVars}{mode}  eq "path "){
+		   $extensions{logo}{commands}{closepath}
+	   }
+	   else {
+		   $extensions{logo}{logoVars}{xPos}=$x;
+		   $extensions{logo}{logoVars}{yPos}=$y;
+	   }
+     },
+
+     text=>sub{
+		 my $text=shift;
+		 $text=evaluate($text);
+		 my %font=%{$extensions{logo}{logoVars}{font}};
+		 my $style=qq{style="font-size:$font{size};font-family:$font{family}; font-style:$font{style}; fill:$font{fill}; " };
+		 my ($x,$y)= (int ($extensions{logo}{logoVars}{xPos}), int($extensions{logo}{logoVars}{yPos}) );
+		 my $anchor=qq(text-anchor="$font{anchor}");
+		 my $transform=qq{transform="rotate($font{rotate},$x,$y)"};
+		 my $line=qq{<text $style $transform $anchor x= "$x" y="$y">$text</text>\n};
+		 $extensions{logo}{logoVars}{svg}.=$line;
+	 },
+
+	 pan=>sub{
+		 my ($dir,$distance)=@_;
+		 if (!$distance) {$distance=10};
+		 if      ($dir eq "up")   { $extensions{logo}{logoVars}{fmTLY}+=$distance }
+		 elsif   ($dir eq "down") { $extensions{logo}{logoVars}{fmTLY}-=$distance }
+		 elsif   ($dir eq "left") { $extensions{logo}{logoVars}{fmTLX}-=$distance }
+		 elsif   ($dir eq "right"){ $extensions{logo}{logoVars}{fmTLX}+=$distance }
+		 else    {logline("Pan Direction $dir not recognised\n")}
+	 },
+	 
+     pen=>sub{
+       my $ud=shift;
+       $ud=($ud=~/up|1/)?0:1;
+       $extensions{logo}{logoVars}{pen}=$ud;
+       if ($extensions{logo}{logoVars}{mode} eq "path"){
+		   if (!$ud) { $extensions{logo}{commands}{closepath}->() }  # close path if pen raised
+		   else {
+			   my ($x,$y)= (int ($extensions{logo}{logoVars}{xPos}), int($extensions{logo}{logoVars}{yPos}) );
+			   $extensions{logo}{commands}{addpoints}->("M $x $y ");
+		   };
+	   }
+     },
+   
+     fill=>sub{
+		my $colour=shift;
+		if ($colour =~m/random/){
+			$colour="rgb(".int(rand(256)).",".int(rand(256)).",".int(rand(256)).")";
+		}
+		$extensions{logo}{logoVars}{fill}=$colour;
+	 },
+     
+     mode =>sub{
+        my $mode=shift;
+        my $colour=$extensions{logo}{logoVars}{colour};
+        my $thickness=$extensions{logo}{logoVars}{thickness};
+        my $fill=$extensions{logo}{logoVars}{fill};
+        my ($x,$y)= (int ($extensions{logo}{logoVars}{xPos}), int($extensions{logo}{logoVars}{yPos}) );
+        my $line;
+        if ($mode=~ /(path|polyline|polygon|line)/) {
+		  $mode=$1;
+          $extensions{logo}{logoVars}{mode}=$mode;
+          if ($mode=~ /(poly(gon|line))/){
+			  $line=qq(<$1 points="
+$x,$y 
+" style="stroke:$colour;stroke-width:$thickness;fill:$fill" />\n);
+		  }
+		  elsif ($mode eq "path"){
+			  $line=qq(<path d="M
+$x,$y 
+" style="stroke:$colour;stroke-width:$thickness;fill:$fill; fill-rule:evenodd"/>\n);
+		  }
+		  $extensions{logo}{logoVars}{svg}.=$line;
+        }
+     },
+     
+     nl =>sub{
+		 my $spacing=shift;
+		 $spacing=evaluate($spacing) // 1;
+		 
+		 $extensions{logo}{logoVars}{yPos}+=($extensions{logo}{logoVars}{font}{size}*$spacing)
+	 },
+	 
+	 nextline=>sub{
+		 $extensions{logo}{commands}{nl}
+	 },
+          
+     rectangle => sub{
+		 my $wh=shift;
+		 my ($x,$y)= (int ($extensions{logo}{logoVars}{xPos}), int($extensions{logo}{logoVars}{yPos}) );
+		 my  ($width,$height,$rx,$ry)=split(",", $wh);
+		 ($width,$height,$rx,$ry)=map {($_ ne undef) ? evaluate($_) : 0}($width,$height,$rx,$ry);
+		 my $line="<rect x=\"$x\" y=\"$y\" width=\"$width\"  height=\"$height\"  rx=\"$rx\"  ry=\"$ry\" ".
+		                                   "stroke=\"$extensions{logo}{logoVars}{colour}\" ".
+		                                   "stroke-width=\"$extensions{logo}{logoVars}{thickness}\" ".
+		                                   "fill=\"$extensions{logo}{logoVars}{fill}\" />\n";
+		 $extensions{logo}{logoVars}{svg}.=$line;
+		  
+     },
+     
+     resetlogo => sub{
+		  $extensions{logo}{commands}{clear}->();
+		  $commands{reset}->();
+	 },
+     
+     target  =>sub{   # set the destination of newly created elements
+		 my ($tg,$line)=@_;
+		 if    ($tg=~/svg/)                      {  $extensions{logo}{logoVars}{svg}.=$line        }
+		 elsif ($tg =~ /group\s+(\w+)\s*\$/)     {  $extensions{logo}{logoVars}{groups}{$1}.=$line }
+		 elsif ($tg =~ /clip\s+(\w+)\s*\$/)      {  $extensions{logo}{logoVars}{clippaths}{$1}.=$line }
+		 
+	 },
+     
+     thickness => sub {
+		 my $thickness=shift;
+		 $extensions{logo}{logoVars}{thickness}=evaluate($thickness);
+	 },
+     
+     transform => sub{
+     
+     },
+     
+     svgout=>sub{
+         my $svgFile=shift;
+         $svgFile=~s/^\s+|\s+$//g;
+         if ($svgFile!~/\.svg$/){$svgFile.='.svg'};
+         logLine( "saving file to $svgFile\n");
+         open (my $svg,'>',$svgFile);          
+		 print $svg "<svg  viewBox=\" ". $extensions{logo}{logoVars}{fmTLX}." ".$extensions{logo}{logoVars}{fmTLY}.  
+		                              " ".$extensions{logo}{logoVars}{fmWidth}." ".$extensions{logo}{logoVars}{fmHeight}."\"".
+		                              " xmlns='http://www.w3.org/2000/svg' >\n".
+		                              $extensions{logo}{logoVars}{svg}.
+		                              "  </svg>";
+		 close $svg;
+	 },
+	 
+	 pngout=>sub{
+		 
+		 
+	 },
+	 
+	 zoom=>sub {
+		my $zoom=shift;
+		$zoom=~/\s*(all|in|out)\s*(-?\d*)\s*$/;
+		my ($zoom,$zf)=($1,$2);
+		if (!$zf) {$zf=10};
+		if ($zoom eq "all"){
+		 $extensions{logo}{logoVars}{fmTLX}    = $extensions{logo}{logoVars}{minX};
+		 $extensions{logo}{logoVars}{fmTLY}    = $extensions{logo}{logoVars}{minY};
+		 $extensions{logo}{logoVars}{fmWidth}  = $extensions{logo}{logoVars}{maxX} - $extensions{logo}{logoVars}{minX};
+		 $extensions{logo}{logoVars}{fmHeight} = $extensions{logo}{logoVars}{maxY} - $extensions{logo}{logoVars}{minY};
+		}
+		elsif ($zoom eq "in"){
+		 $extensions{logo}{logoVars}{fmTLX}   = int($extensions{logo}{logoVars}{fmTLX}+($extensions{logo}{logoVars}{fmWidth}) *($zf/200) );  
+		 $extensions{logo}{logoVars}{fmTLY}   = int($extensions{logo}{logoVars}{fmTLY}+($extensions{logo}{logoVars}{fmHeight})*($zf/200) ); 
+		 $extensions{logo}{logoVars}{fmHeight}= int($extensions{logo}{logoVars}{fmHeight}*(1-$zf/100));
+		 $extensions{logo}{logoVars}{fmWidth} = int($extensions{logo}{logoVars}{fmWidth}*(1-$zf/100));
+	   }
+	   elsif ($zoom eq "out"){
+		 $extensions{logo}{commands}{zoom}->("in -$zf");
+	   }
+	 },
+	 
+     functions=>{
+	   
+	   
+	   
+     },
+   },
+   
+ 
