@@ -19,7 +19,7 @@ GUIDeFATE requires an available working backend with their relevant connecting P
 
 # Textual Representation of a Graphical Interface
 
-A simple [hello world](https://github.com/saiftynet/GUIDeFATE/blob/master/images/helloworld.png)
+A simple [hello world](https://github.com/saiftynet/dummyrepo/blob/main/GUIDeFATE/helloworld.png?raw=true)
 ```
 +------------------+
 |T Message         |
@@ -73,7 +73,7 @@ my $gui=GUIDeFATE->new($window [$backend],[$assist]); # API changed at version 0
 # $assist is one or  "q" (quiet, default), "v" (verbose) or "a" for Autogenerate
 $gui->MainLoop;
 ```
-This produces something like ![Calculator Screenshot](https://github.com/saiftynet/GUIDeFATE/blob/master/calculator%20screenshot.png)
+This produces something like ![Calculator Screenshot]https://github.com/saiftynet/dummyrepo/blob/main/GUIDeFATE/calculator%20screenshot.png)
 
 From Version 0.10 seven backends are supported. Wx, Tk, Gtk, Qt, Win32, HTML, Websocket.  These have different prerequisites.
 
