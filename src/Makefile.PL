@@ -33,8 +33,6 @@ WriteMakefile
     ABSTRACT_FROM  => 'GUIDeFATE.pod',
     LICENSE      =>  'Perl',
     PREREQ_PM    => {
-          'Wx::Perl::Imagick' => '0',
-          'Wx'          => '0',
     },
     BUILD_REQUIRES => {
     
