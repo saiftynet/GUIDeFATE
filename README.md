@@ -80,6 +80,8 @@ This produces something like:-
 ![Calculator Screenshot](https://github.com/saiftynet/dummyrepo/blob/main/GUIDeFATE/calculator%20screenshot.png)
 
 From Version 0.10 seven backends are supported. Wx, Tk, Gtk, Qt, Win32, HTML, Websocket.  These have different prerequisites.
+![Multiple Backends](https://github.com/saiftynet/dummyrepo/blob/main/GUIDeFATE/Four%20backends%20supported.png)
+
 
 * Perl5.8.8, Exporter, Wx, Wx::Perl::Imagick (for Wx interface)
 * Perl5.8.8, Exporter, Tk, Image::Magick, Tk::JPEG, MIME::Base64 (for Tk interface)
