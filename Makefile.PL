@@ -38,4 +38,5 @@ WriteMakefile
     
     },
     'realclean' => {FILES => "*.old *.bak *.tar.gz *.spec Makefile MANIFEST"},
+    test	=> {TESTS => 't/*.t'},
 );
