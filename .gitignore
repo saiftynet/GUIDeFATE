@@ -2,6 +2,7 @@ Makefile
 Makefile.old
 *.tar.bz2
 *.tar.gz
+*.bak
 MANIFEST
 Buil$
 cover_db
