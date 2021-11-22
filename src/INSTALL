@@ -1,0 +1,121 @@
+GUI Design From A Text Editor
+
+Installation:
+
+This may install even if its dependencies fail to install.  This is 
+because different backends will have different needs. GUIDeFATE will 
+work currently with Gtk, Wx and Tk. 
+
+Perl5.8.8, Exporter, Wx, Wx::Perl::Imagick (for Wx interface)
+Perl5.8.8, Exporter, Tk, Image::Imagick, Tk::JPEG, MIME::Base64 (for Tk interface)
+Perl5.8.8, Exporter, Glib, Gtk (for Gtk interface)
+Perl5.8.8, Exporter, QtCore4 QtGUI4 (for Qt interface)
+Perl5.8.8, Exporter, Win32::GUI and Imager (for Win32 interface)
+
+Designing a graphical User interface requires knowledge of things like
+toolkit libraries, platform context etc.  At least I think it does.  I
+am a relatively new programmer in that I have near zero experience in
+GUI programming outside a web page.  So when I explore how to design an
+application which works outside a command line or a browser window, I
+feel tremendously out of my depth.  When I see the programming
+interfaces to these interfaces (QT, GTK, TK, ncurses, HTML) my
+bewilderment reaches even greater heights.
+
+Sure there are clever things like wxGlade, and QT Designer etc.  These
+are tools that also require more skill than I possess; I am old and I
+can just about use a text editor as an IDE. So what is needed? I need a
+GUI designer that: -
+1) Is simple, abstracting away from the underlying Toolkit/platform
+2) Requires the simplest designer possible, with a visual
+representation of the interface
+3) Allows the use use of multiple different GUI engines
+4) Makes it easy recognise the interface elements by simply looking at
+the code
+
+# So how might this work?
+
+The user uses a text editor to design the window. Not new of course,
+text editors have had to be used to describe windows when other
+graphical representation methods were not possible.  As this is already
+a two dimensional data, it should be possible to convert this into an
+actual graphical interface through an interpreter.  The developer
+simply has to draw the interface in text and then program the
+interaction that is required.
+
+# Textual Representation of a Graphical Interface
+
+A simple hellow world
+
++------------------+
+|T Message         |
++------------------+
+|                  |
+|  Hello World! !  |
+|                  |
++------------------+
+
+A Calculator
+
++------------------------+
+|T  Calculator           |
++------------------------+
+|  [__________________]  |
+|  { V }{ % }{ C }{AC }  |
+|  { 1 }{ 2 }{ 3 }{ + }  |
+|  { 4 }{ 5 }{ 6 }{ - }  |
+|  { 7 }{ 8 }{ 9 }{ * }  |
+|  { . }{ 0 }{ = }{ / }  |
+|  made with GUIdeFATE   |
++------------------------+
+
+
+# Example PERL script
+
+perl
+#!/usr/bin/perl -w
+use strict;
+use GUIDeFATE;
+package Main;
+
+my $window=<<END;
++------------------------+
+|T  Calculator           |
++------------------------+
+|  [                  ]  |
+|  { V }{ % }{ C }{AC }  |
+|  { 1 }{ 2 }{ 3 }{ + }  |
+|  { 4 }{ 5 }{ 6 }{ - }  |
+|  { 7 }{ 8 }{ 9 }{ * }  |
+|  { . }{ 0 }{ = }{ / }  |
+|  made with GUIdeFATE   |
++------------------------+
+
+END
+
+
+my $backend="wx";            # this can be wx,tk,gtk, win32, qt, html etc
+my $assist="q";              #this can be (q)uiet, (v)erbose, (a)utogenerate
+my $gui=GUIDeFATE->new($window,$backend,$assist);
+my $frame=$gui->getFrame()||$gui;
+$gui->MainLoop();
+
+This produces something like
+https://github.com/saiftynet/dummyrepo/blob/main/GUIDeFATE/calculator%20screenshot.png
+
+
+Of course this is at a very early stage, and I have only implemented
+buttons, static text and text control widgets.  More will come.
+Suggestions welcome. 
+
+EDIT> have implemented Menu and image subpanels at version 0.0.2
+EDIT> have implemented Multiline text ctrl subpanels at version 0.0.3
+EDIT> have implemented Message Boxes and  file selector at Version 0.04
+EDIT> have implemented an potential modification to allow other backends 
+EDIT> Have implemented a Tk backend
+
+
+Copyright (C) 2018 Saif Ahmed
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself, either Perl version 5.8.6 or,
+at your option, any later version of Perl 5 you may have available.
