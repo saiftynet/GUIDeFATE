@@ -30,11 +30,12 @@ WriteMakefile
     NAME         => 'GUIDeFATE',
     VERSION_FROM => 'lib/GUIDeFATE.pm',
     AUTHOR       => 'Saif Ahmed <saiftynet { at } gmail.com>',
-    ABSTRACT_FROM  => 'GUIDeFATE.pod',
+    ABSTRACT_FROM  => 'doc/GUIDeFATE.pod',
     LICENSE      =>  'Perl',
     PREREQ_PM    => {
     },
     BUILD_REQUIRES => {
     
-    }
+    },
+    'realclean' => {FILES => "*.old *.bak *.tar.gz *.spec Makefile MANIFEST"},
 );
