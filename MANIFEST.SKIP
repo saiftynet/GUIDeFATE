@@ -1,6 +1,12 @@
-MANIFEST
-\B\.svn\b
+^MANIFEST(\.bak)?$
+\B\.git\b
 ~$
 \.old$
 ^#.*#$
 ^\.#
+^Makefile(\.old)?$
+^Build$
+^cover_db
+^pm_to_blib$
+^blib
+support_files
