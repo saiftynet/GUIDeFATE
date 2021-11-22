@@ -9,4 +9,5 @@
 ^cover_db
 ^pm_to_blib$
 ^blib
+^MYMETA\.
 support_files
