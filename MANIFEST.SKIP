@@ -1,5 +1,6 @@
 ^MANIFEST(\.bak)?$
 \B\.git\b
+.gitignore
 ~$
 \.old$
 ^#.*#$
