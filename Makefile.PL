@@ -5,7 +5,10 @@ use ExtUtils::MakeMaker;
 
 sub MY::postamble {
     my $string = <<EOF;
-deb :: manifest rpm_prep dist
+deb_prep ::
+\tsed -e 's/__VERSION__/\$(VERSION)/g' debian/changelog.in > debian/changelog
+
+deb :: manifest deb_prep dist
 \tmkdir -p /tmp/scdeb
 \tmv \$(NAME)-\$(VERSION).tar.gz /tmp/scdeb
 \tcd /tmp/scdeb && tar -xvzf \$(NAME)-\$(VERSION).tar.gz
