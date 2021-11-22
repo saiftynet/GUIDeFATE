@@ -47,6 +47,6 @@ WriteMakefile
 	COMPRESS	=> 'bzip2',
 	SUFFIX		=> 'bz2'
     },
-    realclean	=> {FILES => "*.old *.bak *.tar.bz2 *.spec Makefile MANIFEST"},
+    realclean	=> {FILES => "*.old *.bak *.tar.bz2 *.tar *.tar.gz *.spec Makefile MANIFEST"},
     test	=> {TESTS => 't/*.t'},
 );
