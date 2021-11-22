@@ -37,6 +37,13 @@ WriteMakefile
     BUILD_REQUIRES => {
     
     },
-    'realclean' => {FILES => "*.old *.bak *.tar.gz *.spec Makefile MANIFEST"},
+    TEST_REQUIRES => {
+	'Test::More' => 1.001014,
+    },
+    dist	=> {
+	COMPRESS	=> 'bzip2',
+	SUFFIX		=> 'bz2'
+    },
+    realclean	=> {FILES => "*.old *.bak *.tar.gz *.spec Makefile MANIFEST"},
     test	=> {TESTS => 't/*.t'},
 );
