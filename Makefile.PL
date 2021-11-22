@@ -30,7 +30,7 @@ WriteMakefile
     NAME         => 'GUIDeFATE',
     VERSION_FROM => 'lib/GUIDeFATE.pm',
     AUTHOR       => 'Saif Ahmed <saiftynet { at } gmail.com>',
-    ABSTRACT_FROM  => 'doc/GUIDeFATE.pod',
+    ABSTRACT_FROM  => 'man/GUIDeFATE.pod',
     LICENSE      =>  'Perl',
     PREREQ_PM    => {
     },

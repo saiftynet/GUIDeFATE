@@ -99,7 +99,6 @@ tk GUIDeFATE plugin
 %files common
 %{_mandir}/man3/GUIDeFATE.3pm
 %{perl_vendorlib}/GUIDeFATE.pm
-%{perl_vendorlib}/GUIDeFATE.pod
 %{perl_vendorlib}/GUIDeFATE/GFtemplate.pm
 %{perl_vendorlib}/Language/SIMPLE.pm
 
