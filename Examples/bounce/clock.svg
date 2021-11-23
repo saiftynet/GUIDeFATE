@@ -1,0 +1,17 @@
+<svg height='100' width='100'>
+  <circle cx='50' cy='50' r='47'  fill='beige' stroke='black' />
+  <text  text-anchor='middle' x='71' y='20'>1</text>
+  <text  text-anchor='middle' x='86' y='35'>2</text>
+  <text  text-anchor='middle' x='92' y='55'>3</text>
+  <text  text-anchor='middle' x='86' y='75'>4</text>
+  <text  text-anchor='middle' x='71' y='89'>5</text>
+  <text  text-anchor='middle' x='50' y='95'>6</text>
+  <text  text-anchor='middle' x='29' y='89'>7</text>
+  <text  text-anchor='middle' x='13' y='75'>8</text>
+  <text  text-anchor='middle' x='8' y='55'>9</text>
+  <text  text-anchor='middle' x='13' y='35'>10</text>
+  <text  text-anchor='middle' x='29' y='20'>11</text>
+  <text  text-anchor='middle' x='50' y='15'>12</text>
+  <rect x='47' y='15' width='6' height='45' fill='red'   transform=' rotate(528 50 50)' />
+  <rect x='48' y='10' width='4' height='50' fill='green' transform=' rotate(276 50 50)' />
+  <rect x='49' y='5'  width='2' height='50'              transform=' rotate(324 50 50)' /></svg>

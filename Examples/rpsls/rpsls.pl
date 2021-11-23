@@ -14,7 +14,7 @@ my $window=<<END;
 |                                                |
 | Play Rock Paper   +I------+                    |
 | Scissors Lizard   |rock.jp|                    |
-| Spock.  Click     |g      |                    |
+| Spock. Click      |g      |                    |
 | any button to     +-------+                    |
 | play              { Rock  }                    |
 |                                                |

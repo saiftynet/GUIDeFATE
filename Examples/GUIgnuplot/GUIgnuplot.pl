@@ -6,6 +6,7 @@
 use strict;
 use warnings;
 use GUIDeFATE;
+
 use File::Copy qw(copy);
 
 my $window=<<END;
@@ -82,11 +83,11 @@ sub menu9{
 sub menu12{
 	open(GP, "| gnuplot") or die "Error while piping to Gnuplot: $! \n";
 	print GP <<END;
-set terminal png size 1024,600
+set terminal png size 2000,1600  font "Helvetica, 40"
 set output 'plotter.png'
-
 END
-	print GP $frame->getValue("TextCtrl1");
+	my $tmp=$frame->getValue("TextCtrl1");
+	print GP $tmp;
     
     close(GP);
     $frame->setImage("Image2","plotter.png")

@@ -12,3 +12,6 @@ blib
 MYMETA.*
 *.spec
 debian/changelog
+plotter.png
+dial.svg
+simplelogo.svg
