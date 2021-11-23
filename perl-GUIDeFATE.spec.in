@@ -4,7 +4,7 @@ Name:                   perl-%{module_name}
 Version:                __VERSION__
 Release:                1%{?dist}
 Packager:               Olivier Lahaye <olivier.lahaye@cea.fr>
-License:                GPL
+License:                GPLv3+
 Group:                  Development/Libraries
 Source:                 %{module_name}-%{version}.tar.gz
 BuildRoot:              /usr/src/redhat/BUILD/%{name}-%{version}
@@ -97,6 +97,7 @@ tk GUIDeFATE plugin
 %defattr(-,root,root)
 
 %files common
+%doc README.md INSTALL Changes AUTHORS LICENSE
 %{_mandir}/man3/GUIDeFATE.3pm
 %{perl_vendorlib}/GUIDeFATE.pm
 %{perl_vendorlib}/GUIDeFATE/GFtemplate.pm
