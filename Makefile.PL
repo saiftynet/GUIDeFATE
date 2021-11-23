@@ -10,8 +10,8 @@ deb_prep ::
 
 deb :: manifest deb_prep dist
 \tmkdir -p /tmp/scdeb
-\tmv \$(NAME)-\$(VERSION).tar.gz /tmp/scdeb
-\tcd /tmp/scdeb && tar -xvzf \$(NAME)-\$(VERSION).tar.gz
+\tmv \$(NAME)-\$(VERSION).tar.bz2 /tmp/scdeb
+\tcd /tmp/scdeb && tar -xvzf \$(NAME)-\$(VERSION).tar.bz2
 \tcd /tmp/scdeb/\$(NAME)-\$(VERSION) && dpkg-buildpackage -rfakeroot -us -uc
 \techo "Debian packages are available in /tmp/scdeb"
 \trm -rf /tmp/scdeb/\$(NAME)-\$(VERSION)
@@ -20,10 +20,10 @@ rpm_prep ::
 \tsed -e 's/__VERSION__/\$(VERSION)/g' perl-GUIDeFATE.spec.in > perl-GUIDeFATE.spec
 
 rpm :: rpm_prep manifest dist
-\trpmbuild -tb --target noarch \$(NAME)-\$(VERSION).tar.gz
+\trpmbuild -tb --target noarch \$(NAME)-\$(VERSION).tar.bz2
 
 srpm :: rpm_prep manifest dist
-\trpmbuild -ts --target noarch --nodeps \$(NAME)-\$(VERSION).tar.gz
+\trpmbuild -ts --target noarch --nodeps \$(NAME)-\$(VERSION).tar.bz2
 
 EOF
 }

@@ -6,7 +6,7 @@ Release:                1%{?dist}
 Packager:               Olivier Lahaye <olivier.lahaye@cea.fr>
 License:                GPLv3+
 Group:                  Development/Libraries
-Source:                 %{module_name}-%{version}.tar.gz
+Source:                 %{module_name}-%{version}.tar.bz2
 BuildRoot:              /usr/src/redhat/BUILD/%{name}-%{version}
 #BuildRoot:             /var/tmp/%{name}-buildroot
 BuildArch:              noarch
