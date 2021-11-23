@@ -2,7 +2,7 @@
 #A test script that calls the test files in scripts folder
 #uses GUIDeFATE (which in turn depends on Wx or Tk)
 
-use lib '../lib/';
+use lib '../../../lib';
 use strict;
 use warnings;
 use GUIDeFATE;
@@ -10,6 +10,7 @@ use GUIDeFATE;
 
 my @workingModules;
 BEGIN {
+	#$DB::single = 1;
 	eval {
             eval "use GUIDeFATE" or die; 
         };
@@ -19,9 +20,9 @@ BEGIN {
         }
     # contains list of modules reuired for each backend
     # in order of preference
-    foreach my $module ( qw/ GFwin32 GFwx GFtk  GFqt/ ) {
+    foreach my $module ( qw/ GFwin32 GFwx GFtk GFqt / ) {
         eval {
-            eval "use $module" or die; 
+            eval "use GUIDeFATE::$module" or die; 
         };
         if ($@ && $@ =~ /$module/) {
             print " $module not installed\n";
@@ -46,12 +47,13 @@ my $window=<<END;
 |T Executioner                         |
 +M-------------------------------------+
 |  ^bends ^     Options       ^optns^  |
+|  {Hello World                     }  |
 |  {Calculator                      }  |
 |  {Rock Paper Scissors Lizard Spock}  |
 |  {GUI Gnuplotter                  }  |
-|  { Text editor                    }  |
+|  {Text editor                     }  |
 |  {Image Magick GUI                }  |
-|  { Executioner (this)             }  |
+|  {Executioner (this)              }  |
 |  [                    ]{Execute   }  |
 +--------------------------------------+
 
@@ -77,30 +79,34 @@ sub combo1{
 	$assist=$frame->getValue("combo1");
 }
 
-sub btn3 #called using button with label Calculator                       
+sub btn3 #called using button with label Hello World
+   {
+  system("$preLine perl -I../lib/ HelloWorld.pl $backend $assist $postLine");
+   };
+sub btn4 #called using button with label Calculator                       
   {
   system("$preLine perl -I../lib/ calculator.pl $backend $assist $postLine");
    };
-sub btn4 #called using button with label Rock Paper Scissors Lizard Spock 
+sub btn5 #called using button with label Rock Paper Scissors Lizard Spock 
   {
   system("$preLine perl -I../lib/ rpsls.pl $backend $assist $postLine");
   };
 
-sub btn5 #called using button with label GUI Gnuplotter                   
+sub btn6 #called using button with label GUI Gnuplotter                   
   {
   system("$preLine perl -I../lib/ GUIgnuplot.pl $backend $assist $postLine");
    };
 
-sub btn6 #called using button with label GUI Gnuplotter                   
+sub btn7 #called using button with label GUI Gnuplotter                   
   {
   system("$preLine perl -I../lib/ texteditor.pl $backend $assist $postLine");
    };
 
-sub btn7 #called using button with label  Text editor                     
+sub btn8 #called using button with label  Text editor                     
   {
   system("$preLine perl -I../lib/ ImageMagickGUI.pl $backend $assist $postLine");
    };
-sub btn8 #called using button with label Executioner                       
+sub btn9 #called using button with label Executioner                       
   {
   system("$preLine perl -I../lib/ Executioner.pl $backend $assist $postLine");
    };
@@ -109,7 +115,7 @@ sub textctrl10
    {
 	system("$preLine perl -I../lib/ ". $frame->getValue("textctrl10") . " $backend $assist $postLine");
    };
-sub btn9 #called using button with label Executioner                       
+sub btn10 #called using button with label Executioner                       
   {
   system("$preLine perl -I../lib/ ". $frame->getValue("textctrl10") . " $backend $assist $postLine");
    };
