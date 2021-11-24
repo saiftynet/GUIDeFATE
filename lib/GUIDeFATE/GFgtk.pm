@@ -77,11 +77,12 @@ package GFgtk;
 	       }
 	   }
 	   foreach my $timerID (keys %timers){
-		   $timers{$timerID}{timer} = AE::timer 1, $timers{$timerID}{interval}/1000, $timers{$timerID}{function};
-		  $timers{$timerID}{timer} = AnyEvent->timer (after => 0, interval => $timers{$timerID}{interval}/1000, cb => $timers{$timerID}{function});
+		   #$timers{$timerID}{timer} = AE::timer 1, $timers{$timerID}{interval}/1000, $timers{$timerID}{function};
+		  #$timers{$timerID}{timer} = AnyEvent->timer (after => 0, interval => $timers{$timerID}{interval}/1000, cb => $timers{$timerID}{function});
 		   #if ($timers{$timerID}{interval}>0){
 			   #$timers{$timerID}{timer}->start($timers{$timerID}{interval});
 		   #}
+		   if ($timers{$timerID}{start} eq '1'){start($self,$timerID)};
 	   }
 	   
 	   sub aBt{
@@ -340,7 +341,29 @@ package GFgtk;
 	   $dialog->destroy;
        return (($answer eq "ok")||($answer eq "yes"))
    };
-   
+ # Timer functions
+
+  sub start{
+	  my ($self,$timerID)=@_;
+	  $timers{$timerID}{timer} = AnyEvent->timer (after => 0, interval => $timers{$timerID}{interval}/1000, cb => $timers{$timerID}{function});
+  };
+  sub stop{
+	  my ($self,$timerID)=@_;
+	  $timers{$timerID}{timer} = undef;
+  };
+  sub interval{
+	  my ($self,$timerID,$interval)=@_;
+	  stop($self,$timerID);
+	  $timers{$timerID}{interval}=$interval;
+	  start($self,$timerID);
+  };
+  sub callback{
+	  my ($self,$timerID,$function)=@_;
+	  stop($self,$timerID);
+	  $timers{$timerID}{function}=$function;
+	  start($self,$timerID);
+  };
+    
 # Quit
    sub quit{
 	   my ($self) = @_;

@@ -224,6 +224,7 @@ package GFweb;
 	         }
 	   }
 	   foreach my $timerID (keys %timers){  ## nnot sure if this needs to be implemented yet
+		   if ($timers{$timerID}{start} eq '1'){start($self,$timerID)};
 	   }
 	   
 	   
@@ -422,7 +423,28 @@ package GFweb;
 	   my ($self, $title, $message,$response,$icon) = @_;
 	   $connection->send_utf8("action=showDialog&id=dialog&value=$icon#$response#$title#$message");
    };
-   
+ # Timer functions
+
+  sub start{
+	  my ($self,$timerID)=@_;
+	  $timers{$timerID}{timer} = AnyEvent->timer (after => 0, interval => $timers{$timerID}{interval}/1000, cb => $timers{$timerID}{function});
+  };
+  sub stop{
+	  my ($self,$timerID)=@_;
+	  $timers{$timerID}{timer} = undef;
+  };
+  sub interval{
+	  my ($self,$timerID,$interval)=@_;
+	  stop($self,$timerID);
+	  $timers{$timerID}{interval}=$interval;
+	  start($self,$timerID);
+  };
+  sub callback{
+	  my ($self,$timerID,$function)=@_;
+	  stop($self,$timerID);
+	  $timers{$timerID}{function}=$function;
+	  start($self,$timerID);
+  };   
 # Quit
    sub quit{
 	  $webApp->shutdown();

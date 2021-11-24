@@ -4,13 +4,16 @@ package GFqt;
    
    our $VERSION = '0.13';
 
+
 use QtCore4;
 use QtGui4;
-use QtCore4::isa qw( Qt::MainWindow );
+use QtCore4::isa qw( Qt::MainWindow);
 use QtCore4::slots
     mapAction=>['QString'],
     timedaction  =>[];##attempt ot get timer functionality  currently only single timeout slot
 
+use AE;
+use Time::HiRes qw(time);
    
    use Exporter 'import';   
    our @EXPORT   = qw<addWidget addTimer addVar setScale getFrame $frame $winScale $winWidth $winHeight $winTitle>;
@@ -43,7 +46,7 @@ use QtCore4::slots
     $self->setWindowTitle ( $winTitle );
     $self->{canvas}->setGeometry(0, 0, $winWidth, $winHeight);
     $self->{canvas}->setParent($self);
-    $app->setMainWidget($self->{canvas});
+    #$app->setMainWidget($self->{canvas});   seemsto mbe no longer necessary
     
     $self->{SigMan} = Qt::SignalMapper($self);
     $self->connect($self->{SigMan}, SIGNAL 'mapped(QString)', $self, SLOT 'mapAction(QString)');#
@@ -97,12 +100,13 @@ sub mapAction{
 	    if (defined $currentMenu){ $self->menuBar()->addMenu($self->{$currentMenu}) }
 
         #setup timers
-	    foreach my $timerID (keys %timers){
-		   $timers{$timerID}{timer} = Qt::Timer($self);  # create internal timer
-		   $self->connect($timers{$timerID}{timer}, SIGNAL('timeout()'), SLOT('timedaction()'));
-		   if ($timers{$timerID}{interval}>0){
-			   $timers{$timerID}{timer}->start($timers{$timerID}{interval});
-		   }
+        if (keys %timers){
+		  
+		   foreach my $timerID (keys %timers){
+			   $timers{$timerID}{timer} = Qt::Timer($self);  # create internal timer
+			   $self->connect($timers{$timerID}{timer}, SIGNAL('timeout()'), SLOT('timedaction()'));
+		       if ($timers{$timerID}{start} eq '1'){start($self,$timerID)};
+			}
 		}
 
 	   sub aBt{
@@ -212,6 +216,7 @@ sub mapAction{
 	   $timers{$timerID}{interval}=$interval;
 	   $timers{$timerID}{function}=$function;
 	   $timers{$timerID}{start}=$start;
+	   
    }
 
 # Functions for internal use 
@@ -336,7 +341,33 @@ sub mapAction{
 								}
 	   return (($reply==Qt::MessageBox::Yes() )||($reply==Qt::MessageBox::Ok()));
    };
+ 
+    
+# Timer functions
+  sub start{
+	  my ($self,$timerID)=@_;  
+	  $timerID=(keys %timers)[0] ;
+	  $timers{$timerID}{timer}->start($timers{$timerID}{interval});
+  };
+  sub stop{
+	  my ($self,$timerID)=@_;
+	  $timers{$timerID}{timer} = undef;
+  };
+  sub interval{
+	  my ($self,$timerID,$interval)=@_;
+	  stop($self,$timerID);
+	  $timers{$timerID}{interval}=$interval;
+	  start($self,$timerID);
+  };
+  sub callback{
+	  my ($self,$timerID,$function)=@_;
+	  stop($self,$timerID);
+	  $timers{$timerID}{function}=$function;
+	  start($self,$timerID);
+  }; 
    
+   
+  
 # Quit
    sub quit{
 	  $app ->quit();

@@ -16,6 +16,7 @@ package GFwxFrame;
           
    use Wx::Event qw( EVT_BUTTON EVT_TEXT_ENTER EVT_UPDATE_UI EVT_MENU EVT_COMBOBOX EVT_TIMER);
    use Wx::Perl::Imagick;                 #for image panels
+   # use Wx::Image; 
    
    use base qw(Wx::Frame); # Inherit from Wx::Frame
    
@@ -29,13 +30,8 @@ package GFwxFrame;
    my $lastMenuLabel;  #bug workaround in menu generator
    
    our $winScale=6.5;
-   my $font = Wx::Font->new(     3*$winScale,
-                                wxDEFAULT,
-                                wxNORMAL,
-                                wxNORMAL,
-                                0,
-                                "",
-                                wxFONTENCODING_DEFAULT);
+   my $font;
+   setScale($winScale) ;
    
    sub new
    {
@@ -73,14 +69,15 @@ package GFwxFrame;
 	   }
 	   #setup timers
 	   foreach my $timerID (keys %timers){
-		   $timers{$timerID}{timer} = Wx::Timer->new( # create internal timer 
-					$canvas,                          # Parent Frame
-					-1,                               # Timer ID
-	        );
-	        EVT_TIMER $canvas, $timers{$timerID}{timer}, $timers{$timerID}{function}; 
-		   if ($timers{$timerID}{interval}>0){
-			   $timers{$timerID}{timer}->Start($timers{$timerID}{interval});
-		   }
+		   #$timers{$timerID}{timer} = Wx::Timer->new( # create internal timer 
+					#$canvas,                          # Parent Frame
+					#-1,                               # Timer ID
+	        #);
+	        #EVT_TIMER $canvas, $timers{$timerID}{timer}, $timers{$timerID}{function}; 
+		   #if ($timers{$timerID}{interval}>0){
+			   #$timers{$timerID}{timer}->Start($timers{$timerID}{interval});
+		   #}
+		   if ($timers{$timerID}{start} eq '1'){start($self,$timerID)};
 	   }
 	   
 	   sub aCB{
@@ -150,7 +147,7 @@ package GFwxFrame;
 		 }
          
          sub aST{
-			  my ($self,$panel, $id, $text, $location)=@_;
+			 my ($self,$panel, $id, $text, $location)=@_;
 			 $self->{"stattext".$id} = Wx::StaticText->new( $panel,             # parent
                                         $id,                  # id
                                         $text,                # label
@@ -169,7 +166,8 @@ package GFwxFrame;
 			if ($panelType eq "I"){  # Image panels start with I
 				if (! -e $content){ return; }
 				no warnings;   # sorry about that...suppresses a "Useless string used in void context"
-			    my $image = Wx::Perl::Imagick->new($content);
+			    my $image = Wx::Perl::Imagick->new($content, undef, 0);
+			    #my $image = Wx::Image->new($content);
 			    if ($image){
 			      my $bmp;    # used to hold the bitmap.
 			      my $geom=${$size}[0]."x".${$size}[1]."!";
@@ -246,7 +244,7 @@ package GFwxFrame;
    }
    sub setScale{
 	   $winScale=shift;
-	   $font = Wx::Font->new(     3*$winScale,
+	   $font = Wx::Font->new(  1.5*$winScale,
                                 wxDEFAULT,
                                 wxNORMAL,
                                 wxNORMAL,
@@ -271,7 +269,8 @@ package GFwxFrame;
 	   $id=~s/[^\d]//g;
 	   my $size=getSize($self,$id,\@widgets);
 	   if ($size){
-	       my $image = Wx::Perl::Imagick->new($file);
+		   no warnings;
+	       my $image = Wx::Perl::Imagick->new($file,undef,0);
 		   if ($image){
 			  my $bmp;    # used to hold the bitmap.
 			  my $geom=${$size}[0]."x".${$size}[1]."!";
@@ -358,6 +357,38 @@ package GFwxFrame;
        return (($answer==wxOK)||($answer==wxYES))
 	   
    };
+ 
+   
+# Timer functions
+
+  sub start{
+	  my ($self,$timerID)=@_;
+	  #$timers{$timerID}{timer} = AnyEvent->timer (after => 0, interval => $timers{$timerID}{interval}/1000, cb => $timers{$timerID}{function});
+	  $timers{$timerID}{timer} = Wx::Timer->new( # create internal timer 
+					$self,                          # Parent Frame
+					-1,                               # Timer ID
+	        ) or die $!;
+	       EVT_TIMER $self, $timers{$timerID}{timer}, $timers{$timerID}{function}; 
+		   $timers{$timerID}{timer}->Start($timers{$timerID}{interval});
+		   
+  };
+  sub stop{
+	  my ($self,$timerID)=@_;
+	  $timers{$timerID}{timer} = undef;
+  };
+  sub interval{
+	  my ($self,$timerID,$interval)=@_;
+	  stop($self,$timerID);
+	  $timers{$timerID}{interval}=$interval;
+	  start($self,$timerID);
+  };
+  sub callback{
+	  my ($self,$timerID,$function)=@_;
+	  stop($self,$timerID);
+	  $timers{$timerID}{function}=$function;
+	  start($self,$timerID);
+  };
+   
    
 # quit
    sub quit{
@@ -385,7 +416,7 @@ package GFwx;
    our $winWidth;
    our $winHeight;
    our $winTitle;
-   our $winScale=6.5;   
+   our $winScale=6.5; #was 6.5  
    
    sub OnInit
    {

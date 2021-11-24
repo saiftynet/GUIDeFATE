@@ -8,10 +8,9 @@ package GFtk;
    
    use Tk::JPEG;
    use Tk::BrowseEntry;
-   
-   use AnyEvent;
+  
+ #  use AnyEvent;
    use Time::HiRes qw(time);
-   
    use Image::Magick;
    use MIME::Base64;
    
@@ -48,9 +47,9 @@ package GFtk;
          -height => $winHeight)->pack(-expand => 1, -fill => 'both');
       
       $frame ->fontCreate('medium',
-             -family=>'arial',
+             -family=>'Arial',
              -weight=>'normal',
-             -size=>int(-18*18/14));
+             -size=>int(18));
       setupContent($self,$frame);  #then add content
       return $self;
    };
@@ -80,11 +79,12 @@ package GFtk;
 	   #setup timers
 	   foreach my $timerID (keys %timers){
 		  #$timers{$timerID}{timer} = AnyEvent->timer (after => 0, interval => $timers{$timerID}{interval}/1000, cb => $timers{$timerID}{function});
-		  $canvas->repeat($timers{$timerID}{interval}, $timers{$timerID}{function}); #docstore.mik.ua/orelly/perl3/tk/ch13_22.htm
+		 # $canvas->repeat($timers{$timerID}{interval}, $timers{$timerID}{function}); #docstore.mik.ua/orelly/perl3/tk/ch13_22.htm
 		   #$timers{$timerID}{timer} = AE::timer 1, $timers{$timerID}{interval}/1000, $timers{$timerID}{function};
 		   #if ($timers{$timerID}{interval}>0){
 			   #$timers{$timerID}{timer}->start($timers{$timerID}{interval});
 		   #}
+		   if ($timers{$timerID}{start} eq '1'){start($self,$timerID)};
 	   }
 
 	   sub aBt{
@@ -289,7 +289,7 @@ package GFtk;
 			                                     -format=>'jpeg',
 			                                     -data=>encode_base64($bmp) ));
 			      #  $frame->update();  # force refresh...does not work?   
-			      undef $bmp;                          
+			      #  undef $bmp; undef $image;undef $r;                         
                     }
 				 else {"print failed to load image $file \n";}
 			 }
@@ -357,6 +357,30 @@ package GFtk;
 	      -icon => $icon, -message => $message, -title => $title, -type => $response);
        return (($answer eq "Ok")||($answer eq "Yes"))
    };
+   
+# Timer functions
+  sub start{
+	  my ($self,$timerID)=@_;   # can use Any::Event or Tk built in timers: uncomment the use AE and use Timer 
+	  #$timers{$timerID}{timer} = AnyEvent->timer (after => 0, interval => $timers{$timerID}{interval}/1000, cb => $timers{$timerID}{function});
+	  $timers{$timerID}{timer}=$self->repeat($timers{$timerID}{interval}, $timers{$timerID}{function}); #docstore.mik.ua/orelly/perl3/tk/ch13_22.htm
+	  
+  };
+  sub stop{
+	  my ($self,$timerID)=@_;
+	  $timers{$timerID}{timer} = undef;
+  };
+  sub interval{
+	  my ($self,$timerID,$interval)=@_;
+	  stop($self,$timerID);
+	  $timers{$timerID}{interval}=$interval;
+	  start($self,$timerID);
+  };
+  sub callback{
+	  my ($self,$timerID,$function)=@_;
+	  stop($self,$timerID);
+	  $timers{$timerID}{function}=$function;
+	  start($self,$timerID);
+  }; 
    
 # Quit
    sub quit{

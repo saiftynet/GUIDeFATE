@@ -12,6 +12,7 @@ package SIMPLE;
    my  @statements  = ();
    my  @code        = ();
    our %gV          = ();
+   our @dataStack   = ();
    our $pi          = (atan2(1,1)*4);
    my  %labels      = ();
    our %extensions  = ();
@@ -21,6 +22,7 @@ package SIMPLE;
    my  $limit       = 3000;
    my  $scriptPath  = "";
    my  $dataPath    = "";
+   my  $logging     = 0;
    my  %commands    = (
         let => sub {
 			my $rest=shift;
@@ -61,11 +63,32 @@ package SIMPLE;
 			}	
 	
 		},
+		logs => sub{
+			my $rest =shift;
+			return logs(undef,$rest);
+		},
+		
 		print => sub {
 			my $rest=shift;
 			print evaluate($rest)."\n";
 			logLine( "Command 'print' called with parameters $rest\n");
 		},
+		push => sub {
+			my $rest=shift;
+			$rest=evaluate($rest);
+			print $rest."\n";
+			push @dataStack,$rest;
+			print scalar @dataStack."\n";
+		},
+		
+		pop => sub {
+			my $rest=shift;
+			my @varNames=split(',',$rest);
+			foreach (@varNames) {
+				$gV{$_}=pop  @dataStack 
+					};
+		},
+		
 		gosub => sub {
 			my $rest=shift;
 			$rest =~/^\s*([a-zA-Z][\w]*)\b/;
@@ -77,19 +100,34 @@ package SIMPLE;
 		refresh =>sub{
 			
 		},
+		reset =>sub{
+			@statements  = ();
+			@code        = ();
+			%gV          = ();
+			@dataStack   = ();
+			$errors      = "";
+			$listing     = "";
+			
+		},
 		
 	);
 	
    our %functions  = (
-       asin =>	sub { atan2($_[0], sqrt(1 - $_[0] * $_[0])) },
-	   acos =>  sub { atan2( sqrt(1 - $_[0] * $_[0]), $_[0] ) },
-	   tan  =>  sub { sin($_[0]) / cos($_[0])  },
-	   atan =>  sub { atan2($_[0],1) },
-	   deg  =>  sub { 180 * $_[0] / $pi },
-	   rad  =>  sub { $pi * $_[0] / 180 },   
+       asin    =>  sub { atan2($_[0], sqrt(1 - $_[0] * $_[0])) },
+	   acos    =>  sub { atan2( sqrt(1 - $_[0] * $_[0]), $_[0] ) },
+	   tan     =>  sub { sin($_[0]) / cos($_[0])  },
+	   atan    =>  sub { atan2($_[0],1) },
+	   deg     =>  sub { 180 * $_[0] / $pi },
+	   rad     =>  sub { $pi * $_[0] / 180 },   
+	   randint =>  sub { if (ref ($_[0])){ 
+		                   my ($start,$end)=@{$_[0]};
+		                   return $start+int(rand($end-$start));
+		                    } 
+		                 else{ return  int(rand($_[0]))}
+		               },
+	   manyarg =>  sub { return '"'. join("..",@{$_[0]}).'"'},   # testing mult arguments passed
+	   type    =>  sub {'"Type-'. ref ($_[0]).'"'  },
    );
-
-
    
    sub new{
     my ($class, %args) = @_;    
@@ -132,7 +170,12 @@ package SIMPLE;
    
    sub extend{
 	   my ($self, $extName)=@_;
-	   my $file="./$scriptPath".$extName.(($extName=~/\.ext$/)?"":".ext");
+	   my $intExtPath=__FILE__;
+	   $intExtPath=~s/SIMPLE.pm$//;
+	   my $extFileName=$extName.(($extName=~/\.ext$/)?"":".ext");
+	   my $intExtension=$intExtPath."SIMPLE/".$extFileName;
+	   my $file="./".$scriptPath.$extFileName;
+	   $file=$intExtension unless -e $file ;
 	   $extName=~s/.ext$//;
 	   if (-e $file){
 		   my %extension=do $file or die "Failed to load extension in $file $!";
@@ -168,8 +211,16 @@ package SIMPLE;
    
    # this returns the $logs, containing the logs of course 
    sub logs{
-	   my $self=shift;
-	   return $logs;
+	   my ($self, $option)=@_;
+	   if ($option){
+		   if( $option eq 'clear'){
+		      $logs="";
+	       }
+	       else {
+			   $logging=($option eq "off")?0:1;
+		   }
+	   }
+	   else {return $logs};
    }
    
    # this generates a listing of the statements
@@ -279,7 +330,7 @@ package SIMPLE;
 			  else {last;}
 		  }
 		}
-		elsif ($head eq "for"){
+		elsif ($head eq "for"){  #syntax is for start, end, optional step magnitude , optional variable name
 			my($start,$end,$stepMagnitude,$counterName)=split(",",$line);
 				$start = evaluate($start);
 				$end   = evaluate($end);
@@ -369,7 +420,7 @@ package SIMPLE;
 	
 	#logging procedures
 	sub logLine{
-		$logs.=shift;
+		if ($logging) {$logs.=shift};
 	}
 	
 	sub errorLine{
@@ -392,6 +443,7 @@ package SIMPLE;
 			else {die "Error $1...$2...\n"}
 		}
 		elsif ($expression=~m/^\s*(\"[^\"]*\")/){ $preval.=$1;logLine("\n...found a string $1");$expression=~s/^\s*(\"[^\"]*\")//}
+		elsif ($expression=~m/^\s*(\d\.\d+e-\d{1,2})/){ $preval.=$1;logLine("\n...found a string $1");$expression=~s/^\s*(\d\.\d+e-\d{1,2})//}  # capture numbers expresed mantissa exp
 		elsif ($expression=~m/^\s*([\+\-\(\)\*\/<>=\.\[\],])/){$preval.=$1;logLine("\n...found a $1"); $expression=~s/^\s*([\+\-\(\)\*\/<>=\.\[\],])//i; }
 		elsif ($expression=~m/^\s*(eq|ne|lt|gt)(\s.*)+/){$preval.=" ".$1." ";logLine("\n...found a $1"); $expression=~s/^\s*$1//i; }
 		elsif ($expression=~m/^\s*([a-z][a-z0-9]*)[^\(\[a-z0-9]/i){logLine("\n...found a $1");  $preval.="\$gV{".$1."}";$expression=~s/^\s*$1//}
@@ -402,7 +454,7 @@ package SIMPLE;
 	}
 	no warnings 'all';
 	my $result=eval($preval);
-	if ($@){ errorLine($@)  } 
+	if ($@){ errorLine("In \"$preval\"\n\t $@")  } 
 	elsif  ( ref($result) eq 'ARRAY') {
 		logLine("\n...Evaluating an array ");
 		return "Array (".join(",",@{eval($preval)}).")";
@@ -417,9 +469,17 @@ package SIMPLE;
   # handles internal string and arithmetic and trigonometric procedures   
   sub FUNCTION{
 		my ($command,$parameters)=@_;
+		my $param;
 		logLine("\n...Evaluating func $command on $parameters");
-		if ($command =~m/^(sin|cos|tan|log|atan|acos|asin|rand|int|ceil|floor|sqrt|deg|rad)?$/){
-			my $param=evaluate($parameters);
+		if ((exists $functions{$command})||($command=~/sin|cos|tan|rand|int/)){
+			if ($parameters =~/,/){
+				$parameters=evaluate("[".$parameters."]");
+				$parameters=~s/^Array \(|\)$//g;
+				my @arr=split (',',$parameters);
+				$param=\@arr;
+				}
+			else{ $param=evaluate($parameters);}
+
 			if (exists $functions{$command}){
 				return $functions{$command}->($param)
 				}
@@ -438,14 +498,16 @@ package SIMPLE;
 		   my $found=0;  # if function not found search extensions for functions
 		   foreach my $extName (keys %extensions){
 			   if (exists $extensions{$extName}{functions}{$command}){
-				   logLine("Command $command  found in $extName \n");
+				   logLine("Function $command  found in $extName \n");
 				   $found=1;
-				   $extensions{$extName}{functions}{$command}->($parameters);
+				   return $extensions{$extName}{functions}{$command}->($parameters);
 				   last;
 			   }
 		   }
-		   if(!$found){ return ""};
-	   }
+		   
+		 }
+		  logLine("Function $command  not found\n");
+		return "";
 		
 		sub substring {
 			my ($string,$index,$len)=@_;
@@ -488,7 +550,7 @@ package SIMPLE;
         
    sub buildLines{                               # function takes a script and builds an array of statements
 	   	my $script=shift;
-		$script=~s/\\\n//g;                      # remove line joiners
+		$script=~s/>\n//g;                      # remove line joiners
 		$script=~s/\s*([\{\}])\s*/\n$1\n/g;      # block ends i.e. { and } in separate
 		my @lines=split(/[;\n]+/,$script);       # find statement separators
 		map { s/#.*$//g; } @lines;               # remove # comments; REM statements remain;

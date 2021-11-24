@@ -21,12 +21,13 @@ package GUIDeFATE;
 
 sub new{
 	(my $class,my $textGUI,$target,my $assist, my $port)=@_;
-	 no warnings;
-	if ((!$target)||($target=~/^wx/i)){
-		$target="wx";
-		die "Failed to load Wx backend: $@" unless eval { require GUIDeFATE::GFwx} ;  GFwx->import;
-		convert($textGUI,$assist);
-		return  GFwx->new(); ;
+	# no warnings;
+	 open STDERR, '>/dev/null' unless ($assist and $assist=~m/d/i);;
+	if ((!$target)||($target =~m/^gtk/i)){
+		$target="gtk";
+		die "Failed to load Gtk backend: $@" unless eval {require GUIDeFATE::GFgtk} ; GFgtk->import;
+		convert($textGUI, $assist);
+		return GFgtk->new(); 
 	}
 	elsif ($target =~m/^gtk2/i){## ADDED OPTION 'gtk2' FOR Gtk2 IN CASE USERS DONT HAVE Gtk3...
       $target="gtk2";
@@ -34,13 +35,6 @@ sub new{
       convert($textGUI, $assist);
       return GFgtk2->new(); 
     }
-	elsif ($target =~m/^gtk/i){
-		$target="gtk";
-		die "Failed to load Gtk backend: $@" unless eval {require GUIDeFATE::GFgtk} ; GFgtk->import;
-		convert($textGUI, $assist);
-		return GFgtk->new(); 
-		
-	}	
 	elsif ($target =~m/^tk/i){
 		$target="tk";
 		die "Failed to load Tk backend: $@" unless eval { require GUIDeFATE::GFtk };  GFtk->import;
@@ -53,6 +47,12 @@ sub new{
 		convert($textGUI, $assist);
 		my $qtWin=GFqt->new(); 
 		return $qtWin;
+	}
+	if ($target=~/^wx/i){
+		$target="wx";
+		die "Failed to load Wx backend: $@" unless eval { require GUIDeFATE::GFwx} ;  GFwx->import;
+		convert($textGUI,$assist);
+		return  GFwx->new(); ;
 	}
 	elsif ($target =~m/^win32/i){
 		$target="win32";
@@ -72,6 +72,27 @@ sub new{
 		convert($textGUI, $assist);
 		return GFweb->new($port,($assist=~/d/i)); 
 	}
+	elsif ($target =~m/^test$/i){
+      $target="gtk2";
+      die "Failed to load Gtk backend: $@" unless eval { require GUIDeFATE::GFgtk2} ; GFgtk2->import;
+      convert($textGUI, $assist);
+      return GFgtk2->new(); 
+	}
+}
+
+sub backendWorks{   # routine to test is the backend works
+	my $be=lc(shift);
+	my $call="perl -I -MGUIDeFATE::GF$be -e 'print \$GUIDeFATE::GF$be\:\:VERSION' ";
+	return $call;
+}
+
+sub backendList{
+	my @list=();
+	for (qw/win32 gtk2 gtk wx tk qt html web/){
+		push @list, backendWorks($_);
+	}
+	return @list;
+	
 }
 
 sub convert{
@@ -199,7 +220,6 @@ sub convert{
 			if ($verbose){ print $log; }
 			if ($auto){ $autoGen.="#".$log.makeSub($function,"Function called by Timer$bid"); }
 			addTimer("Timer".$bid++,$interval,\&{"main::$function"},$start);
-			
 		}
 		
 		if($mode eq "menu"){
@@ -261,6 +281,8 @@ sub convert{
 	}
   }
 }
+
+
 
 1;
 =head1 GUIDeFATE
