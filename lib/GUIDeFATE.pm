@@ -80,7 +80,7 @@ sub new{
 	}
 }
 
-sub backendWorks{   # routine to test is the backend works
+sub backendWorks{   # routine to test if the backend works
 	my $be=lc(shift);
 	my $call="perl -I -MGUIDeFATE::GF$be -e 'print \$GUIDeFATE::GF$be\:\:VERSION' ";
 	return $call;
