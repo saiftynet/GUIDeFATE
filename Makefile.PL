@@ -26,7 +26,21 @@ WriteMakefile
     test	=> {TESTS => 't/*.t'},
 );
 
+# Specific part of the Makefile.
+
 package MY;
+
+sub dist_core {
+    my $dist = shift->SUPER::dist_core(@_);
+    $dist =~ s/^(\S.* :.*)/$1 perl-GUIDeFATE.spec debian\/changelog/mg;
+    $dist
+}
+
+sub dist_basics {
+    my $dist_basics = shift->SUPER::dist_basics(@_);
+    $dist_basics =~ s/^(manifest :)/$1 perl-GUIDeFATE.spec debian\/changelog/mg;
+    $dist_basics
+}
 
 sub postamble {
     my $string = <<EOF;
@@ -52,11 +66,4 @@ srpm :: dist
 
 EOF
 }
-
-sub dist_core {
-    my $dist = shift->SUPER::dist_core(@_);
-    $dist =~ s/^(\S.* :.*)/$1 perl-GUIDeFATE.spec debian\/changelog/mg;
-    $dist
-}
-
 
