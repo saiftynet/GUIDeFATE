@@ -3,31 +3,6 @@ use warnings;
  
 use ExtUtils::MakeMaker;
 
-sub MY::postamble {
-    my $string = <<EOF;
-deb_prep ::
-\tsed -e 's/__VERSION__/\$(VERSION)/g' debian/changelog.in > debian/changelog
-
-deb :: manifest deb_prep dist
-\tmkdir -p /tmp/scdeb
-\tmv \$(NAME)-\$(VERSION).tar.bz2 /tmp/scdeb
-\tcd /tmp/scdeb && tar -xvzf \$(NAME)-\$(VERSION).tar.bz2
-\tcd /tmp/scdeb/\$(NAME)-\$(VERSION) && dpkg-buildpackage -rfakeroot -us -uc
-\techo "Debian packages are available in /tmp/scdeb"
-\trm -rf /tmp/scdeb/\$(NAME)-\$(VERSION)
-
-rpm_prep ::
-\tsed -e 's/__VERSION__/\$(VERSION)/g' perl-GUIDeFATE.spec.in > perl-GUIDeFATE.spec
-
-rpm :: rpm_prep manifest dist
-\trpmbuild -tb --target noarch \$(NAME)-\$(VERSION).tar.bz2
-
-srpm :: rpm_prep manifest dist
-\trpmbuild -ts --target noarch --nodeps \$(NAME)-\$(VERSION).tar.bz2
-
-EOF
-}
-
 WriteMakefile
 (
     NAME         => 'GUIDeFATE',
@@ -44,9 +19,44 @@ WriteMakefile
 	'Test::More' => 1.001014,
     },
     dist	=> {
-	COMPRESS	=> 'bzip2',
+	COMPRESS	=> 'bzip2 -f',
 	SUFFIX		=> 'bz2'
     },
-    realclean	=> {FILES => "*.old *.bak *.tar.bz2 *.tar *.tar.gz *.spec Makefile MANIFEST"},
+    realclean	=> {FILES => "*.old *.bak *.tar.bz2 *.tar *.tar.gz *.spec Makefile debian/changelog"},
     test	=> {TESTS => 't/*.t'},
 );
+
+package MY;
+
+sub postamble {
+    my $string = <<EOF;
+debian/changelog :: debian/changelog.in
+\tsed -e 's/__VERSION__/\$(VERSION)/' < \$< > \$@
+
+perl-GUIDeFATE.spec :: perl-GUIDeFATE.spec.in
+\tsed -e 's/__VERSION__/\$(VERSION)/' < \$< > \$@
+
+deb :: dist
+\tmkdir -p /tmp/scdeb
+\tmv \$(NAME)-\$(VERSION).tar.bz2 /tmp/scdeb
+\tcd /tmp/scdeb && tar -xvzf \$(NAME)-\$(VERSION).tar.bz2
+\tcd /tmp/scdeb/\$(NAME)-\$(VERSION) && dpkg-buildpackage -rfakeroot -us -uc
+\techo "Debian packages are available in /tmp/scdeb"
+\trm -rf /tmp/scdeb/\$(NAME)-\$(VERSION)
+
+rpm :: dist
+\trpmbuild -tb --target noarch \$(NAME)-\$(VERSION).tar.bz2
+
+srpm :: dist
+\trpmbuild -ts --target noarch --nodeps \$(NAME)-\$(VERSION).tar.bz2
+
+EOF
+}
+
+sub dist_core {
+    my $dist = shift->SUPER::dist_core(@_);
+    $dist =~ s/^(\S.* :.*)/$1 perl-GUIDeFATE.spec debian\/changelog/mg;
+    $dist
+}
+
+
