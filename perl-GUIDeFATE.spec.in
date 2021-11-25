@@ -102,6 +102,7 @@ tk GUIDeFATE plugin
 %{perl_vendorlib}/GUIDeFATE.pm
 %{perl_vendorlib}/GUIDeFATE/GFtemplate.pm
 %{perl_vendorlib}/Language/SIMPLE.pm
+%{perl_vendorlib}/Language/SIMPLE/logo.ext
 
 %files win32
 %{perl_vendorlib}/GUIDeFATE/GFwin32.pm
