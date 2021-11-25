@@ -1,0 +1,133 @@
+%define	module_name GUIDeFATE
+Summary:                GUI Design From A Text Editor
+Name:                   perl-%{module_name}
+Version:                __VERSION__
+Release:                1%{?dist}
+Packager:               Olivier Lahaye <olivier.lahaye@cea.fr>
+License:                GPLv3+
+Group:                  Development/Libraries
+Source:                 %{module_name}-%{version}.tar.bz2
+BuildRoot:              /usr/src/redhat/BUILD/%{name}-%{version}
+#BuildRoot:             /var/tmp/%{name}-buildroot
+BuildArch:              noarch
+Requires:		perl-%{module_name}-common = %{version}, perl-%{module_name}-win32 = %{version}, perl-%{module_name}-gtk2 = %{version}, perl-%{module_name}-gtk = %{version}, perl-%{module_name}-wx = %{version}, perl-%{module_name}-html = %{version}, perl-%{module_name}-web = %{version}, perl-%{module_name}-qt = %{version}, perl-%{module_name}-tk = %{version}
+%description
+GUIDeFATE enables the user to convert a textual representation into a Graphical
+User Interface. It attempts to abstract out the underlying framework. A visually
+recognisable pattern is passed as a string to GUIDeFATE and this is transformed
+into an Interactive Interface.
+
+%package common
+Summary: Main GUIDeFATE perl module
+
+%description common
+Main GUIDeFATE perl module
+
+%package win32
+Summary: win32 GUIDeFATE plugin
+Requires: %{name}-common = %{version}
+
+%description win32
+win32 GUIDeFATE plugin
+
+%package gtk2
+Summary: gtk2 GUIDeFATE plugin
+Requires: %{name}-common = %{version}
+
+%description gtk2
+gtk2 GUIDeFATE plugin
+
+%package gtk
+Summary: gtk (gtk3) GUIDeFATE plugin
+Requires: %{name}-common = %{version}
+
+%description gtk
+gtk2 GUIDeFATE plugin
+
+%package wx
+Summary: wx GUIDeFATE plugin
+Requires: %{name}-common = %{version}
+
+%description wx
+wx GUIDeFATE plugin
+
+%package html
+Summary: html GUIDeFATE plugin
+Requires: %{name}-common = %{version}
+
+%description html
+html GUIDeFATE plugin
+
+%package web
+Summary: web GUIDeFATE plugin
+Requires: %{name}-common = %{version}
+
+%description web
+web GUIDeFATE plugin
+
+%package qt
+Summary: Qt GUIDeFATE plugin
+Requires: %{name}-common = %{version}
+
+%description qt
+qt GUIDeFATE plugin
+
+%package tk
+Summary: tk GUIDeFATE plugin
+Requires: %{name}-common = %{version}
+
+%description tk
+tk GUIDeFATE plugin
+
+%prep
+%setup -q -n %{module_name}-%{version}
+
+%build
+%__perl Makefile.PL INSTALLDIRS=vendor # INSTALLDIRS=vendor tells perl that we are in a package
+%__make manifest
+
+%__make
+%__rm -rf $RPM_BUILD_ROOT
+%__make install SITEPREFIX=/usr DESTDIR=$RPM_BUILD_ROOT
+
+%__rm -f $RPM_BUILD_ROOT/%{perl_archlib}/perllocal.pod
+%__rm -f $RPM_BUILD_ROOT/%{perl_vendorarch}/auto/GUIDeFATE/.packlist
+
+%files
+%defattr(-,root,root)
+
+%files common
+%doc README.md INSTALL Changes AUTHORS LICENSE
+%{_mandir}/man3/GUIDeFATE.3pm
+%{perl_vendorlib}/GUIDeFATE.pm
+%{perl_vendorlib}/GUIDeFATE/GFtemplate.pm
+%{perl_vendorlib}/Language/SIMPLE.pm
+%{perl_vendorlib}/Language/SIMPLE/logo.ext
+
+%files win32
+%{perl_vendorlib}/GUIDeFATE/GFwin32.pm
+
+%files gtk2
+%{perl_vendorlib}/GUIDeFATE/GFgtk2.pm
+
+%files gtk
+%{perl_vendorlib}/GUIDeFATE/GFgtk.pm
+
+%files wx
+%{perl_vendorlib}/GUIDeFATE/GFwx.pm
+
+%files html
+%{perl_vendorlib}/GUIDeFATE/GFhtml.pm
+
+%files web
+%{perl_vendorlib}/GUIDeFATE/GFweb.pm
+
+%files qt
+%{perl_vendorlib}/GUIDeFATE/GFqt.pm
+
+%files tk
+%{perl_vendorlib}/GUIDeFATE/GFtk.pm
+
+%changelog
+* Mon Nov 15 2021 Olivier Lahaye <olivier.lahaye@cea.fr>
+- v0.13 Initial packaging.

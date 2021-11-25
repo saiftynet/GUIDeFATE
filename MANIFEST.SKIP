@@ -1,0 +1,31 @@
+# Avoid version control files.
+\B\.git\b
+.gitignore
+
+# Avoid Makemaker generated and utility files.
+\bMakefile$
+\bblib
+\bMakeMaker-\d
+\bpm_to_blib$
+\bblibdirs$
+^MANIFEST\.SKIP$
+
+# Avoid Module::Build generated and utility files.
+\bBuild$
+\bBuild.bat$
+\b_build
+
+# Avoid temp and backup files.
+~$
+\.tmp$
+\.old$
+\.bak$
+\#$
+\.#
+\.rej$
+^#.*#$
+
+# Avoid archives of this distribution
+^cover_db
+^MYMETA\.
+support_files

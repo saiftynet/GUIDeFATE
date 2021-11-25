@@ -1,0 +1,17 @@
+Makefile
+Makefile.old
+*.tar.bz2
+*.tar.gz
+*.tar
+*.bak
+MANIFEST
+Build$
+cover_db
+pm_to_blib
+blib
+MYMETA.*
+*.spec
+debian/changelog
+plotter.png
+dial.svg
+simplelogo.svg

@@ -1,0 +1,707 @@
+(
+AdaptiveBlur=>
+	{   Type=>"Filters",
+		Parameters=>'geometry=>geometry, radius=>double, sigma=>double, bias=>double, channel=>{All, Default, Alpha, Black, Blue, CMYK, Cyan, Gray, Green, Index, Magenta, Alpha, Red, RGB, Yellow}',
+	    Description=>'adaptively blur the image with a Gaussian operator of the given radius and standard deviation (sigma). Decrease the effect near edges.'},
+
+AdaptiveResize=>
+	{   Type=>"Distorts",
+		Parameters=>'geometry=>geometry, width=>integer, height=>integer, filter=>{Point, Box, Triangle, Hermite, Hanning, Hamming, Blackman, Gaussian, Quadratic, Cubic, Catrom, Mitchell, Lanczos, Bessel, Sinc}, support=>double, blur=>double',
+	    Description=>'adaptively resize image using data dependant triangulation. Specify blur > 1 for blurry or < 1 for sharp'},
+
+AdaptiveSharpen=>
+	{   Type=>"Filters",
+		Parameters=>'geometry=>geometry, radius=>double, sigma=>double, bias=>double, channel=>{All, Default, Alpha, Black, Blue, CMYK, Cyan, Gray, Green, Index, Magenta, Alpha, Red, RGB, Yellow}',
+	    Description=>'adaptively sharpen the image with a Gaussian operator of the given radius and standard deviation (sigma). Increase the effect near edges.'},
+
+AdaptiveThreshold=>
+	{   Type=>"Colour",
+		Parameters=>'geometry=>geometry, width=>integer, height=>integer, offset=>integer',
+	    Description=>'local adaptive thresholding.'},
+
+AddNoise=>
+	{   Type=>"Filters",
+		Parameters=>'noise=>{Uniform, Gaussian, Multiplicative, Impulse, Laplacian, Poisson}, attenuate=>double, channel=>{All, Default, Alpha, Black, Blue, CMYK, Cyan, Gray, Green, Index, Magenta, Alpha, Red, RGB, Yellow}',
+	    Description=>'add noise to an image'},
+
+AffineTransform=>
+	{   Type=>"Distorts",
+		Parameters=>'affine=>array of float values, translate=>float, float, scale=> float, float, rotate=>float, skewX=>float, skewY=>float, interpolate={Average, Bicubic, Bilinear, Filter, Integer, Mesh, NearestNeighbor}, background=>color name',
+	    Description=>'affine transform image'},
+
+Affinity=>
+	{   Type=>"Filters",
+		Parameters=>'image=>image-handle, method=>{None, FloydSteinberg, Riemersma}',
+	    Description=>'choose a particular set of colors from this image'},
+
+Annotate=>
+	{   Type=>"",
+		Parameters=>'text=>string, font=>string, family=>string, style=>{Normal, Italic, Oblique, Any}, stretch=>{Normal, UltraCondensed, ExtraCondensed, Condensed, SemiCondensed, SemiExpanded, Expanded, ExtraExpanded, UltraExpanded}, weight=>integer, pointsize=>integer, density=>geometry, stroke=>color name, strokewidth=>integer, fill=>color name, undercolor=>color name, kerning=>float, geometry=>geometry, gravity=>{NorthWest, North, NorthEast, West, Center, East, SouthWest, South, SouthEast}, antialias=>{true, false}, x=>integer, y=>integer, affine=>array of float values, translate=>float, float, scale=>float, float, rotate=>float. skewX=>float, skewY=> float, align=>{Left, Center, Right}, encoding=>{UTF-8}, interline-spacing=>double, interword-spacing=>double, direction=>{right-to-left, left-to-right}',
+	    Description=>'annotate an image with text. See QueryFontMetrics to get font metrics without rendering any text.'},
+
+AutoGamma=>
+	{   Type=>"Colour",
+		Parameters=>'channel=>{All, Default, Alpha, Black, Blue, CMYK, Cyan, Gray, Green, Index, Magenta, Alpha, Red, RGB, Yellow}',
+	    Description=>'automagically adjust gamma level of image'},
+
+AutoLevel=>
+	{   Type=>"Colour",
+		Parameters=>'channel=>{All, Default, Alpha, Black, Blue, CMYK, Cyan, Gray, Green, Index, Magenta, Alpha, Red, RGB, Yellow}',
+	    Description=>'automagically adjust color levels of image'},
+
+AutoOrient=>
+	{   Type=>"Distorts",
+		Parameters=>'',
+	    Description=>'adjusts an image so that its orientation is suitable for viewing (i.e. top-left orientation)'},
+
+AutoThreshold=>
+	{   Type=>"Colour",
+		Parameters=>'method=>{Kapur, OTSU, Triangle}',
+	    Description=>'automatically perform image thresholding'},
+
+BlackThreshold=>
+	{   Type=>"Colour",
+		Parameters=>'threshold=>string, channel=>{All, Default, Alpha, Black, Blue, CMYK, Cyan, Gray, Green, Index, Magenta, Alpha, Red, RGB, Yellow}',
+	    Description=>'force all pixels below the threshold intensity into black'},
+
+BlueShift=>
+	{   Type=>"Filters",
+		Parameters=>'factor=>double,',
+	    Description=>'simulate a scene at nighttime in the moonlight. Start with a factor of 1.5.'},
+
+Blur=>
+	{   Type=>"Filters",
+		Parameters=>'geometry=>geometry, radius=>double, sigma=>double, bias=>double, channel=>{All, Default, Alpha, Black, Blue, CMYK, Cyan, Gray, Green, Index, Magenta, Alpha, Red, RGB, Yellow}',
+	    Description=>'reduce image noise and reduce detail levels with a Gaussian operator of the given radius and standard deviation (sigma).'},
+
+Border=>
+	{   Type=>"",
+		Parameters=>'geometry=>geometry, width=>integer, height=>integer, bordercolor=>color name, compose=>{Undefined, Add, Atop, Blend, Bumpmap, Clear, ColorBurn, ColorDodge, Colorize, CopyBlack, CopyBlue, CopyCMYK, Cyan, CopyGreen, Copy, CopyMagenta, CopyAlpha, CopyRed, RGB, CopyYellow, Darken, Dst, Difference, Displace, Dissolve, DstAtop, DstIn, DstOut, DstOver, Dst, Exclusion, HardLight, Hue, In, Lighten, Luminize, Minus, Modulate, Multiply, None, Out, Overlay, Over, Plus, ReplaceCompositeOp, Saturate, Screen, SoftLight, Src, SrcAtop, SrcIn, SrcOut, SrcOver, Src, Subtract, Threshold, Xor },',
+	    Description=>'surround the image with a border of color'},
+
+CannyEdge=>
+	{   Type=>"Filters",
+		Parameters=>'geometry=>geometry, radius=>double, sigma=>double, \'lower-percent\'=>double, \'upper-percent\'=>double\',
+	    Description=>\'use a multi-stage algorithm to detect a wide range of edges in the image (e.g. CannyEdge(\'0x1+10%+40%\')).'},
+
+Charcoal=>
+	{   Type=>"FX",
+		Parameters=>'geometry=>geometry, radius=>double, sigma=>double',
+	    Description=>'simulate a charcoal drawing'},
+
+Chop=>
+	{   Type=>"Distorts",
+		Parameters=>'geometry=>geometry, width=>integer, height=>integer, x=>integer, y=>integer, gravity=>{NorthWest, North, NorthEast, West, Center, East, SouthWest, South, SouthEast}',
+	    Description=>'chop an image'},
+
+Clamp=>
+	{   Type=>"Colour",
+		Parameters=>'channel=>{Red, RGB, All, etc.}',
+	    Description=>'set each pixel whose value is below zero to zero and any the pixel whose value is above the quantum range to the quantum range (e.g. 65535) otherwise the pixel value remains unchanged.'},
+
+Clip=>
+	{   Type=>"Decorate",
+		Parameters=>'id=>name, inside=>{true, false},',
+	    Description=>'apply along a named path from the 8BIM profile.'},
+
+ClipMask=>
+	{   Type=>"",
+		Parameters=>'mask=>image-handle',
+	    Description=>'clip image as defined by the image mask'},
+
+Clut=>
+	{   Type=>"Colour",
+		Parameters=>'image=>image-handle, interpolate={Average, Bicubic, Bilinear, Filter, Integer, Mesh, NearestNeighbor}, channel=>{Red, RGB, All, etc.}',
+	    Description=>'apply a color lookup table to an image sequence'},
+
+Coalesce=>
+	{   Type=>"MultiPic",
+		Parameters=>'',
+	    Description=>'merge a sequence of images'},
+
+Color=>
+	{   Type=>"Colour",
+		Parameters=>'color=>color name',
+	    Description=>'set the entire image to this color.'},
+
+ColorDecisionList=>
+	{   Type=>"Colour",
+		Parameters=>'filename=>string,',
+	    Description=>'color correct with a color decision list.'},
+
+Colorize=>
+	{   Type=>"Colour",
+		Parameters=>'fill=>color name, blend=>string',
+	    Description=>'colorize the image with the fill color'},
+
+ColorMatrix=>
+	{   Type=>"Colour",
+		Parameters=>'matrix=>array of float values',
+	    Description=>'apply color correction to the image. Although you can use variable sized matrices, typically you use a 5 x 5 for an RGBA image and a 6x6 for CMYKA. A 6x6 matrix is required for offsets (populate the last column with normalized values).'},
+
+Colorspace=>
+	{   Type=>"Colour",
+		Parameters=>'colorspace=>{RGB, Gray, Transparent, OHTA, XYZ, YCbCr, YCC, YIQ, YPbPr, YUV, CMYK}',
+	    Description=>'set the image colorspace'},
+
+Comment=>
+	{   Type=>"Text",
+		Parameters=>'string',
+	    Description=>'add a comment to your image'},
+
+CompareLayers=>
+	{   Type=>"MultiPic",
+		Parameters=>'method=>{any, clear, overlay}',
+	    Description=>'compares each image with the next in a sequence and returns the minimum bounding region of any pixel differences it discovers. Images do not have to be the same size, though it is best that all the images are coalesced (images are all the same size, on a flattened canvas, so as to represent exactly how a specific frame should look).'},
+
+Composite=>
+	{   Type=>"MultiPic",
+		Parameters=>'image=>image-handle, compose=>{Undefined, Add, Atop, Blend, Bumpmap, Clear, ColorBurn, ColorDodge, Colorize, CopyBlack, CopyBlue, CopyCMYK, Cyan, CopyGreen, Copy, CopyMagenta, CopyAlpha, CopyRed, RGB, CopyYellow, Darken, Dst, Difference, Displace, Dissolve, DstAtop, DstIn, DstOut, DstOver, Dst, Exclusion, HardLight, Hue, In, Lighten, Luminize, Minus, Modulate, Multiply, None, Out, Overlay, Over, Plus, ReplaceCompositeOp, Saturate, Screen, SoftLight, Src, SrcAtop, SrcIn, SrcOut, SrcOver, Src, Subtract, Threshold, Xor }, mask=>image-handle, geometry=>geometry, x=>integer, y=>integer, gravity=>{NorthWest, North, NorthEast, West, Center, East, SouthWest, South, SouthEast}, opacity=>integer, tile=>{True, False}, rotate=>double, color=>color name, blend=>geometry, interpolate=>{undefined, average, bicubic, bilinear, filter, integer, mesh, nearest-neighbor, spline}',
+	    Description=>'composite one image onto another. Use the rotate parameter in concert with the tile parameter.'},
+
+ConnectedComponents=>
+	{   Type=>"",
+		Parameters=>'connectivity=>integer,',
+	    Description=>'connected-components uniquely labeled, choose from 4 or 8 way connectivity.'},
+
+Contrast=>
+	{   Type=>"Colour",
+		Parameters=>'sharpen=>{True, False}',
+	    Description=>'enhance or reduce the image contrast'},
+
+ContrastStretch=>
+	{   Type=>"",
+		Parameters=>'levels=>string, \'black-point\'=>double, \'white-point\'=>double, channel=>{Red, RGB, All, etc.}',
+	    Description=>'improve the contrast in an image by \`stretching\' the range of intensity values'},
+
+Convolve=>
+	{   Type=>"Filters",
+		Parameters=>'coefficients=>array of float values, channel=>{All, Default, Alpha, Black, Blue, CMYK, Cyan, Gray, Green, Index, Magenta, Alpha, Red, RGB, Yellow}, bias=>double',
+	    Description=>'apply a convolution kernel to the image. Given a kernel order , you would supply order*order float values (e.g. 3x3 implies 9 values).'},
+
+CopyPixels=>
+	{   Type=>"Decorate",
+		Parameters=>'image=>image-handle, geometry=>geometry, width=>integer, height=>integer, x=>integer, y=>integer, offset=>geometry, gravity=>{NorthWest, North, NorthEast, West, Center, East, SouthWest, South, SouthEast}, dx=>integer, dy=>integer',
+	    Description=>'copy pixels from the image as defined by the widthxheight+x+y to image at offset +dx,+dy.'},
+
+Crop=>
+	{   Type=>"Distorts",
+		Parameters=>'geometry=>geometry, width=>integer, height=>integer, x=>integer, y=>integer, fuzz=>double, gravity=>{NorthWest, North, NorthEast, West, Center, East, SouthWest, South, SouthEast}',
+	    Description=>'crop an image'},
+
+CycleColormap=>
+	{   Type=>"Colour",
+		Parameters=>'amount=>integer',
+	    Description=>'displace image colormap by amount'},
+
+Decipher=>
+	{   Type=>"Filters",
+		Parameters=>'passphrase=>string',
+	    Description=>'convert cipher pixels to plain pixels'},
+
+Deconstruct=>
+	{   Type=>"Decorate",
+		Parameters=>'',
+	    Description=>'break down an image sequence into constituent parts'},
+
+Deskew=>
+	{   Type=>"Distorts",
+		Parameters=>'geometry=>string,threshold=>double',
+	    Description=>'straighten the image'},
+
+Despeckle=>
+	{   Type=>"Filters",
+		Parameters=>'',
+	    Description=>'reduce the speckles within an image'},
+
+Difference=>
+	{   Type=>"MultiPic",
+		Parameters=>'image=>image-handle',
+	    Description=>'compute the difference metrics between two images'},
+
+Distort=>
+	{   Type=>"Distorts",
+		Parameters=>'points=>array of float values, method=>{Affine, AffineProjection, ScaleRotateTranslate, SRT, Perspective, PerspectiveProjection, BilinearForward, BilinearReverse, Polynomial, Arc, Polar, DePolar, Barrel, BarrelInverse, Shepards, Resize}, \'virtual-pixel\'=>{Background Black Constant Dither Edge Gray Mirror Random Tile Transparent White}, \'best-fit\'=>{True, False}',
+	    Description=>'distort image'},
+
+Draw=>
+	{   Type=>"Decorate",
+		Parameters=>'primitive=>{point, line, rectangle, arc, ellipse, circle, path, polyline, polygon, bezier, color, matte, text, @filename}, points=>string , method=>{Point, Replace, Floodfill, FillToBorder, Reset}, stroke=>color name, fill=>color name, font=>string, pointsize=>integer, strokewidth=>float, antialias=>{true, false}, bordercolor=>color name, x=>float, y=>float, dash-offset=>float, dash-pattern=>array of float values, affine=>array of float values, translate=>float, float, scale=>float, float, rotate=>float, skewX=>float, skewY=>float, interpolate=>{undefined, average, bicubic, bilinear, mesh, nearest-neighbor, spline}, kerning=>float, text=>string, vector-graphics=>string, interline-spacing=>double, interword-spacing=>double, direction=>{right-to-left, left-to-right}',
+	    Description=>'annotate an image with one or more graphic primitives.'},
+
+Encipher=>
+	{   Type=>"",
+		Parameters=>'passphrase=>string',
+	    Description=>'convert plain pixels to cipher pixels'},
+
+Edge=>
+	{   Type=>"Filters",
+		Parameters=>'radius=>double',
+	    Description=>'enhance edges within the image with a convolution filter of the given radius.'},
+
+Emboss=>
+	{   Type=>"Filters",
+		Parameters=>'geometry=>geometry, radius=>double, sigma=>double',
+	    Description=>'emboss the image with a convolution filter of the given radius and standard deviation (sigma).'},
+
+Enhance=>
+	{   Type=>"Filters",
+		Parameters=>'',
+	    Description=>'apply a digital filter to enhance a noisy image'},
+
+Equalize=>
+	{   Type=>"Filters",
+		Parameters=>'channel=>{All, Default, Alpha, Black, Blue, CMYK, Cyan, Gray, Green, Index, Magenta, Alpha, Red, RGB, Yellow}',
+	    Description=>'perform histogram equalization to the image'},
+
+Extent=>
+	{   Type=>"",
+		Parameters=>'geometry=>geometry, width=>integer, height=>integer, x=>integer, y=>integer, fuzz=>double, background=>color name, gravity=>{NorthWest, North, NorthEast, West, Center, East, SouthWest, South, SouthEast}',
+	    Description=>'set the image size'},
+
+Evaluate=>
+	{   Type=>"",
+		Parameters=>'value=>double, operator=>{Add, And, Divide, LeftShift, Max, Min, Multiply, Or, Rightshift, RMS, Subtract, Xor}, channel=>{All, Default, Alpha, Black, Blue, CMYK, Cyan, Gray, Green, Index, Magenta, Alpha, Red, RGB, Yellow}',
+	    Description=>'apply an arithmetic, relational, or logical expression to the image'},
+
+Filter=>
+	{   Type=>"Filters",
+		Parameters=>'kernel=>string, channel=>{All, Default, Alpha, Black, Blue, CMYK, Cyan, Gray, Green, Index, Magenta, Alpha, Red, RGB, Yellow}, bias=>double',
+	    Description=>'apply a convolution kernel to the image.'},
+
+Flip=>
+	{   Type=>"Distorts",
+		Parameters=>'',
+	    Description=>'reflect the image scanlines in the vertical direction'},
+
+Flop=>
+	{   Type=>"Distorts",
+		Parameters=>'',
+	    Description=>'reflect the image scanlines in the horizontal direction'},
+
+FloodfillPaint=>
+	{   Type=>"Decorate",
+		Parameters=>'geometry=>geometry, channel=>{All, Default, Alpha, Black, Blue, CMYK, Cyan, Gray, Green, Index, Magenta, Alpha, Red, RGB, Yellow}, x=>integer, y=>integer , fill=>color name, bordercolor=>color name, fuzz=>double, invert=>{True, False}',
+	    Description=>'changes the color value of any pixel that matches the color of the target pixel and is a neighbor. If you specify a border color, the color value is changed for any neighbor pixel that is not that color.'},
+
+ForwardFourierTransform=>
+	{   Type=>"",
+		Parameters=>'magnitude=>{True, False}',
+	    Description=>'implements the forward discrete Fourier transform (DFT)'},
+
+Frame=>
+	{   Type=>"",
+		Parameters=>'geometry=>geometry, width=>integer, height=>integer, inner=>integer, outer=>integer, fill=>color name, compose=>{Undefined, Add, Atop, Blend, Bumpmap, Clear, ColorBurn, ColorDodge, Colorize, CopyBlack, CopyBlue, CopyCMYK, Cyan, CopyGreen, Copy, CopyMagenta, CopyAlpha, CopyRed, RGB, CopyYellow, Darken, Dst, Difference, Displace, Dissolve, DstAtop, DstIn, DstOut, DstOver, Dst, Exclusion, HardLight, Hue, In, Lighten, Luminize, Minus, Modulate, Multiply, None, Out, Overlay, Over, Plus, ReplaceCompositeOp, Saturate, Screen, SoftLight, Src, SrcAtop, SrcIn, SrcOut, SrcOver, Src, Subtract, Threshold, Xor },',
+	    Description=>'surround the image with an ornamental border'},
+
+Function=>
+	{   Type=>"",
+		Parameters=>'parameters=>array of float values, function=>{Sin}, \'virtual-pixel\'=>{Background Black Constant Dither Edge Gray Mirror Random Tile Transparent White}',
+	    Description=>'apply a function to the image'},
+
+Gamma=>
+	{   Type=>"Filters",
+		Parameters=>'gamma=>string, channel=>{All, Default, Alpha, Black, Blue, CMYK, Cyan, Gray, Green, Index, Magenta, Alpha, Red, RGB, Yellow}',
+	    Description=>'gamma correct the image'},
+
+GaussianBlur=>
+	{   Type=>"Filters",
+		Parameters=>'geometry=>geometry, radius=>double, sigma=>double, bias=>double, channel=>{All, Default, Alpha, Black, Blue, CMYK, Cyan, Gray, Green, Index, Magenta, Alpha, Red, RGB, Yellow}',
+	    Description=>'reduce image noise and reduce detail levels with a Gaussian operator of the given radius and standard deviation (sigma).'},
+
+GetPixel=>
+	{   Type=>"",
+		Parameters=>'geometry=>geometry, channel=>{All, Default, Alpha, Black, Blue, CMYK, Cyan, Gray, Green, Index, Magenta, Alpha, Red, RGB, Yellow}, normalize=>{true, false}, x=>integer, y=>integer',
+	    Description=>'get a single pixel. By default normalized pixel values are returned.'},
+
+GetPixels=>
+	{   Type=>"",
+		Parameters=>'geometry=>geometry, width=>integer, height=>integer, x=>integer, y=>integer, map=>string, normalize=>{true, false}',
+	    Description=>'get image pixels as defined by the map (e.g. "RGB", "RGBA", etc.). By default non-normalized pixel values are returned.'},
+
+Grayscale=>
+	{   Type=>"",
+		Parameters=>'channel=>{Average, Brightness, Lightness, Rec601Luma, Rec601Luminance, Rec709Luma, Rec709Luminance, RMS}',
+	    Description=>'convert image to grayscale'},
+
+HaldClut=>
+	{   Type=>"",
+		Parameters=>'image=>image-handle, channel=>{Red, RGB, All, etc.}',
+	    Description=>'apply a Hald color lookup table to an image sequence'},
+
+HoughLine=>
+	{   Type=>"",
+		Parameters=>'geometry=>geometry, width=>double, height=>double, threshold=>double',
+	    Description=>'identify lines in the image (e.g. HoughLine(\'9x9+195\')).'},
+
+Identify=>
+	{   Type=>"",
+		Parameters=>'file=>file, features=>distance, unique=>{True, False}',
+	    Description=>'identify the attributes of an image'},
+
+Implode=>
+	{   Type=>"FX",
+		Parameters=>'amount=>double, interpolate=>{undefined, average, bicubic, bilinear, mesh, nearest-neighbor, spline}',
+	    Description=>'implode image pixels about the center'},
+
+InverseDiscreteFourierTransform=>
+	{   Type=>"",
+		Parameters=>'magnitude=>{True, False}',
+	    Description=>'implements the inverse discrete Fourier transform (DFT)'},
+
+Kuwahara=>
+	{   Type=>"Filters",
+		Parameters=>'geometry=>geometry, radius=>double, sigma=>double, bias=>double, channel=>{All, Default, Alpha, Black, Blue, CMYK, Cyan, Gray, Green, Index, Magenta, Alpha, Red, RGB, Yellow}',
+	    Description=>'edge preserving noise reduction filter'},
+
+Label=>
+	{   Type=>"Text",
+		Parameters=>'string',
+	    Description=>'assign a label to an image'},
+
+Layers=>
+	{   Type=>"",
+		Parameters=>'method=>{coalesce, compare-any, compare-clear, compare-over, composite, dispose, flatten, merge, mosaic, optimize, optimize-image, optimize-plus, optimize-trans, remove-dups, remove-zero}, compose=>{Undefined, Add, Atop, Blend, Bumpmap, Clear, ColorBurn, ColorDodge, Colorize, CopyBlack, CopyBlue, CopyCMYK, Cyan, CopyGreen, Copy, CopyMagenta, CopyAlpha, CopyRed, RGB, CopyYellow, Darken, Dst, Difference, Displace, Dissolve, DstAtop, DstIn, DstOut, DstOver, Dst, Exclusion, HardLight, Hue, In, Lighten, LinearLight, Luminize, Minus, Modulate, Multiply, None, Out, Overlay, Over, Plus, ReplaceCompositeOp, Saturate, Screen, SoftLight, Src, SrcAtop, SrcIn, SrcOut, SrcOver, Src, Subtract, Threshold, Xor }, dither=>{true, false}',
+	    Description=>'compare each image the GIF disposed forms of the previous image in the sequence. From this, attempt to select the smallest cropped image to replace each frame, while preserving the results of the animation.'},
+
+Level=>
+	{   Type=>"Colour",
+		Parameters=>'levels=>string, \'black-point\'=>double, \'gamma\'=>double, \'white-point\'=>double, channel=>{Red, RGB, All, etc.}',
+	    Description=>'adjust the level of image contrast'},
+
+LevelColors=>
+	{   Type=>"Colour",
+		Parameters=>'invert=>>{True, False}, \'black-point\'=>string, \'white-point\'=>string, channel=>{Red, RGB, All, etc.}',
+	    Description=>'level image with the given colors'},
+
+LinearStretch=>
+	{   Type=>"Distorts",
+		Parameters=>'levels=>string, \'black-point\'=>double, \'white-point\'=>double',
+	    Description=>'linear with saturation stretch'},
+
+LiquidResize=>
+	{   Type=>"Distorts",
+		Parameters=>'geometry=>geometry, width=>integer, height=>integer, delta-x=>double, rigidity=>double',
+	    Description=>'rescale image with seam-carving.'},
+
+Magnify=>
+	{   Type=>"Distorts",
+		Parameters=>'',
+	    Description=>'double the size of the image with pixel art scaling'},
+
+Mask=>
+	{   Type=>"",
+		Parameters=>'mask=>image-handle',
+	    Description=>'composite image pixels as defined by the mask'},
+
+MatteFloodfill=>
+	{   Type=>"",
+		Parameters=>'geometry=>geometry, x=>integer, y=>integer , matte=>integer, bordercolor=>color name, fuzz=>double, invert=>{True, False}',
+	    Description=>'changes the matte value of any pixel that matches the color of the target pixel and is a neighbor. If you specify a border color, the matte value is changed for any neighbor pixel that is not that color.'},
+
+MeanShift=>
+	{   Type=>"",
+		Parameters=>'geometry=>geometry, width=>double, height=>double, distance=>double',
+	    Description=>'delineate arbitrarily shaped clusters in the image (e.g. MeanShift(\'7x7+10%\')).'},
+
+MedianFilter=>
+	{   Type=>"",
+		Parameters=>'geometry=>geometry, width=>integer, height=>integer, channel=>{All, Default, Alpha, Black, Blue, CMYK, Cyan, Gray, Green, Index, Magenta, Alpha, Red, RGB, Yellow}',
+	    Description=>'replace each pixel with the median intensity pixel of a neighborhood.'},
+
+Minify=>
+	{   Type=>"Distorts",
+		Parameters=>'',
+	    Description=>'half the size of an image'},
+
+Mode=>
+	{   Type=>"",
+		Parameters=>'geometry=>geometry, width=>integer, height=>integer, channel=>{All, Default, Alpha, Black, Blue, CMYK, Cyan, Gray, Green, Index, Magenta, Alpha, Red, RGB, Yellow}',
+	    Description=>'make each pixel the predominant color of the neighborhood.'},
+
+Modulate=>
+	{   Type=>"Colour",
+		Parameters=>'factor=>geometry, brightness=>double, saturation=>double, hue=>double, lightness=>double, whiteness=>double, blackness=>double',
+	    Description=>'vary the brightness, saturation, and hue of an image by the specified percentage'},
+
+Morphology=>
+	{   Type=>"",
+		Parameters=>'kernel=>string, channel=>{All, Default, Alpha, Black, Blue, CMYK, Cyan, Gray, Green, Index, Magenta, Alpha, Red, RGB, Yellow}, iterations=>integer',
+	    Description=>'apply a morphology method to the image.'},
+
+MotionBlur=>
+	{   Type=>"FX",
+		Parameters=>'geometry=>geometry, radius=>double, sigma=>double, angle=>double, bias=>double, channel=>{All, Default, Alpha, Black, Blue, CMYK, Cyan, Gray, Green, Index, Magenta, Alpha, Red, RGB, Yellow}',
+	    Description=>'reduce image noise and reduce detail levels with a Gaussian operator of the given radius and standard deviation (sigma) at the given angle to simulate the effect of motion'},
+
+Negate=>
+	{   Type=>"Colour",
+		Parameters=>'gray=>{True, False}, channel=>{All, Default, Alpha, Black, Blue, CMYK, Cyan, Gray, Green, Index, Magenta, Alpha, Red, RGB, Yellow}',
+	    Description=>'replace each pixel with its complementary color (white becomes black, yellow becomes blue, etc.)'},
+
+Normalize=>
+	{   Type=>"Colour",
+		Parameters=>'',
+	    Description=>'transform image to span the full range of color values'},
+	    
+OilPaint=>
+	{   Type=>"FX",
+		Parameters=>'radius=>integer',
+	    Description=>'simulate an oil painting'},
+
+Opaque=>
+	{   Type=>"",
+		Parameters=>'color=>color name, fill=>color name, channel=>{All, Default, Alpha, Black, Blue, CMYK, Cyan, Gray, Green, Index, Magenta, Alpha, Red, RGB, Yellow}, invert=>{True, False}',
+	    Description=>'change this color to the fill color within the image'},
+
+OrderedDither=>
+	{   Type=>"Filters",
+		Parameters=>'threshold=>{threshold, checks, o2x2, o3x3, o4x4, o8x8, h4x4a, h6x6a, h8x8a, h4x4o, h6x6o, h8x8o, h16x16o, hlines6x4}, channel=>{All, Default, Alpha, Black, Blue, CMYK, Cyan, Gray, Green, Index, Magenta, Alpha, Red, RGB, Yellow}',
+	    Description=>'order dither image'},
+
+Perceptible=>
+	{   Type=>"Colour",
+		Parameters=>'epsilon=>double, channel=>{Red, RGB, All, etc.}',
+	    Description=>'set each pixel whose value is less than |epsilon| to -epsilon or epsilon (whichever is closer) otherwise the pixel value remains unchanged..'},
+
+Polaroid=>
+	{   Type=>"FX",
+		Parameters=>'caption=>string, angle=>double, pointsize=>double, font=>string, stroke=> color name, strokewidth=>integer, fill=>color name, gravity=>{NorthWest, North, NorthEast, West, Center, East, SouthWest, South, SouthEast}, background=>color name',
+	    Description=>'simulate a Polaroid picture.'},
+
+Posterize=>
+	{   Type=>"FX",
+		Parameters=>'levels=>integer, dither=>{True, False}',
+	    Description=>'reduce the image to a limited number of color level'},
+
+Profile=>
+	{   Type=>"",
+		Parameters=>'name=>string, profile=>blob, rendering-intent=>{Undefined, Saturation, Perceptual, Absolute, Relative}, black-point-compensation=>{True, False}',
+	    Description=>'add or remove ICC or IPTC image profile; name is formal name (e.g. ICC or filename; set profile to \'\' to remove profile'},
+
+Quantize=>
+	{   Type=>"",
+		Parameters=>'colors=>integer, colorspace=>{RGB, Gray, Transparent, OHTA, XYZ, YCbCr, YIQ, YPbPr, YUV, CMYK, sRGB, HSL, HSB}, treedepth=> integer, dither=>{True, False}, dither-method=>{Riemersma, Floyd-Steinberg}, measure_error=>{True, False}, global_colormap=>{True, False}, transparent-color=>color',
+	    Description=>'preferred number of colors in the image'},
+
+Raise=>
+	{   Type=>"FX",
+		Parameters=>'geometry=>geometry, width=>integer, height=>integer, x=>integer, y=>integer, raise=>{True, False}',
+	    Description=>'lighten or darken image edges to create a 3-D effect'},
+
+ReduceNoise=>
+	{   Type=>"Filters",
+		Parameters=>'geometry=>geometry, width=>integer, height=>integer, channel=>{All, Default, Alpha, Black, Blue, CMYK, Cyan, Gray, Green, Index, Magenta, Alpha, Red, RGB, Yellow}',
+	    Description=>'reduce noise in the image with a noise peak elimination filter'},
+
+Remap=>
+	{   Type=>"MultiPic",
+		Parameters=>'image=>image-handle, dither=>{true, false}, dither-method=>{Riemersma, Floyd-Steinberg}',
+	    Description=>'replace the colors of an image with the closest color from a reference image.'},
+
+Resample=>
+	{   Type=>"",
+		Parameters=>'density=>geometry, x=>double, y=>double, filter=>{Point, Box, Triangle, Hermite, Hanning, Hamming, Blackman, Gaussian, Quadratic, Cubic, Catrom, Mitchell, Lanczos, Bessel, Sinc}, support=>double',
+	    Description=>'resample image to desired resolution. Specify blur > 1 for blurry or < 1 for sharp'},
+
+Resize=>
+	{   Type=>"Distorts",
+		Parameters=>'geometry=>geometry, width=>integer, height=>integer, filter=>{Point, Box, Triangle, Hermite, Hanning, Hamming, Blackman, Gaussian, Quadratic, Cubic, Catrom, Mitchell, Lanczos, Bessel, Sinc}, support=>double, blur=>double',
+	    Description=>'scale image to desired size. Specify blur > 1 for blurry or < 1 for sharp'},
+
+Roll=>
+	{   Type=>"Distorts",
+		Parameters=>'geometry=>geometry, x=>integer, y=>integer',
+	    Description=>'roll an image vertically or horizontally'},
+
+Rotate=>
+	{   Type=>"Distorts",
+		Parameters=>'degrees=>double, background=>color name',
+	    Description=>'rotate an image'},
+
+RotationalBlur=>
+	{   Type=>"Filters",
+		Parameters=>'geometry=>geometry, angle=>double, bias=>double, channel=>{All, Default, Alpha, Black, Blue, CMYK, Cyan, Gray, Green, Index, Magenta, Alpha, Red, RGB, Yellow}',
+	    Description=>'radial blur the image.'},
+
+Sample=>
+	{   Type=>"",
+		Parameters=>'geometry=>geometry, width=>integer, height=>integer',
+	    Description=>'scale image with pixel sampling.'},
+
+Scale=>
+	{   Type=>"Distorts",
+		Parameters=>'geometry=>geometry, width=>integer, height=>integer',
+	    Description=>'scale image to desired size'},
+
+Segment=>
+	{   Type=>"",
+		Parameters=>'colorspace=>{RGB, Gray, Transparent, OHTA, XYZ, YCbCr, YCC, YIQ, YPbPr, YUV, CMYK}, verbose={True, False}, cluster-threshold=>double, smoothing-threshold=double',
+	    Description=>'segment an image by analyzing the histograms of the color components and identifying units that are homogeneous'},
+
+SelectiveBlur=>
+	{   Type=>"Filters",
+		Parameters=>'geometry=>geometry, radius=>double, sigma=>double, threshold=>double, bias=>double, channel=>{All, Default, Alpha, Black, Blue, CMYK, Cyan, Gray, Green, Index, Magenta, Alpha, Red, RGB, Yellow}',
+	    Description=>'selectively blur pixels within a contrast threshold.'},
+
+Separate=>
+	{   Type=>"",
+		Parameters=>'channel=>{Red, RGB, All, etc.}',
+	    Description=>'separate a channel from the image into a grayscale image'},
+
+Shade=>
+	{   Type=>"FX",
+		Parameters=>'geometry=>geometry, azimuth=>double, elevation=>double, gray=>{true, false}',
+	    Description=>'shade the image using a distant light source'},
+
+SetPixel=>
+	{   Type=>"",
+		Parameters=>'geometry=>geometry, channel=>{All, Default, Alpha, Black, Blue, CMYK, Cyan, Gray, Green, Index, Magenta, Alpha, Red, RGB, Yellow}, color=>array of float values, x=>integer, y=>integer, color=>array of float values',
+	    Description=>'set a single pixel. By default normalized pixel values are expected.'},
+
+Shadow=>
+	{   Type=>"",
+		Parameters=>'geometry=>geometry, opacity=>double, sigma=>double, x=>integer, y=>integer',
+	    Description=>'simulate an image shadow'},
+
+Sharpen=>
+	{   Type=>"Filters",
+		Parameters=>'geometry=>geometry, radius=>double, sigma=>double, bias=>double, channel=>{All, Default, Alpha, Black, Blue, CMYK, Cyan, Gray, Green, Index, Magenta, Alpha, Red, RGB, Yellow}',
+	    Description=>'sharpen the image with a Gaussian operator of the given radius and standard deviation (sigma).'},
+
+Shave=>
+	{   Type=>"",
+		Parameters=>'geometry=>geometry, width=>integer, height=>integer',
+	    Description=>'shave pixels from the image edges'},
+
+Shear=>
+	{   Type=>"Distorts",
+		Parameters=>'geometry=>geometry, x=>double, y=>double fill=>color name',
+	    Description=>'shear the image along the X or Y axis by a positive or negative shear angle'},
+
+SigmoidalContrast=>
+	{   Type=>"",
+		Parameters=>'geometry=>string, \'contrast\'=>double, \'mid-point\'=>double channel=>{Red, RGB, All, etc.}, sharpen=>{True, False}',
+	    Description=>'sigmoidal non-lineraity contrast control. Increase the contrast of the image using a sigmoidal transfer function without saturating highlights or shadows. Contrast indicates how much to increase the contrast (0 is none; 3 is typical; 20 is a lot); mid-point indicates where midtones fall in the resultant image (0 is white; 50% is middle-gray; 100% is black). To decrease contrast, set sharpen to False.'},
+
+Signature=>
+	{   Type=>"",
+		Parameters=>'',
+	    Description=>'generate an SHA-256 message digest for the image pixel stream'},
+
+Sketch=>
+	{   Type=>"",
+		Parameters=>'geometry=>geometry, radius=>double, sigma=>double, angle=>double',
+	    Description=>'sketch the image with a Gaussian operator of the given radius and standard deviation (sigma) at the given angle'},
+
+Solarize=>
+	{   Type=>"FX",
+		Parameters=>'geometry=>string, threshold=>double, channel=>{All, Default, Alpha, Black, Blue, CMYK, Cyan, Gray, Green, Index, Magenta, Alpha, Red, RGB, Yellow}',
+	    Description=>'negate all pixels above the threshold level'},
+
+SparseColor=>
+	{   Type=>"Colour",
+		Parameters=>'points=>array of float values, method=>{Barycentric, Bilinear, Shepards, Voronoi}, \'virtual-pixel\'=>{Background Black Constant Dither Edge Gray Mirror Random Tile Transparent White}',
+	    Description=>\'interpolate the image colors around the supplied points'},
+
+Splice=>
+	{   Type=>"",
+		Parameters=>'geometry=>geometry, width=>integer, height=>integer, x=>integer, y=>integer, fuzz=>double, background=>color name, gravity=>{NorthWest, North, NorthEast, West, Center, East, SouthWest, South, SouthEast}',
+	    Description=>'splice an image'},
+
+Spread=>
+	{   Type=>"FX",
+		Parameters=>'radius=>double, interpolate=>{undefined, average, bicubic, bilinear, mesh, nearest-neighbor, spline}',
+	    Description=>'displace image pixels by a random amount'},
+
+Statistic=>
+	{   Type=>"",
+		Parameters=>'geometry=>geometry, width=>integer, height=>integer, channel=>{All, Default, Alpha, Black, Blue, CMYK, Cyan, Gray, Green, Index, Magenta, Alpha, Red, RGB, Yellow}, Type=>>{Median, Mode, Mean, Maximum, Minimum, ReduceNoise, RMS}',
+	    Description=>'replace each pixel with corresponding statistic from the neighborhood.'},
+
+Stegano=>
+	{   Type=>"Text",
+		Parameters=>'image=>image-handle, offset=>integer',
+	    Description=>'hide a digital watermark within the image'},
+
+Stereo=>
+	{   Type=>"MultiPic",
+		Parameters=>'image=>image-handle, x=>integer, y=>integer',
+	    Description=>'composites two images and produces a single image that is the composite of a left and right image of a stereo pair'},
+
+Strip=>
+	{   Type=>"Text",
+		Parameters=>'',
+	    Description=>'strip an image of all profiles and comments.'},
+
+Swirl=>
+	{   Type=>"FX",
+		Parameters=>'degrees=>double, interpolate=>{undefined, average, bicubic, bilinear, mesh, nearest-neighbor, spline}',
+	    Description=>'swirl image pixels about the center'},
+
+Texture=>
+	{   Type=>"Filters",
+		Parameters=>'texture=>image-handle',
+	    Description=>'name of texture to tile onto the image background'},
+
+Thumbnail=>
+	{   Type=>"Distorts",
+		Parameters=>'geometry=>geometry, width=>integer, height=>integer',
+	    Description=>'changes the size of an image to the given dimensions and removes any associated profiles.'},
+
+Threshold=>
+	{   Type=>"Colour",
+		Parameters=>'threshold=>string, channel=>{All, Default, Alpha, Black, Blue, CMYK, Cyan, Gray, Green, Index, Magenta, Alpha, Red, RGB, Yellow}',
+	    Description=>'threshold the image'},
+
+Tint=>
+	{   Type=>"Colour",
+		Parameters=>'fill=>color name, blend=>string',
+	    Description=>'tint the image with the fill color.'},
+
+Transparent=>
+	{   Type=>"Colour",
+		Parameters=>'color=>color name, invert=>{True, False}',
+	    Description=>'make this color transparent within the image'},
+
+Transpose=>
+	{   Type=>"Distorts",
+		Parameters=>'',
+	    Description=>'flip image in the vertical direction and rotate 90 degrees'},
+
+Transverse=>
+	{   Type=>"Distorts",
+		Parameters=>'',
+	    Description=>'flop image in the horizontal direction and rotate 270 degrees'},
+
+Trim=>
+	{   Type=>"Decorate",
+		Parameters=>'',
+	    Description=>'remove edges that are the background color from the image'},
+
+UnsharpMask=>
+	{   Type=>"Filters",
+		Parameters=>'geometry=>geometry, radius=>double, sigma=>double, gain=>double, threshold=>double',
+	    Description=>'sharpen the image with the unsharp mask algorithm.'},
+
+Vignette=>
+	{   Type=>"",
+		Parameters=>'geometry=>geometry, radius=>double, sigma=>double, x=>integer, y=>integer, background=>color name',
+	    Description=>'offset the edges of the image in vignette style'},
+
+Wave=>
+	{   Type=>"Distorts",
+		Parameters=>'geometry=>geometry, amplitude=>double, wavelength=>double, interpolate=>{undefined, average, bicubic, bilinear, mesh, nearest-neighbor, spline}',
+	    Description=>'alter an image along a sine wave'},
+
+WaveDenoise=>
+	{   Type=>"Filters",
+		Parameters=>'geometry=>geometry, threshold=>double, threshold=>double',
+	    Description=>'removes noise from the image using a wavelet transform'},
+
+WhiteThreshold=>
+	{   Type=>"Colour",
+		Parameters=>'threshold=>string, , channel=>{All, Default, Alpha, Black, Blue, CMYK, Cyan, Gray, Green, Index, Magenta, Alpha, Red, RGB, Yellow}',
+	    Description=>'force all pixels above the threshold intensity into white'}
+);
+
