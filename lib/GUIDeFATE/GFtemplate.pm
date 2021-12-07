@@ -17,9 +17,9 @@ package GFtemplate;
  
    # these arrays will contain the widgets each as an arrayref of the parameters
    my @widgets=();
-   my %iVars=();      #vars for interface operation (e.g. 
+   my %iVars=();     #vars for interface operation (e.g. 
    my %oVars=();      #vars for interface creation (e.g. list of options)
-   my %styles;        #reserved for future module creation
+   my %styles;
    
    my $lastMenuLabel;  #bug workaround in menu generator may be needed for submenus
    
@@ -212,3 +212,4 @@ package GFtemplate;
 
    }
 1;
+

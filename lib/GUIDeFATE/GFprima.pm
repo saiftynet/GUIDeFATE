@@ -1,20 +1,10 @@
-package GFtk;
+package GFprima;
    use strict;
    use warnings;
    
    our $VERSION = '0.14';
-   
-   use parent qw(Tk::MainWindow);
-   
-   use Tk::JPEG;
-   use Tk::BrowseEntry;
-   use Tk::Pane;
-   
-   use AnyEvent;
-   use Time::HiRes qw(time);
-   
-   use Image::Magick;
-   use MIME::Base64;
+      
+   use Prima qw(Application Buttons Label InputLine );;
    
    use Exporter 'import';   
    our @EXPORT  = qw<addWidget addVar addTimer setScale $frame $winScale $winWidth $winHeight $winTitle>;
@@ -39,20 +29,11 @@ package GFtk;
    sub new
    {
     my $class = shift;    
-    my $self = $class->SUPER::new(@_);  # call the superclass' constructor
-    $self -> title($winTitle);
-    $self -> geometry($winWidth."x".$winHeight);
-      $frame = $self->Canvas(
-         -bg => 'lavender',
-         -relief => 'sunken',
-         -width => $winWidth,
-         -height => $winHeight)->pack(-expand => 1, -fill => 'both');
-      
-      $frame ->fontCreate('medium',
-             -family=>'arial',
-             -weight=>'normal',
-             -size=>int(-18*18/14));
-      setupContent($self,$frame);  #then add content
+    my $self = Prima::MainWindow->new(text=>$winTitle,
+                                      size=> [$winWidth,$winHeight]);  # call the superclass' constructor
+      $self->{frame}={};
+      setupContent($self,$self->frame);  #then add content
+      run Prima;
       return $self;
    };
 
@@ -94,33 +75,23 @@ package GFtk;
 
 	   sub aBt{
 	    my ($self,$canvas, $id, $label, $location, $size, $action)=@_;
-	    $canvas->{"btn$id"}=$canvas->Button(-text => $label,
-	                         -width  => ${$size}[0]/6.68-4,
-	                         -height => ${$size}[1]/16,
-	                         -pady   => 1,
-	                         -command => $action);
-	    $canvas->createWindow(${$location}[0] ,${$location}[1],
-	                         -anchor => "nw",
-	                         -window => $canvas->{"btn$id"});
+	    $canvas->{"btn$id"}=Prima::Button->new(text => $label,
+	                         width  => ${$size}[0]/6.68-4,
+	                         height => ${$size}[1]/16,
+	                         owner  => $self);
         }
        sub aTC{
 		my ($self,$canvas, $id, $text, $location, $size, $action)=@_;
-		$canvas->{"textctrl$id"}=$canvas->Entry(
-                             -bg => 'white',
-	                         -width  => (${$size}[0]+32)/8);
-	    $canvas->{"textctrl$id"}->delete(0, 'end');
-	    $canvas->{"textctrl$id"}->insert(0,$text);
-	    $canvas->createWindow(${$location}[0] ,${$location}[1],
-	                         -anchor => "nw",
-	                         -window => $canvas->{"textctrl$id"} );
+		$canvas->{"textctrl$id"}=Prima::InputLine->new(
+                             bg => 'white',
+                             text => $text,
+	                         width  => (${$size}[0]+32)/8,
+	                         owner  =>$self);
         }
        sub aST{
 		my ($self,$canvas, $id, $text, $location)=@_;
-		$canvas->{"stattext$id"}=$canvas->createText(${$location}[0] ,${$location}[1], 
-		                     -anchor => "nw",
-                             -text => $text,
-                             -font =>'medium'
-                 );
+		$canvas->{"stattext$id"}=Prima::Label->new(text => $text,
+	                         owner  =>$self);
         }
         sub aCB{  #adapted from http://www.perlmonks.org/?node_id=799673
 		   my ($self,$canvas, $id, $label, $location, $size, $action)=@_;
@@ -133,7 +104,7 @@ package GFtk;
 				 -listwidth  => (${$size}[0]-20)/2,
 				 -browsecmd => $action);
 		    foreach (@strings2){ $canvas->{"combo$id"}->insert("end",$_);}
-			$canvas->{"cont$id"}=$canvas->{"combo$id"}->Subwidget('slistbox')->Subwidget('scrolled');#?? creates a scrlled list box as a subwidget of combo
+			$canvas->{"cont$id"}=$canvas->{"combo$id"}->Subwidget('slistbox')->Subwidget('scrolled');#??
 			
 			$canvas->createWindow(${$location}[0] ,${$location}[1],
 	             -width  => (${$size}[0]-20)*1.5,
@@ -184,82 +155,9 @@ package GFtk;
 	   sub aSP{
 			 my ($self,$canvas, $id, $panelType, $content, $location, $size)=@_;
 			
-			if ($panelType eq "I"){  # Image panels start with I
-				if (! -e $content){ return; }
-				no warnings;   # sorry about that...suppresses a "Useless string used in void context"
-			    my $image = Image::Magick->new;
-			    my $r = $image->Read("$content");
-			    if ($image){
-			      my $bmp;    # used to hold the bitmap.
-			      my $geom=${$size}[0]."x".${$size}[1]."!";
-			      $image->Scale(geometry => $geom);
-			      $bmp = ( $image->ImageToBlob(magick=>'jpg') )[0];
-			      $canvas->{"image".($id+1)}=$canvas->createImage(${$location}[0],${$location}[1],
-			                             -anchor=>"nw",
-			                             -image => $canvas->Photo(#"img$id",
-			                                     -format=>'jpeg',
-			                                     -data=>encode_base64($bmp) ));			                                     
-                    }
-				 else {"print failed to load image $content \n";}
+			if ($panelType eq "I"){  
 			 }
 			elsif ($panelType eq "T"){  
-				$id++;
-				$canvas->{"TextCtrl$id"}=$canvas->Text(
-				             -bg => 'white',
-	                         -width  => (${$size}[0])/7,
-	                         -height => (${$size}[1]+12)/15);
-	            $canvas->{"TextCtrl$id"}->insert('end',$content);
-	            $canvas->createWindow(${$location}[0] ,${$location}[1],
-	                         -anchor => "nw",
-	                         -window => $canvas->{"TextCtrl$id"});
-			 }
-			 elsif ($panelType eq "L"){ # ListBox
-				$id++;
-		        if (defined $oVars{$content}){
-					my @strings2 = split(",",$oVars{$content});
-					$canvas->{"listbox$id"}=$canvas->Scrolled("Listbox", 
-								 -bg => 'white',
-								 -scrollbars => "e",
-								 -selectmode => 'extended',
-								 -width  => (${$size}[0])/7,
-								 -height => (${$size}[1]+12)/15);
-					$canvas->{"listbox$id"}->insert('end',@strings2);
-					$canvas->createWindow(${$location}[0] ,${$location}[1],
-								 -anchor => "nw",
-								 -window => $canvas->{"listbox$id"});
-			    }
-			 }
-			 elsif ($panelType eq "C"){  #CheckListBox
-				$id++;
-				my @cbvalue;
-				
-				print "size=[".(${$size}[0])/7 .",".(${$size}[1]+12)/1 ."]";
-		        if (defined $oVars{$content}){
-					my @strings2 = split(",",$oVars{$content});
-					
-						# create a scrolling pane
-	                 $canvas->{"checklist$id"} = $canvas->Scrolled('Pane',
-	                      -bg =>"white",
-						  -scrollbars  => 'e',
-						  -sticky=>'nsew',
-						  -width  => ${$size}[0],
-						  -height => ${$size}[1]) ->place( -x => $$location[0], -y =>  $$location[1]);
-								 
-					    foreach my $i (0..$#strings2){
-							  $canvas->{"checklistbox$id-$i"}= $canvas->{"checklist$id"}->Checkbutton(
-								  -text     => $strings2[$i],
-								  -onvalue => 1,
-								  -offvalue => 0,
-								  -variable => \$cbvalue[$i],
-								  -anchor=> 'w',
-								)->pack(-fill   => 'x' );
-								$cbvalue[$i] = 0; #initialize selections to off
-							 }
-					
-					$canvas->createWindow(${$location}[0] ,${$location}[1],
-								 -anchor => "nw",
-								 -window => $canvas->{"checklist$id"});
-			    }
 			 }
 		 }
    }
@@ -315,8 +213,7 @@ package GFtk;
    };
 
    sub getFrame{
-	   my $self=shift;
-	return $self;
+	   return 1
    };
 
 #  The functions for GUI Interactions

@@ -2,18 +2,15 @@ package GFqt;
    use strict;
    use warnings;
    
-   our $VERSION = '0.13';
-
+   our $VERSION = '0.14';
 
 use QtCore4;
 use QtGui4;
-use QtCore4::isa qw( Qt::MainWindow);
+use QtCore4::isa qw( Qt::MainWindow );
 use QtCore4::slots
     mapAction=>['QString'],
     timedaction  =>[];##attempt ot get timer functionality  currently only single timeout slot
 
-use AE;
-use Time::HiRes qw(time);
    
    use Exporter 'import';   
    our @EXPORT   = qw<addWidget addTimer addVar setScale getFrame $frame $winScale $winWidth $winHeight $winTitle>;
@@ -46,7 +43,7 @@ use Time::HiRes qw(time);
     $self->setWindowTitle ( $winTitle );
     $self->{canvas}->setGeometry(0, 0, $winWidth, $winHeight);
     $self->{canvas}->setParent($self);
-    #$app->setMainWidget($self->{canvas});   seemsto mbe no longer necessary
+    $app->setMainWidget($self->{canvas});
     
     $self->{SigMan} = Qt::SignalMapper($self);
     $self->connect($self->{SigMan}, SIGNAL 'mapped(QString)', $self, SLOT 'mapAction(QString)');#
@@ -94,19 +91,22 @@ sub mapAction{
 		   elsif ($wtype eq "stattext")     {aST($self, $canvas, @params);}
 		   elsif ($wtype eq "sp")           {aSP($self, $canvas, @params);}
 		   elsif ($wtype eq "combo")        {aCB($self, $canvas, @params);}
+		   elsif ($wtype eq "chkbox")       {aKB($self, $canvas, @params);}
 		   elsif ($wtype eq "sp")           {aSP($self, $canvas, @params);}
-		   elsif ($wtype eq "mb")           {$currentMenu=aMB($self,$canvas,$currentMenu,@params) }	       
+		   elsif ($wtype eq "mb")           {$currentMenu=aMB($self,$canvas,$currentMenu,@params) }
+	       else {
+			   print "Widget type $wtype withh parameters ".join(", ",@params). "cannot be created";
+		   }	       
 	   }
 	    if (defined $currentMenu){ $self->menuBar()->addMenu($self->{$currentMenu}) }
 
         #setup timers
-        if (keys %timers){
-		  
-		   foreach my $timerID (keys %timers){
-			   $timers{$timerID}{timer} = Qt::Timer($self);  # create internal timer
-			   $self->connect($timers{$timerID}{timer}, SIGNAL('timeout()'), SLOT('timedaction()'));
-		       if ($timers{$timerID}{start} eq '1'){start($self,$timerID)};
-			}
+	    foreach my $timerID (keys %timers){
+		   $timers{$timerID}{timer} = Qt::Timer($self);  # create internal timer
+		   $self->connect($timers{$timerID}{timer}, SIGNAL('timeout()'), SLOT('timedaction()'));
+		   if ($timers{$timerID}{interval}>0){
+			   $timers{$timerID}{timer}->start($timers{$timerID}{interval});
+		   }
 		}
 
 	   sub aBt{
@@ -147,6 +147,15 @@ sub mapAction{
 		 else {print "Combo options not defined for 'combo$id' with label $label\n"}
 
 		}
+	   sub aKB{
+		   my ($self,$panel, $id, $label, $location, $size, $action)=@_;
+		   $canvas->{"chkbox$id"}=Qt::CheckBox($label);
+		   $canvas->{"chkbox$id"}->setParent($canvas);
+		   $canvas->{"chkbox$id"}->setGeometry(${$location}[0],${$location}[1],${$size}[0],${$size}[1]);
+		   $self->connect($canvas->{"chkbox".$id}, SIGNAL 'clicked()', $self->{SigMan}, SLOT 'map()');
+		   $self->{SigMan}->setMapping($canvas->{"chkbox".$id}, "chkbox".$id);
+		   
+	   }
 		 
       sub aMB{
 	     my ($self,$canvas,$currentMenu, $id, $label, $type, $action)=@_;
@@ -195,6 +204,16 @@ sub mapAction{
 		            $canvas->{"TextCtrl".($id+1)}->setParent($canvas);
 		            $canvas->{"TextCtrl".($id+1)}->setGeometry(${$location}[0],${$location}[1],${$size}[0],${$size}[1]);				
 			}
+			elsif ($panelType eq "L"){ 
+					 my @strings2 = split(",",$oVars{$label});
+					 
+				    $canvas->{"listbox".($id+1)}=Qt::ListWidget;
+				    foreach (@strings2){
+						 $canvas->{"listbox".($id+1)}->addItem($_);
+					 }
+		            $canvas->{"listbox".($id+1)}->setParent($canvas);
+		            $canvas->{"listbox".($id+1)}->setGeometry(${$location}[0],${$location}[1],${$size}[0],${$size}[1]);				
+			}
 		 }
 
 	 }
@@ -216,7 +235,6 @@ sub mapAction{
 	   $timers{$timerID}{interval}=$interval;
 	   $timers{$timerID}{function}=$function;
 	   $timers{$timerID}{start}=$start;
-	   
    }
 
 # Functions for internal use 
@@ -341,33 +359,7 @@ sub mapAction{
 								}
 	   return (($reply==Qt::MessageBox::Yes() )||($reply==Qt::MessageBox::Ok()));
    };
- 
-    
-# Timer functions
-  sub start{
-	  my ($self,$timerID)=@_;  
-	  $timerID=(keys %timers)[0] ;
-	  $timers{$timerID}{timer}->start($timers{$timerID}{interval});
-  };
-  sub stop{
-	  my ($self,$timerID)=@_;
-	  $timers{$timerID}{timer} = undef;
-  };
-  sub interval{
-	  my ($self,$timerID,$interval)=@_;
-	  stop($self,$timerID);
-	  $timers{$timerID}{interval}=$interval;
-	  start($self,$timerID);
-  };
-  sub callback{
-	  my ($self,$timerID,$function)=@_;
-	  stop($self,$timerID);
-	  $timers{$timerID}{function}=$function;
-	  start($self,$timerID);
-  }; 
    
-   
-  
 # Quit
    sub quit{
 	  $app ->quit();
