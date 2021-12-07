@@ -3,11 +3,11 @@ package GUIDeFATE;
    use strict;
    use warnings;
    
-   our $VERSION = '0.13';
+   our $VERSION = '0.14';
    
    use Exporter 'import';
    
-   our @EXPORT_OK      = qw<$frame>;  # allows manipulation of frame from main.
+   our @EXPORT_OK      = qw<$frame availableToolkits>;  # allows manipulation of frame from main.
    our $target="";
    our $AppObject;
    our $winX=30;
@@ -21,78 +21,77 @@ package GUIDeFATE;
 
 sub new{
 	(my $class,my $textGUI,$target,my $assist, my $port)=@_;
-	# no warnings;
-	 open STDERR, '>/dev/null' unless ($assist and $assist=~m/d/i);;
-	if ((!$target)||($target =~m/^gtk/i)){
-		$target="gtk";
-		die "Failed to load Gtk backend: $@" unless eval {require GUIDeFATE::GFgtk} ; GFgtk->import;
-		convert($textGUI, $assist);
-		return GFgtk->new(); 
-	}
-	elsif ($target =~m/^gtk2/i){## ADDED OPTION 'gtk2' FOR Gtk2 IN CASE USERS DONT HAVE Gtk3...
-      $target="gtk2";
-      die "Failed to load Gtk backend: $@" unless eval { require GUIDeFATE::GFgtk2} ; GFgtk2->import;
-      convert($textGUI, $assist);
-      return GFgtk2->new(); 
-    }
-	elsif ($target =~m/^tk/i){
-		$target="tk";
-		die "Failed to load Tk backend: $@" unless eval { require GUIDeFATE::GFtk };  GFtk->import;
-		convert($textGUI, $assist);
-		return GFtk->new(); 
-	}
-	elsif ($target =~m/^qt/i){
-		$target="qt";
-		die "Failed to load Qt backend: $@" unless eval  { require  GUIDeFATE::GFqt }; GFqt->import;
-		convert($textGUI, $assist);
-		my $qtWin=GFqt->new(); 
-		return $qtWin;
-	}
-	if ($target=~/^wx/i){
+	 no warnings;
+	if ((!$target)||($target=~/^wx/i)){
 		$target="wx";
 		die "Failed to load Wx backend: $@" unless eval { require GUIDeFATE::GFwx} ;  GFwx->import;
 		convert($textGUI,$assist);
 		return  GFwx->new(); ;
 	}
+	elsif ($target =~m/^gtk2/i){## ADDED OPTION 'gtk2' FOR Gtk2 IN CASE USERS DONT HAVE Gtk3...
+      $target="gtk2";
+      open my $fh, '>', "/dev/null";
+	  local *STDERR = $fh;
+      die "Failed to load Gtk2 backend: $@" unless eval { require GUIDeFATE::GFgtk2} ;
+      close $fh;
+      GFgtk2->import;
+      convert($textGUI, $assist);
+      return GFgtk2->new(); 
+    }
+	elsif ($target =~m/^gtk/i){
+		$target="gtk";
+        open my $fh, '>', "/dev/null";
+	    local *STDERR = $fh;
+		die "Failed to load Gtk3 backend: $@" unless eval {require GUIDeFATE::GFgtk} ;
+        close $fh;
+		GFgtk->import;
+		convert($textGUI, $assist);
+		return GFgtk->new(); 
+		
+	}	
+	elsif ($target =~m/^tk/i){
+		$target="tk";
+		die "Failed to load Tk backend: $@" unless eval { require GUIDeFATE::GFtk };
+		GFtk->import;
+		convert($textGUI, $assist);
+		return GFtk->new(); 
+	}	
+	elsif ($target =~m/^prima/i){
+		$target="prima";
+		die "Failed to load Prima backend: $@" unless eval { require GUIDeFATE::GFprima };
+		GFprima->import;
+		convert($textGUI, $assist);
+		return GFprima->new(); 
+	}
+	elsif ($target =~m/^qt/i){
+		$target="qt";
+		die "Failed to load Qt backend: $@" unless eval  { require  GUIDeFATE::GFqt };
+		GFqt->import;
+		convert($textGUI, $assist);
+		my $qtWin=GFqt->new(); 
+		return $qtWin;
+	}
 	elsif ($target =~m/^win32/i){
 		$target="win32";
-		die "Failed to load Win32 backend: $@" unless eval { require GUIDeFATE::GFwin32 };GFwin32->import;
+		die "Failed to load Win32 backend: $@" unless eval { require GUIDeFATE::GFwin32 };
+		GFwin32->import;
 		convert($textGUI, $assist);
 		return GFwin32->new(); 
 	}
 	elsif ($target =~m/^html/i){
 		$target="html";
-		die "Failed to load HTML backend: $@" unless eval { require GUIDeFATE::GFhtml }; GFhtml->import;
+		die "Failed to load HTML backend: $@" unless eval { require GUIDeFATE::GFhtml };
+		GFhtml->import;
 		convert($textGUI, $assist);
 		return GFhtml->new(); 
 	}
 	elsif ($target =~m/^web$/i){
 		$target="web"; 
-		die "Failed to load WebSocket backend: $@" unless eval {require GUIDeFATE::GFweb }; GFweb->import;
+		die "Failed to load WebSocket backend: $@" unless eval {require GUIDeFATE::GFweb }; 
+		GFweb->import;
 		convert($textGUI, $assist);
 		return GFweb->new($port,($assist=~/d/i)); 
 	}
-	elsif ($target =~m/^test$/i){
-      $target="gtk2";
-      die "Failed to load Gtk backend: $@" unless eval { require GUIDeFATE::GFgtk2} ; GFgtk2->import;
-      convert($textGUI, $assist);
-      return GFgtk2->new(); 
-	}
-}
-
-sub backendWorks{   # routine to test if the backend works
-	my $be=lc(shift);
-	my $call="perl -I -MGUIDeFATE::GF$be -e 'print \$GUIDeFATE::GF$be\:\:VERSION' ";
-	return $call;
-}
-
-sub backendList{
-	my @list=();
-	for (qw/win32 gtk2 gtk wx tk qt html web/){
-		push @list, backendWorks($_);
-	}
-	return @list;
-	
 }
 
 sub convert{
@@ -175,6 +174,15 @@ sub convert{
 			$bid++;
 			$line=~s/(\[([^\]]+)\])/" " x length($1)/e;     #remove text controls replacing with spaces
 		}
+		while ($line=~m/(`([A-z0-9_]+))/){   # check boxes are backticks
+			my ($ps,$all,$content)=(length($`),$1,$2);
+			$log= "Checkbox, with id chkbox$bid with label $content calls function &chkbox$bid \n"; ##
+			if ($verbose){ print $log; }
+			if ($auto){ $autoGen.=makeSub("chkbox$bid","Check Box with label $content " ); }	
+			addWidget(["chkbox",$bid, $content,[$winScale*($ps*2-1),$winScale*$l*4],[-1,-1], \&{"main::chkbox".$bid}]);
+			$bid++;
+			$line=~s/(`([A-z0-9_]+))/" " x length($1)/e;     #remove chkBoxes replacing with spaces
+		}
 		if ($line !~ m/^\+/){
 		  my $tmp=$line;
 		  $tmp=~s/(\[([^\]]+)\])|(\{([^}]*)\})/" " x length $1/ge;    
@@ -220,6 +228,7 @@ sub convert{
 			if ($verbose){ print $log; }
 			if ($auto){ $autoGen.="#".$log.makeSub($function,"Function called by Timer$bid"); }
 			addTimer("Timer".$bid++,$interval,\&{"main::$function"},$start);
+			
 		}
 		
 		if($mode eq "menu"){
@@ -282,7 +291,20 @@ sub convert{
   }
 }
 
-
+sub failedLoad{
+	(my $class,my $textGUI,$target,my $assist, my $port)=@_;
+	my $working="";
+	print "Failed to get $target toolkit to work\n";
+    foreach my $module ( qw/ GFwin32 GFwx GFtk  GFqt GFhtml GFweb/ ) {
+		if  (eval { "require GUIDeFATE::$module" }){
+			$working=$module=~s/^GF//r;
+			last
+		}
+	}
+	return new($class,$textGUI,$working,$assist,$port) if $working;
+	print "Failed to find any working GF Module\n";
+	
+}
 
 1;
 =head1 GUIDeFATE
