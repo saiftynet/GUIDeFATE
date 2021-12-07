@@ -164,7 +164,7 @@ package GFgtk2;
          
          if ($panelType eq "I"){  # Image panels start with I
             $canvas->{"Image".$id} = Gtk2::Image->new();
-            $canvas->put($canvas->{"Image".$id},${$location}[0] ,${$location}[1]);
+            $canvas->put($canvas->{"Image".$id},${$location}[0] ,${$location}[1]);             
             if (! -e $content){ return; }
             my $pixbuf = Gtk2::Gdk::Pixbuf->new_from_file($content);
             my $scaled = $pixbuf->scale_simple(${$size}[0],${$size}[1], 'GDK_INTERP_HYPER');
@@ -184,18 +184,14 @@ package GFgtk2;
            elsif ($panelType eq "L"){  ##listbox
 				 if (defined $oVars{$content}){
 					my @strings2 = split(",",$oVars{$content});
-					my $tree_store = Gtk2::TreeStore->new(qw/Glib::String/);
+                    $canvas->{"listbox".($id+1)}= Gtk2::List->new();
 					foreach my $item (@strings2) {
-                       my $iter = $tree_store->append(undef);
- 		                $tree_store->set ($iter,0 => $item);
+                       $canvas->{"listbox".($id+1)}->add(Gtk2::ListItem->new($item));
                      }
+                    $canvas->{"listbox".($id+1)}->set_selection_mode("multiple");
 					$canvas->{"sw$id"}= Gtk2::ScrolledWindow->new();
 					$canvas->{"sw$id"}->set_size_request (${$size}[0],${$size}[1]);
-					$canvas->{"checklist".($id+1)}=Gtk2::ListBox->new();					
-					$canvas->{"listbox".($id+1)}->get_selection->set_mode("none");
-					$canvas->{"listbox".($id+1)}->append_column ($tree_column);
-					#$canvas->{"listbox".($id+1)}->toggle-cursor-row();
-					$canvas->{"sw$id"}->add($canvas->{"listbox".($id+1)});
+					$canvas->{"sw$id"}->add_with_viewport( $canvas->{"listbox".($id+1)} );
 					$canvas->put($canvas->{"sw$id"},${$location}[0] ,${$location}[1]);
 				}
 			 }
@@ -206,10 +202,12 @@ package GFgtk2;
 					
 					$canvas->{"sw$id"}= Gtk2::ScrolledWindow->new();
 					$canvas->{"sw$id"}->set_size_request (${$size}[0],${$size}[1]);
+					my $container = Gtk2::VBox->new (0, 0);
                     foreach my $i (0..$#strings2){
 						$canvas->{"checklist$id-$i"}=Gtk2::CheckButton->new_with_label($strings2[$i]);
-						$canvas->{"sw$id"}->add_with_viewport ($canvas->{"checklist$id-$i"})
+						$container->pack_start($canvas->{"checklist$id-$i"}, "TRUE","FALSE",0)
 					}
+					$canvas->{"sw$id"}->add_with_viewport( $container );
 
 					$canvas->put($canvas->{"sw$id"},${$location}[0] ,${$location}[1]);
 				}

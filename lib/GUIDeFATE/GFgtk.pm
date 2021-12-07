@@ -197,6 +197,20 @@ package GFgtk;
 					$canvas->put($canvas->{"sw$id"},${$location}[0] ,${$location}[1]);
 				}
 			 }
+			 elsif ($panelType eq "C"){  ##listbox
+				 if (defined $oVars{$content}){
+					my @strings2 = split(",",$oVars{$content});
+					$canvas->{"sw$id"}= Gtk3::ScrolledWindow->new();
+					$canvas->{"sw$id"}->set_hexpand(1);
+					$canvas->{"sw$id"}->set_vexpand(1);
+					$canvas->{"sw$id"}->set_size_request (${$size}[0],${$size}[1]);
+					$canvas->{"checklist".($id+1)}=Gtk3::ListBox->new();
+					$canvas->{"checklist".($id+1)}->set_selection_mode("none");#multiple selectiable
+					$canvas->{"checklist".($id+1)}->insert(Gtk3::CheckButton->new_with_label($_), 0 ) foreach (reverse  @strings2);
+					$canvas->{"sw$id"}->add($canvas->{"checklist".($id+1)});
+					$canvas->put($canvas->{"sw$id"},${$location}[0] ,${$location}[1]);
+				}
+			 }
 		 }
         
 	   
