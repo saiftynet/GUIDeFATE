@@ -249,7 +249,7 @@ package GFtk;
 					    foreach my $i (0..$#strings2){
 							my $action;
 							# local no ref to create a subroutine that returns 
-							{ no strict 'refs';$action = sub{\&{"main::checklist$id"}($i,$iVars{"checklist$id-$i"}) } } ; 
+							{ no strict 'refs';$action = sub{\&{"main::checklist$id"}($i,$iVars{"checklist$id-$i"},$strings2[$i])} } ; 
 							  $canvas->{"checklistbox$id-$i"}= $canvas->{"checklist$id"}->Checkbutton(
 								  -text     => $strings2[$i],
 								  -onvalue => 1,
@@ -379,8 +379,13 @@ package GFtk;
    }
    sub setValue{
 	   my ($self,$id,$text)=@_;
-	   $frame->{"$id"}->delete('0.0','end');
-	   $frame->{"$id"}->insert("end",$text);	   
+	   if (exists $iVars{$id}){
+			  $iVars{$id}=$text
+		  }
+	   else{
+		   $frame->{"$id"}->delete('0.0','end');
+		   $frame->{"$id"}->insert("end",$text);
+	   }	   
    }   
    sub appendValue{
 	   my ($self,$id,$text)=@_;
