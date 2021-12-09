@@ -148,6 +148,9 @@ package GFtk;
 	   sub aKB{
 		   my ($self,$canvas, $id, $label, $location, $size,$action)=@_;
 		   $canvas->{"chkbox$id"}=$canvas->Checkbutton(-text => $label,
+		                     -variable => \($iVars{"chkbox$id"}),
+		                     -onvalue  => $label,
+		                     -offvalue =>"",
 	                         -command => $action);
 	       	$canvas->createWindow(${$location}[0] ,${$location}[1],
 	                         -anchor => "nw",
@@ -182,7 +185,7 @@ package GFtk;
 		   return $currentMenu;
 	   }
 	   sub aSP{
-			 my ($self,$canvas, $id, $panelType, $content, $location, $size)=@_;
+			 my ($self,$canvas, $id, $panelType, $content, $location, $size, $action)=@_;
 			
 			if ($panelType eq "I"){  # Image panels start with I
 				if (! -e $content){ return; }
@@ -232,12 +235,10 @@ package GFtk;
 			 elsif ($panelType eq "C"){  #CheckListBox
 				$id++;
 				my @cbvalue;
-				
-				print "size=[".(${$size}[0])/7 .",".(${$size}[1]+12)/1 ."]";
 		        if (defined $oVars{$content}){
 					my @strings2 = split(",",$oVars{$content});
 					
-						# create a scrolling pane
+					# create a scrolling pane
 	                 $canvas->{"checklist$id"} = $canvas->Scrolled('Pane',
 	                      -bg =>"white",
 						  -scrollbars  => 'e',
@@ -246,11 +247,15 @@ package GFtk;
 						  -height => ${$size}[1]) ->place( -x => $$location[0], -y =>  $$location[1]);
 								 
 					    foreach my $i (0..$#strings2){
+							my $action;
+							# local no ref to create a subroutine that returns 
+							{ no strict 'refs';$action = sub{\&{"main::checklist$id"}($i,$iVars{"checklist$id-$i"}) } } ; 
 							  $canvas->{"checklistbox$id-$i"}= $canvas->{"checklist$id"}->Checkbutton(
 								  -text     => $strings2[$i],
 								  -onvalue => 1,
 								  -offvalue => 0,
-								  -variable => \$cbvalue[$i],
+								  -variable => \($iVars{"checklist$id-$i"}),
+								  -command =>$action,
 								  -anchor=> 'w',
 								)->pack(-fill   => 'x' );
 								$cbvalue[$i] = 0; #initialize selections to off
@@ -360,7 +365,7 @@ package GFtk;
 	   
    }
 
-#Text input functions
+#Text/UI input/output functions
   sub getValue{
 	   my ($self,$id)=@_;
 	   if ($id =~/TextCtrl/){return $frame->{$id}->get('1.0','end-1c'); }
