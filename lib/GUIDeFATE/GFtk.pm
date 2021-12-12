@@ -9,6 +9,7 @@ package GFtk;
    use Tk::JPEG;
    use Tk::BrowseEntry;
    use Tk::Pane;
+   use Tk::Balloon;
    
    use AnyEvent;
    use Time::HiRes qw(time);
@@ -29,7 +30,7 @@ package GFtk;
  
    # these arrays will contain the widgets each as an arrayref of the parameters
    my @widgets=();
-   my %iVars=();     #vars for interface operation (e.g. 
+   my %iVars=();      #vars for interface operation (e.g. states of check buttons)
    my %oVars=();      #vars for interface creation (e.g. list of options)
    my %styles;
    my %timers;
@@ -250,7 +251,7 @@ package GFtk;
 							my $action;
 							# local no ref to create a subroutine that returns 
 							{ no strict 'refs';$action = sub{\&{"main::checklist$id"}($i,$iVars{"checklist$id-$i"},$strings2[$i])} } ; 
-							  $canvas->{"checklistbox$id-$i"}= $canvas->{"checklist$id"}->Checkbutton(
+							  $canvas->{"checklist$id-$i"}= $canvas->{"checklist$id"}->Checkbutton(
 								  -text     => $strings2[$i],
 								  -onvalue => 1,
 								  -offvalue => 0,
@@ -391,6 +392,15 @@ package GFtk;
 	   my ($self,$id,$text)=@_;
 	   $frame->{$id}->insert('end',$text);
    }   
+
+
+#tooltips https://www.perlmonks.org/?node_id=626281
+   sub tooltip{
+	   my ($self,$id,$tooltip)=@_;
+	   return unless $frame->{$id};
+	   my $ba = $self->Balloon(-background=>'yellow');
+	   $ba->attach($frame->{$id},-initwait=>0,-balloonmsg=>$tooltip)
+   }
 
 #Message box, Fileselector and Dialog Boxes
    sub showFileSelectorDialog{
