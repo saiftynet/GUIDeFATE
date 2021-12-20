@@ -10,7 +10,7 @@ use QtCore4::isa qw( Qt::MainWindow );
 use QtCore4::slots
     mapAction=>['QString'],
     timedaction  =>[];##attempt ot get timer functionality  currently only single timeout slot
-
+#use QtCore4::debug qw(ambiguous);
    
    use Exporter 'import';   
    our @EXPORT   = qw<addWidget addTimer addVar setScale getFrame $frame $winScale $winWidth $winHeight $winTitle>;
@@ -26,7 +26,7 @@ use QtCore4::slots
  
    # these arrays will contain the widgets each as an arrayref of the parameters
    my @widgets=();
-   my %iVars=();     #vars for interface operation (e.g. 
+   my %iVars=();     #vars for interface operation (e.g. states of objects)
    my %oVars=();      #vars for interface creation (e.g. list of options)
    my %styles;
    my %timers;
@@ -43,7 +43,7 @@ use QtCore4::slots
     $self->setWindowTitle ( $winTitle );
     $self->{canvas}->setGeometry(0, 0, $winWidth, $winHeight);
     $self->{canvas}->setParent($self);
-    $app->setMainWidget($self->{canvas});
+    #$app->setMainWidget($self->{canvas});
     
     $self->{SigMan} = Qt::SignalMapper($self);
     $self->connect($self->{SigMan}, SIGNAL 'mapped(QString)', $self, SLOT 'mapAction(QString)');#
@@ -69,13 +69,22 @@ use QtCore4::slots
 
 sub mapAction{
 	my $item=shift;
+	if ($item=~/(checklist)(\d+)\-(\d+)/){
+		my ($sub,$no,$indx)=($1,$2,$3);
+		no strict 'refs';
+		&{"main::checklist$no"}($indx,($frame->{$item}->isChecked())?1:0,$frame->{$item}->text() );
+		return;
+	}
+	
 	my $widgetIndex=getItem($item);
 	my @widget=@{$widgets[$widgetIndex]};
 	my $wType=shift @widget;
 	if ($widgetIndex !=-1){
 		if     ($wType eq "mb")   { &{$widget[3]};}
 		elsif  ($wType eq "btn")  { &{$widget[4]};}
-		elsif  ($wType eq "combo")  { &{$widget[4]};}
+		elsif  ($wType eq "combo")  { &{$widget[4]}($iVars{$item},$frame->{$item}->currentText());}
+		elsif  ($wType eq "chkbox")  { &{$widget[4]};}
+		elsif  ($wType eq "sp")  { }
 	}
 }
 
@@ -95,7 +104,7 @@ sub mapAction{
 		   elsif ($wtype eq "sp")           {aSP($self, $canvas, @params);}
 		   elsif ($wtype eq "mb")           {$currentMenu=aMB($self,$canvas,$currentMenu,@params) }
 	       else {
-			   print "Widget type $wtype withh parameters ".join(", ",@params). "cannot be created";
+			   print "Widget type $wtype with parameters ".join(", ",@params). "cannot be created";
 		   }	       
 	   }
 	    if (defined $currentMenu){ $self->menuBar()->addMenu($self->{$currentMenu}) }
@@ -148,11 +157,12 @@ sub mapAction{
 
 		}
 	   sub aKB{
-		   my ($self,$panel, $id, $label, $location, $size, $action)=@_;
+		   my ($self,$canvas, $id, $label, $location, $size, $action)=@_;
+		   my $check=0;
 		   $canvas->{"chkbox$id"}=Qt::CheckBox($label);
 		   $canvas->{"chkbox$id"}->setParent($canvas);
-		   $canvas->{"chkbox$id"}->setGeometry(${$location}[0],${$location}[1],${$size}[0],${$size}[1]);
-		   $self->connect($canvas->{"chkbox".$id}, SIGNAL 'clicked()', $self->{SigMan}, SLOT 'map()');
+		   $canvas->{"chkbox$id"}->setGeometry(${$location}[0],${$location}[1],16*(3+length $label),16);
+		   $self->connect($canvas->{"chkbox$id"}, SIGNAL 'clicked()', $self->{SigMan}, SLOT 'map()');
 		   $self->{SigMan}->setMapping($canvas->{"chkbox".$id}, "chkbox".$id);
 		   
 	   }
@@ -205,14 +215,34 @@ sub mapAction{
 		            $canvas->{"TextCtrl".($id+1)}->setGeometry(${$location}[0],${$location}[1],${$size}[0],${$size}[1]);				
 			}
 			elsif ($panelType eq "L"){ 
-					 my @strings2 = split(",",$oVars{$label});
+					 my @strings2 = split(",",$oVars{$content});
 					 
 				    $canvas->{"listbox".($id+1)}=Qt::ListWidget;
 				    foreach (@strings2){
 						 $canvas->{"listbox".($id+1)}->addItem($_);
 					 }
+					$canvas->{"listbox".($id+1)}->setSelectionMode(2) ;
 		            $canvas->{"listbox".($id+1)}->setParent($canvas);
 		            $canvas->{"listbox".($id+1)}->setGeometry(${$location}[0],${$location}[1],${$size}[0],${$size}[1]);				
+			}
+			elsif ($panelType eq "C"){ 
+					 my @strings2 = split(",",$oVars{$content});
+						 
+				    $canvas->{"checklist".($id+1)}=Qt::Widget;
+				    my $layout=Qt::VBoxLayout;
+				    $canvas->{"checklist".($id+1)}->setLayout($layout);
+				    my $i=0;
+				    foreach (@strings2){
+		               $canvas->{"checklist".($id+1)."-$i"}=Qt::CheckBox($_);
+		               $self->connect($canvas->{"checklist".($id+1)."-$i"}, SIGNAL 'clicked()', $self->{SigMan}, SLOT 'map()');
+		               $self->{SigMan}->setMapping($canvas->{"checklist".($id+1)."-$i"}, "checklist".($id+1)."-$i");
+					   $layout->addWidget($canvas->{"checklist".($id+1)."-$i"}); 
+					   $i++;
+					 }
+					$canvas->{"sa".($id+1)}=Qt::ScrollArea;
+					$canvas->{"sa".($id+1)}->setWidget($canvas->{"checklist".($id+1)});  
+		            $canvas->{"sa".($id+1)}->setParent($canvas);
+		            $canvas->{"sa".($id+1)}->setGeometry(${$location}[0],${$location}[1],${$size}[0],${$size}[1]);				
 			}
 		 }
 
@@ -252,10 +282,11 @@ sub mapAction{
    }   
    sub getItem{
 	   my ($id)=@_;
-	   $id=~s/[^\d]//g;
+	   $id=~s/[^\-\d]//g;
+	   $id=~s/\-\d+$//g;
 	   my $i=0; my $found=-1;
-	   while ($i<@widgets){
-		   if ($widgets[$i][1]==$id) {
+	   while ($i<@widgets){ # go through all widgets to find the one with the target index matching
+		   if ($widgets[$i][1] eq $id) {
 			   $found=$i;
 			   }
 		   $i++;
@@ -299,18 +330,27 @@ sub mapAction{
 	   if ($id=~/TextCtrl/){ return $frame->{$id}->toPlainText() }
 	   elsif ($id=~/textctrl/){ return $frame->{$id}->text();}
 	   elsif ($id=~/combo/){ return $frame->{$id}->currentText();}
+	   elsif ($id=~/checklist|chkbox/) {return $frame->{$id}->isChecked()?1:0}
 	   
    }
    sub setValue{
 	   my ($id,$text)=@_;	
 	   if ($id=~/TextCtrl/){ $frame->{$id}->setPlainText($text) }
 	   elsif ($id=~/textctrl/){ return $frame->{$id}->setText($text)}   
+	   elsif ($id=~/checklist|chkbox/) {$frame->{$id}->setChecked($text)}
    }   
    sub appendValue{
 	   my ($id,$text)=@_;
 	   if ($id=~/TextCtrl/){ $frame->{$id}->appendPlainText($text) }
 	   elsif ($id=~/textctrl/){ return $frame->{$id}->insert($text)}  
    }   
+
+#tooltips https://www.perlmonks.org/?node_id=626281
+   sub tooltip{
+	   my ($id,$tooltip)=@_;
+	   return unless $frame->{$id};
+	   $frame->{$id}->setToolTip($tooltip)
+   }
 
 #Message box, Fileselector and Dialog Boxes
    sub showFileSelectorDialog{

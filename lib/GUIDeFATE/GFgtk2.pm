@@ -116,7 +116,7 @@ package GFgtk2;
            $canvas->{"combo$id"}->set_active (0);
            $canvas->{"combo$id"}->signal_connect(changed => sub{
            $iVars{"combo$id"}=$canvas->{"combo$id"}->get_active_text;
-           &$action});
+		   &$action("",$iVars{"combo$id"})});
            $canvas->put($canvas->{"combo$id"},${$location}[0] ,${$location}[1]);
           }
           else {print "Combo options not defined for 'combo$id' with label $label\n"}
@@ -198,16 +198,21 @@ package GFgtk2;
 			 elsif ($panelType eq "C"){  ##checklist
 				 #https://python-gtk-3-tutorial.readthedocs.io/en/latest/layout.html
 				 if (defined $oVars{$content}){
-					my @strings2 = split(",",$oVars{$content});
-					
+					my @strings2 =  split(",",$oVars{$content});					
 					$canvas->{"sw$id"}= Gtk2::ScrolledWindow->new();
 					$canvas->{"sw$id"}->set_size_request (${$size}[0],${$size}[1]);
-					my $container = Gtk2::VBox->new (0, 0);
+					$canvas->{"checklist".($id+1)} = Gtk2::VBox->new (0, 0);
                     foreach my $i (0..$#strings2){
-						$canvas->{"checklist$id-$i"}=Gtk2::CheckButton->new_with_label($strings2[$i]);
-						$container->pack_start($canvas->{"checklist$id-$i"}, "TRUE","FALSE",0)
+						my $action;
+						$iVars{"checklist".($id+1)."-$i"}=0;
+						# local no ref to create a subroutine that returns 
+						{ no strict 'refs';$action = sub{$iVars{"checklist".($id+1)."-$i"}=$iVars{"checklist".($id+1)."-$i"}?0:1  ;\&{ "main::checklist".($id+1)}($i,$iVars{"checklist".($id+1)."-$i"},$strings2[$i])} } ; 
+
+						$canvas->{"checklist".($id+1)."-$i"}=Gtk2::CheckButton->new_with_label($strings2[$i]);
+						$canvas->{"checklist".($id+1)."-$i"}->signal_connect( clicked => $action );
+						$canvas->{"checklist".($id+1)}->pack_start($canvas->{"checklist".($id+1)."-$i"}, "TRUE","FALSE",0)
 					}
-					$canvas->{"sw$id"}->add_with_viewport( $container );
+					$canvas->{"sw$id"}->add_with_viewport( $canvas->{"checklist".($id+1)} );
 
 					$canvas->put($canvas->{"sw$id"},${$location}[0] ,${$location}[1]);
 				}
@@ -320,6 +325,9 @@ package GFgtk2;
       elsif ($id=~/^t/){
          $self->{panel}->{"$id"}->set_text($text);
       }  
+	   elsif ($id=~/^check/){
+		   $self->{panel}->{"$id"}->set_active($text);
+	   } 
    }   
    sub appendValue{
       my ($self,$id,$text)=@_;
@@ -333,7 +341,16 @@ package GFgtk2;
        my $newText=$self->{panel}->{"$id"}->get_text . $text;
          $self->{panel}->{"$id"}->set_text($newText);
       } 
-   }   
+   }
+   
+#tooltips https://www.perlmonks.org/?node_id=626281
+   sub tooltip{
+	   my ($self,$id,$tooltip)=@_;
+	   return unless $self->{panel}->{"$id"};
+	   $self->{panel}->{"$id"}->set_tooltip_text($tooltip);
+   }
+
+   
 
 #Message box, Fileselector and Dialog Boxes
    sub showFileSelectorDialog{

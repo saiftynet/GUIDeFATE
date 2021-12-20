@@ -14,8 +14,7 @@ package GFwxFrame;
           wxYES_NO wxCANCEL wxOK  wxCENTRE  wxICON_EXCLAMATION  wxICON_HAND 
           wxICON_ERROR  wxICON_QUESTION  wxICON_INFORMATION wxCB_DROPDOWN wxSOLID wxLB_MULTIPLE          
           wxDefaultValidator);
-          
-   use Wx::Event qw( EVT_BUTTON EVT_TEXT_ENTER EVT_UPDATE_UI EVT_MENU EVT_COMBOBOX EVT_TIMER);
+   use Wx::Event qw(EVT_BUTTON EVT_TEXT_ENTER EVT_UPDATE_UI EVT_MENU EVT_COMBOBOX  EVT_CHECKLISTBOX EVT_TIMER);
    use Wx::Perl::Imagick;                 #for image panels
    
    use base qw(Wx::Frame); # Inherit from Wx::Frame
@@ -106,7 +105,7 @@ package GFwxFrame;
                                         $location,       # position
                                         $size            # size
                                        );
-        EVT_BUTTON( $self, $id, $action );  #object to bind to, buton id, and subroutine to call
+              EVT_CHECKBOX( $self, $id, $action );  #object to bind to, buton id, and subroutine to call
 	   }	   
 	   sub aMB{
 	     my ($self,$panel,$currentMenu, $id, $label, $type, $action)=@_;
@@ -148,7 +147,7 @@ package GFwxFrame;
                                         $location,       # position
                                         $size            # size
                                        );
-        EVT_BUTTON( $self, $id, $action );  #object to bind to, buton id, and subroutine to call
+        EVT_BUTTON( $self, $id, $action );  #object to bind to, button id, and subroutine to call
         }
          
         sub aTC{
@@ -223,9 +222,18 @@ package GFwxFrame;
 					$self->{"listbox".($id+1)}->SetFont(Wx::Font->new(10, wxMODERN, wxNORMAL, wxNORMAL ));
 				}
 			 }
-           elsif ($panelType eq "C"){  ##listbox
+           elsif ($panelType eq "C"){  ##checkbutton list
 				 if (defined $oVars{$content}){
 					my @strings2 = split(",",$oVars{$content});
+					$iVars{"checklist".($id+1)."-$_"}=0 foreach (0..$#strings2);
+					my $action;
+					{ no strict 'refs';$action = sub{
+						    my ($this,$event)=@_;
+						    my $i=$event->GetInt();
+						    my $s=$this->{"checklist".($id+1)}->IsChecked( $i ) ?1 : 0;
+						    $iVars{"checklist".($id+1)."-$i"}=$s;
+							\&{ "main::checklist".($id+1)}($i,$s,$this->{"checklist".($id+1)}->GetString( $i ))} } ; 
+
 					$self->{"checklist".($id+1)}=Wx::CheckListBox->new(
 					    $self->{"subpanel".$id},
 					    $id+1,
@@ -234,7 +242,9 @@ package GFwxFrame;
                         \@strings2,
                         wxDefaultValidator,
                         );
-                        
+                        my $i=0;
+                    foreach my $cli (@{$self->{"checklist".($id+1)}->{Items}}){ $self->{"checklist".($id+1)."-$i"}=$cli,$i++};
+					EVT_CHECKLISTBOX( $self, ($id+1), $action );  #object to bind to,  id, and subroutine to call    
 					$self->{"checklist".($id+1)}->SetFont(Wx::Font->new(10, wxMODERN, wxNORMAL, wxNORMAL ));
 				}
 			 }
@@ -337,7 +347,8 @@ package GFwxFrame;
 #Text input functions
    sub getValue{
 	   my ($self,$id)=@_;
-	   if (!$self->{$id}) {print "can not get  Value for widget ". $id.": Widget not found\n";}
+	   if (exists $iVars{$id}){return  $iVars{$id}}
+	   elsif (!$self->{$id}) {print "can not get  Value for widget ". $id.": Widget not found\n";}
 	   else { $self->{$id}->GetValue();}
    }
    sub setValue{
@@ -350,6 +361,17 @@ package GFwxFrame;
 	   if (!$self->{$id}) {print "can not Append  Value to widget ". $id.": Widget not found\n";}
 	    else { $self->{$id}->AppendText($text);}
    }
+
+
+
+#tooltips https://www.perlmonks.org/?node_id=626281
+   sub tooltip{
+	   my ($self,$id,$tooltip)=@_;
+	   return unless $self->{$id};
+	   $self->{$id}->SetToolTip($tooltip)
+   }
+
+
    
 #drawing canvas functions
    sub draw{ 
