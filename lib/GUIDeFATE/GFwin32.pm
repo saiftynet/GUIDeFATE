@@ -2,7 +2,7 @@ package GFwin32;
    use strict;
    use warnings;
    
-   our $VERSION = '0.13';
+   our $VERSION = '0.14';
    
    use Win32::GUI;
    use Imager;
@@ -131,6 +131,9 @@ package GFwin32;
 	       $iVars{"combo$id"}=$strings2[0];
 	       foreach (@strings2){ $self->{"combo$id"}->InsertItem($_);}
 
+	   }
+	   sub aKB{
+		   
 	   }
        sub aMB{  #parses the menu items into a menu.   menus may need to be a child of main window
 	     my ($self,$canvas,$currentMenu, $id, $label, $type, $action)=@_; 

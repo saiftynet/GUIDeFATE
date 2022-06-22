@@ -3,7 +3,7 @@ package GFwxFrame;
    use strict;
    use warnings;
 
-   our $VERSION = '0.13';
+   our $VERSION = '0.14';
    
    use Exporter 'import';
    our @EXPORT = qw<addWidget addVar addTimer setScale>;
@@ -12,11 +12,10 @@ package GFwxFrame;
           wxFONTENCODING_DEFAULT wxTE_MULTILINE wxHSCROLL wxDefaultPosition wxFD_SAVE
           wxYES wxFD_OPEN wxFD_FILE_MUST_EXIST wxFD_CHANGE_DIR wxID_CANCEL
           wxYES_NO wxCANCEL wxOK  wxCENTRE  wxICON_EXCLAMATION  wxICON_HAND 
-          wxICON_ERROR  wxICON_QUESTION  wxICON_INFORMATION wxCB_DROPDOWN wxSOLID);
-          
-   use Wx::Event qw( EVT_BUTTON EVT_TEXT_ENTER EVT_UPDATE_UI EVT_MENU EVT_COMBOBOX EVT_TIMER);
+          wxICON_ERROR  wxICON_QUESTION  wxICON_INFORMATION wxCB_DROPDOWN wxSOLID wxLB_MULTIPLE          
+          wxDefaultValidator);
+   use Wx::Event qw(EVT_BUTTON EVT_TEXT_ENTER EVT_UPDATE_UI EVT_MENU EVT_COMBOBOX  EVT_CHECKLISTBOX EVT_TIMER);
    use Wx::Perl::Imagick;                 #for image panels
-   # use Wx::Image; 
    
    use base qw(Wx::Frame); # Inherit from Wx::Frame
    
@@ -30,8 +29,13 @@ package GFwxFrame;
    my $lastMenuLabel;  #bug workaround in menu generator
    
    our $winScale=6.5;
-   my $font;
-   setScale($winScale) ;
+   my $font = Wx::Font->new(    1.5*$winScale,
+                                wxDEFAULT,
+                                wxNORMAL,
+                                wxNORMAL,
+                                0,
+                                "",
+                                wxFONTENCODING_DEFAULT);
    
    sub new
    {
@@ -58,6 +62,7 @@ package GFwxFrame;
 		   elsif ($wtype eq "stattext")     {aST($self, $canvas, @params);}
 		   elsif ($wtype eq "sp")           {aSP($self, $canvas, @params);}
 		   elsif ($wtype eq "combo")        {aCB($self, $canvas, @params);}
+		   elsif ($wtype eq "chkbox")       {aKB($self, $canvas, @params);}
 		   elsif ($wtype eq "sp")           {aSP($self, $canvas, @params);}
 		   elsif ($wtype eq "mb"){
 			   if (! $self->{"menubar"}){
@@ -66,18 +71,20 @@ package GFwxFrame;
 				  }
 			   $currentMenu=aMB($self,$canvas,$currentMenu,@params)
 	       }
+	       else {
+			   print "Widget type $wtype withh parameters ".join(", ",@params). "cannot be created";
+		   }
 	   }
 	   #setup timers
 	   foreach my $timerID (keys %timers){
-		   #$timers{$timerID}{timer} = Wx::Timer->new( # create internal timer 
-					#$canvas,                          # Parent Frame
-					#-1,                               # Timer ID
-	        #);
-	        #EVT_TIMER $canvas, $timers{$timerID}{timer}, $timers{$timerID}{function}; 
-		   #if ($timers{$timerID}{interval}>0){
-			   #$timers{$timerID}{timer}->Start($timers{$timerID}{interval});
-		   #}
-		   if ($timers{$timerID}{start} eq '1'){start($self,$timerID)};
+		   $timers{$timerID}{timer} = Wx::Timer->new( # create internal timer 
+					$canvas,                          # Parent Frame
+					-1,                               # Timer ID
+	        );
+	        EVT_TIMER $canvas, $timers{$timerID}{timer}, $timers{$timerID}{function}; 
+		   if ($timers{$timerID}{interval}>0){
+			   $timers{$timerID}{timer}->Start($timers{$timerID}{interval});
+		   }
 	   }
 	   
 	   sub aCB{
@@ -89,7 +96,17 @@ package GFwxFrame;
 		 }
 		 else {print "Combo options not defined for 'combo$id' with label $label\n"}
 	   }
-	   	   
+	   sub aKB{
+		   my ($self,$panel, $id, $label, $location, $size, $action)=@_;
+		   print "Drawing checkBox $id";
+		    $self->{"chkbox".$id} =  Wx::CheckBox->new(     $panel,      # parent
+                                        $id,             # CheckBoxId
+                                        $label,          # label
+                                        $location,       # position
+                                        $size            # size
+                                       );
+              EVT_CHECKBOX( $self, $id, $action );  #object to bind to, buton id, and subroutine to call
+	   }	   
 	   sub aMB{
 	     my ($self,$panel,$currentMenu, $id, $label, $type, $action)=@_;
 	     if (($lastMenuLabel) &&($label eq $lastMenuLabel)){return $currentMenu} # bug workaround 
@@ -130,7 +147,7 @@ package GFwxFrame;
                                         $location,       # position
                                         $size            # size
                                        );
-        EVT_BUTTON( $self, $id, $action );  #object to bind to, buton id, and subroutine to call
+        EVT_BUTTON( $self, $id, $action );  #object to bind to, button id, and subroutine to call
         }
          
         sub aTC{
@@ -147,7 +164,7 @@ package GFwxFrame;
 		 }
          
          sub aST{
-			 my ($self,$panel, $id, $text, $location)=@_;
+			  my ($self,$panel, $id, $text, $location)=@_;
 			 $self->{"stattext".$id} = Wx::StaticText->new( $panel,             # parent
                                         $id,                  # id
                                         $text,                # label
@@ -166,8 +183,7 @@ package GFwxFrame;
 			if ($panelType eq "I"){  # Image panels start with I
 				if (! -e $content){ return; }
 				no warnings;   # sorry about that...suppresses a "Useless string used in void context"
-			    my $image = Wx::Perl::Imagick->new($content, undef, 0);
-			    #my $image = Wx::Image->new($content);
+			    my $image = Wx::Perl::Imagick->new($content);
 			    if ($image){
 			      my $bmp;    # used to hold the bitmap.
 			      my $geom=${$size}[0]."x".${$size}[1]."!";
@@ -179,7 +195,7 @@ package GFwxFrame;
 				 }
 				 else {"print failed to load image $content \n";}
 			 }
-		     elsif ($panelType eq "T"){  # handle
+		     elsif ($panelType eq "T"){  # Text panels start with T
 				
 				$self->{"TextCtrl".($id+1)} = Wx::TextCtrl->new(
                    $self->{"subpanel".$id}, 
@@ -190,6 +206,47 @@ package GFwxFrame;
                    wxTE_MULTILINE|wxHSCROLL 
                   );
                 $self->{"TextCtrl".($id+1)}->SetFont(Wx::Font->new(10, wxMODERN, wxNORMAL, wxNORMAL ));
+			 }
+           elsif ($panelType eq "L"){  ##listbox
+				 if (defined $oVars{$content}){
+					my @strings2 = split(",",$oVars{$content});
+					$self->{"listbox".($id+1)}=Wx::ListBox->new(
+					    $self->{"subpanel".$id},
+					    $id+1,
+                        wxDefaultPosition, 
+                        $size,
+                        \@strings2,
+                        wxLB_MULTIPLE
+                        );
+                        
+					$self->{"listbox".($id+1)}->SetFont(Wx::Font->new(10, wxMODERN, wxNORMAL, wxNORMAL ));
+				}
+			 }
+           elsif ($panelType eq "C"){  ##checkbutton list
+				 if (defined $oVars{$content}){
+					my @strings2 = split(",",$oVars{$content});
+					$iVars{"checklist".($id+1)."-$_"}=0 foreach (0..$#strings2);
+					my $action;
+					{ no strict 'refs';$action = sub{
+						    my ($this,$event)=@_;
+						    my $i=$event->GetInt();
+						    my $s=$this->{"checklist".($id+1)}->IsChecked( $i ) ?1 : 0;
+						    $iVars{"checklist".($id+1)."-$i"}=$s;
+							\&{ "main::checklist".($id+1)}($i,$s,$this->{"checklist".($id+1)}->GetString( $i ))} } ; 
+
+					$self->{"checklist".($id+1)}=Wx::CheckListBox->new(
+					    $self->{"subpanel".$id},
+					    $id+1,
+                        wxDefaultPosition, 
+                        $size,
+                        \@strings2,
+                        wxDefaultValidator,
+                        );
+                        my $i=0;
+                    foreach my $cli (@{$self->{"checklist".($id+1)}->{Items}}){ $self->{"checklist".($id+1)."-$i"}=$cli,$i++};
+					EVT_CHECKLISTBOX( $self, ($id+1), $action );  #object to bind to,  id, and subroutine to call    
+					$self->{"checklist".($id+1)}->SetFont(Wx::Font->new(10, wxMODERN, wxNORMAL, wxNORMAL ));
+				}
 			 }
 			 elsif ($panelType eq "D"){  # handle drawing canvas
 				
@@ -244,7 +301,7 @@ package GFwxFrame;
    }
    sub setScale{
 	   $winScale=shift;
-	   $font = Wx::Font->new(  1.5*$winScale,
+	   $font = Wx::Font->new(   1.5*$winScale,
                                 wxDEFAULT,
                                 wxNORMAL,
                                 wxNORMAL,
@@ -269,8 +326,7 @@ package GFwxFrame;
 	   $id=~s/[^\d]//g;
 	   my $size=getSize($self,$id,\@widgets);
 	   if ($size){
-		   no warnings;
-	       my $image = Wx::Perl::Imagick->new($file,undef,0);
+	       my $image = Wx::Perl::Imagick->new($file);
 		   if ($image){
 			  my $bmp;    # used to hold the bitmap.
 			  my $geom=${$size}[0]."x".${$size}[1]."!";
@@ -291,7 +347,8 @@ package GFwxFrame;
 #Text input functions
    sub getValue{
 	   my ($self,$id)=@_;
-	   if (!$self->{$id}) {print "can not get  Value for widget ". $id.": Widget not found\n";}
+	   if (exists $iVars{$id}){return  $iVars{$id}}
+	   elsif (!$self->{$id}) {print "can not get  Value for widget ". $id.": Widget not found\n";}
 	   else { $self->{$id}->GetValue();}
    }
    sub setValue{
@@ -304,6 +361,17 @@ package GFwxFrame;
 	   if (!$self->{$id}) {print "can not Append  Value to widget ". $id.": Widget not found\n";}
 	    else { $self->{$id}->AppendText($text);}
    }
+
+
+
+#tooltips https://www.perlmonks.org/?node_id=626281
+   sub tooltip{
+	   my ($self,$id,$tooltip)=@_;
+	   return unless $self->{$id};
+	   $self->{$id}->SetToolTip($tooltip)
+   }
+
+
    
 #drawing canvas functions
    sub draw{ 
@@ -357,38 +425,6 @@ package GFwxFrame;
        return (($answer==wxOK)||($answer==wxYES))
 	   
    };
- 
-   
-# Timer functions
-
-  sub start{
-	  my ($self,$timerID)=@_;
-	  #$timers{$timerID}{timer} = AnyEvent->timer (after => 0, interval => $timers{$timerID}{interval}/1000, cb => $timers{$timerID}{function});
-	  $timers{$timerID}{timer} = Wx::Timer->new( # create internal timer 
-					$self,                          # Parent Frame
-					-1,                               # Timer ID
-	        ) or die $!;
-	       EVT_TIMER $self, $timers{$timerID}{timer}, $timers{$timerID}{function}; 
-		   $timers{$timerID}{timer}->Start($timers{$timerID}{interval});
-		   
-  };
-  sub stop{
-	  my ($self,$timerID)=@_;
-	  $timers{$timerID}{timer} = undef;
-  };
-  sub interval{
-	  my ($self,$timerID,$interval)=@_;
-	  stop($self,$timerID);
-	  $timers{$timerID}{interval}=$interval;
-	  start($self,$timerID);
-  };
-  sub callback{
-	  my ($self,$timerID,$function)=@_;
-	  stop($self,$timerID);
-	  $timers{$timerID}{function}=$function;
-	  start($self,$timerID);
-  };
-   
    
 # quit
    sub quit{
@@ -416,7 +452,7 @@ package GFwx;
    our $winWidth;
    our $winHeight;
    our $winTitle;
-   our $winScale=6.5; #was 6.5  
+   our $winScale=6.5;   
    
    sub OnInit
    {

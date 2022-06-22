@@ -2,7 +2,7 @@ package GFgtk2;
    use strict;
    use warnings;
    
-   our $VERSION = '0.13';
+   our $VERSION = '0.14';
    
    use Glib ':constants';   # load Glib and import useful constants
    use Gtk2 '-init';        # load Gtk2 module and initialize it
@@ -66,6 +66,7 @@ package GFgtk2;
          elsif ($wtype eq "stattext")     {aST($self, $canvas, @params);}
          elsif ($wtype eq "sp")           {aSP($self, $canvas, @params);}
          elsif ($wtype eq "combo")        {aCB($self, $canvas, @params);}
+		 elsif ($wtype eq "chkbox")       {aKB($self, $canvas, @params);}
          elsif ($wtype eq "sp")           {aSP($self, $canvas, @params);}
          elsif ($wtype eq "mb")
                          {
@@ -75,11 +76,13 @@ package GFgtk2;
                                 }
                              $currentMenu=aMB($self,$canvas,$currentMenu,@params)
           }
+	       else {
+			   print "Widget type $wtype withh parameters ".join(", ",@params). "cannot be created";
+		   }	  
       }
       foreach my $timerID (keys %timers){
 		  #$timers{$timerID}{timer} = AE::timer 1, $timers{$timerID}{interval}/1000, $timers{$timerID}{function};
-		  #$timers{$timerID}{timer} = AnyEvent->timer (after => 0, interval => $timers{$timerID}{interval}/1000, cb => $timers{$timerID}{function});
-		  if ($timers{$timerID}{start} eq '1'){start($self,$timerID)};
+		  $timers{$timerID}{timer} = AnyEvent->timer (after => 0, interval => $timers{$timerID}{interval}/1000, cb => $timers{$timerID}{function});
 	   }
 	   
       sub aBt{
@@ -113,12 +116,19 @@ package GFgtk2;
            $canvas->{"combo$id"}->set_active (0);
            $canvas->{"combo$id"}->signal_connect(changed => sub{
            $iVars{"combo$id"}=$canvas->{"combo$id"}->get_active_text;
-           &$action});
+		   &$action("",$iVars{"combo$id"})});
            $canvas->put($canvas->{"combo$id"},${$location}[0] ,${$location}[1]);
           }
           else {print "Combo options not defined for 'combo$id' with label $label\n"}
            
       }
+	   sub aKB{
+	    my ($self,$canvas, $id, $label, $location, $action)=@_;
+	    $canvas->{"chkbox$id"}=Gtk2::CheckButton->new_with_label($label);
+	    $canvas->{"chkbox$id"}->signal_connect( clicked => $action );
+	    $canvas->put($canvas->{"chkbox$id"},${$location}[0] ,${$location}[1]);
+		   
+	   }
         sub aMB{
         my ($self,$canvas,$currentMenu, $id, $label, $type, $action)=@_;
         if (($lastMenuLabel) &&($label eq $lastMenuLabel)){return $currentMenu} # bug workaround 
@@ -154,13 +164,13 @@ package GFgtk2;
          
          if ($panelType eq "I"){  # Image panels start with I
             $canvas->{"Image".$id} = Gtk2::Image->new();
-            $canvas->put($canvas->{"Image".$id},${$location}[0] ,${$location}[1]);
+            $canvas->put($canvas->{"Image".$id},${$location}[0] ,${$location}[1]);             
             if (! -e $content){ return; }
             my $pixbuf = Gtk2::Gdk::Pixbuf->new_from_file($content);
             my $scaled = $pixbuf->scale_simple(${$size}[0],${$size}[1], 'GDK_INTERP_HYPER');
             $canvas->{"Image".$id}->set_from_pixbuf($scaled);
           }
-         if ($panelType eq "T"){  
+          elsif ($panelType eq "T"){  
             $canvas->{"sw$id"}= Gtk2::ScrolledWindow->new();
             #$canvas->{"sw$id"}->set_hexpand(1);
             #$canvas->{"sw$id"}->set_vexpand(1);
@@ -171,13 +181,49 @@ package GFgtk2;
             $canvas->{"sw$id"}->add($canvas->{"TextCtrl".($id+1)});
                $canvas->put($canvas->{"sw$id"},${$location}[0] ,${$location}[1]);
           }
+           elsif ($panelType eq "L"){  ##listbox
+				 if (defined $oVars{$content}){
+					my @strings2 = split(",",$oVars{$content});
+                    $canvas->{"listbox".($id+1)}= Gtk2::List->new();
+					foreach my $item (@strings2) {
+                       $canvas->{"listbox".($id+1)}->add(Gtk2::ListItem->new($item));
+                     }
+                    $canvas->{"listbox".($id+1)}->set_selection_mode("multiple");
+					$canvas->{"sw$id"}= Gtk2::ScrolledWindow->new();
+					$canvas->{"sw$id"}->set_size_request (${$size}[0],${$size}[1]);
+					$canvas->{"sw$id"}->add_with_viewport( $canvas->{"listbox".($id+1)} );
+					$canvas->put($canvas->{"sw$id"},${$location}[0] ,${$location}[1]);
+				}
+			 }
+			 elsif ($panelType eq "C"){  ##checklist
+				 #https://python-gtk-3-tutorial.readthedocs.io/en/latest/layout.html
+				 if (defined $oVars{$content}){
+					my @strings2 =  split(",",$oVars{$content});					
+					$canvas->{"sw$id"}= Gtk2::ScrolledWindow->new();
+					$canvas->{"sw$id"}->set_size_request (${$size}[0],${$size}[1]);
+					$canvas->{"checklist".($id+1)} = Gtk2::VBox->new (0, 0);
+                    foreach my $i (0..$#strings2){
+						my $action;
+						$iVars{"checklist".($id+1)."-$i"}=0;
+						# local no ref to create a subroutine that returns 
+						{ no strict 'refs';$action = sub{$iVars{"checklist".($id+1)."-$i"}=$iVars{"checklist".($id+1)."-$i"}?0:1  ;\&{ "main::checklist".($id+1)}($i,$iVars{"checklist".($id+1)."-$i"},$strings2[$i])} } ; 
+
+						$canvas->{"checklist".($id+1)."-$i"}=Gtk2::CheckButton->new_with_label($strings2[$i]);
+						$canvas->{"checklist".($id+1)."-$i"}->signal_connect( clicked => $action );
+						$canvas->{"checklist".($id+1)}->pack_start($canvas->{"checklist".($id+1)."-$i"}, "TRUE","FALSE",0)
+					}
+					$canvas->{"sw$id"}->add_with_viewport( $canvas->{"checklist".($id+1)} );
+
+					$canvas->put($canvas->{"sw$id"},${$location}[0] ,${$location}[1]);
+				}
+			 }
        }
         
       
    }
 
       
-#functions for GUIDeFATE.pm to load the widgets into this backend
+#functions for GUIDeFATE to load the widgets into the backend
    sub addWidget{
       push (@widgets,shift );
    }
@@ -279,6 +325,9 @@ package GFgtk2;
       elsif ($id=~/^t/){
          $self->{panel}->{"$id"}->set_text($text);
       }  
+	   elsif ($id=~/^check/){
+		   $self->{panel}->{"$id"}->set_active($text);
+	   } 
    }   
    sub appendValue{
       my ($self,$id,$text)=@_;
@@ -292,7 +341,16 @@ package GFgtk2;
        my $newText=$self->{panel}->{"$id"}->get_text . $text;
          $self->{panel}->{"$id"}->set_text($newText);
       } 
-   }   
+   }
+   
+#tooltips https://www.perlmonks.org/?node_id=626281
+   sub tooltip{
+	   my ($self,$id,$tooltip)=@_;
+	   return unless $self->{panel}->{"$id"};
+	   $self->{panel}->{"$id"}->set_tooltip_text($tooltip);
+   }
+
+   
 
 #Message box, Fileselector and Dialog Boxes
    sub showFileSelectorDialog{
@@ -336,29 +394,6 @@ package GFgtk2;
        return (($answer eq "ok")||($answer eq "yes"))
    };
    
- # Timer functions
-
-  sub start{
-	  my ($self,$timerID)=@_;
-	  $timers{$timerID}{timer} = AnyEvent->timer (after => 0, interval => $timers{$timerID}{interval}/1000, cb => $timers{$timerID}{function});
-  };
-  sub stop{
-	  my ($self,$timerID)=@_;
-	  $timers{$timerID}{timer} = undef;
-  };
-  sub interval{
-	  my ($self,$timerID,$interval)=@_;
-	  stop($self,$timerID);
-	  $timers{$timerID}{interval}=$interval;
-	  start($self,$timerID);
-  };
-  sub callback{
-	  my ($self,$timerID,$function)=@_;
-	  stop($self,$timerID);
-	  $timers{$timerID}{function}=$function;
-	  start($self,$timerID);
-  };
-    
 # Quit
    sub quit{
       my ($self) = @_;

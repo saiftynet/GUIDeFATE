@@ -2,7 +2,7 @@ package GFhtml;
    use strict;
    use warnings;
    
-   our $VERSION = '0.13';
+   our $VERSION = '0.14';
 
    use Exporter 'import';   
    our @EXPORT      = qw<addWidget addVar setScale MainLoop $frame $winScale $winWidth $winHeight $winTitle>;
@@ -20,7 +20,6 @@ package GFhtml;
    my %iVars=();     #vars for interface operation (e.g. 
    my %oVars=();      #vars for interface creation (e.g. list of options)
    my %styles;
-   my %timers;
    
    my $lastMenuLabel;  #bug workaround in menu generator may be needed for submenus
    
@@ -70,6 +69,7 @@ package GFhtml;
 		   elsif ($wtype eq "stattext")     {aST($self, $canvas, @params);}
 		   elsif ($wtype eq "sp")           {aSP($self, $canvas, @params);}
 		   elsif ($wtype eq "combo")        {aCB($self, $canvas, @params);}
+		   elsif ($wtype eq "chkbox")       {aKB($self, $canvas, @params);}
 		   elsif ($wtype eq "sp")           {aSP($self, $canvas, @params);}
 		   elsif ($wtype eq "mb")
 		      {
@@ -78,12 +78,11 @@ package GFhtml;
 		            }
 	            $currentMenu=aMB($self,$canvas,$currentMenu,@params)
 	         }
+	       else {
+			   print "Widget type $wtype withh parameters ".join(", ",@params). "cannot be created";
+		   }	  
 	   } 
 	   if ($self->{"menubar"}) { $self->{"menubar"}.="</div>\n</li>\n</ul></div>"; }
-	   foreach my $timerID (keys %timers){  ## nnot sure if this needs to be implemented yet
-		   if ($timers{$timerID}{start} eq '1'){start($self,$timerID)};
-	   }
-	   
 	   
 	   sub aBt{      
 	    my ($self,$canvas, $id, $label, $location, $size, $action)=@_;# Button generator
@@ -111,7 +110,12 @@ package GFhtml;
 			 $self->{content}.="</select>\n";
 	      }
 		 else {print "Combo options not defined for 'combo$id' with label $label\n"};
-	   }          
+	   }
+	   sub aKB{
+	    my ($self,$canvas, $id, $label, $location, $action)=@_;
+	       $self->{content}.= "<div style=\"position:absolute;left:".${$location}[0]."px;top:".${$location}[1]."px;\">
+	        <input type=checkbox id=chkbox$id name=chkbox$id ><label for=chkbox$id>$label</label></div>"
+	   }         
 	   
        sub aMB{
 	     my ($self,$canvas,$currentMenu, $id, $label, $type, $action)=@_;
@@ -148,6 +152,13 @@ package GFhtml;
 			elsif ($panelType eq "T"){  
 				$self->{content}.="<textarea id=TextCtrl$id  style=\"position:absolute;left:".${$location}[0]."px;top:".${$location}[1]."px;".
 	                  "width:".${$size}[0]."px;height:".${$size}[1]."px;\">$content</textArea>\n";
+			 }
+			elsif ($panelType eq "L"){  
+			    my @strings2 = split(",",$oVars{$content}); # extract the defined options
+				my $options="";my $index=0;
+				foreach (@strings2){$options.="<option name='".($content.$index++)."' value='$_'>$_</option>\n";}
+					   $self->{content}.="<select name=listbox$id size=".scalar @strings2." style=\"position:absolute;left:".${$location}[0]."px;top:".${$location}[1]."px;".
+	                  "width:".${$size}[0]."px;height:".${$size}[1]."px;\" multiple>$options</select>\n";
 			 }
 		 }
    }
@@ -246,30 +257,7 @@ package GFhtml;
 	   my ($self, $title, $message,$response,$icon) = @_;
 
    };
- 
- # Timer functions
-  sub start{
-	  my ($self,$timerID)=@_;
-	  $timers{$timerID}{timer} = AnyEvent->timer (after => 0, interval => $timers{$timerID}{interval}/1000, cb => $timers{$timerID}{function});
-  };
-  sub stop{
-	  my ($self,$timerID)=@_;
-	  $timers{$timerID}{timer} = undef;
-  };
-  sub interval{
-	  my ($self,$timerID,$interval)=@_;
-	  stop($self,$timerID);
-	  $timers{$timerID}{interval}=$interval;
-	  start($self,$timerID);
-  };
-  sub callback{
-	  my ($self,$timerID,$function)=@_;
-	  stop($self,$timerID);
-	  $timers{$timerID}{function}=$function;
-	  start($self,$timerID);
-  };
-    
-  
+   
 # Quit
    sub quit{
 
