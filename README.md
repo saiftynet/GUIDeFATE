@@ -96,12 +96,74 @@ From Version 0.10 seven backends are supported. Wx, Tk, Gtk, Qt, Win32, HTML, We
 
 Supported Widgets: -
 
+
+# Widgets supported:-
+
+* Static Text
+```
+|    Static text            |
+```
+* Text Entry box
+```
+|   [ Default text    ]     |
+```
 * Buttons
-* Single text entry
-* Multi-line Text entry
-* ComboBoxes
-* Menu (partial)
-* Image panel
+```
+|   {Button Label     }     |
+```
+* MultiLine Text box
+```
+|  +T-----------------+     |
+|  |                  |     |
+|  |                  |     |
+|  |                  |     |
+|  +------------------+     |
+```
+* Combo Box
+```
+|   ^listName  ^            |
+```
+* Image Panel
+```
+|  +I-----------------+     |
+|  |                  |     |
+|  |                  |     |
+|  |                  |     |
+|  +------------------+     |
+```
+* Menu
+```
+Menu
+-File
+--New
+--Open
+--Save Script
+--Quit
+```
+* Fileselector
+```
+	my $file= $frame->showFileSelectorDialog("Save file",0);
+```
+* Message box
+```
+   if($frame->showDialog("Sure?","This will wipe existing text...proceed?","OKC","!")){
+
+}
+```
+
+* Timer (experimental memory leaks in non GTK backends)
+
+* Tooltips
+```
+		$frame->tooltip(<widget-Id>,<Tooltip text>);
+```
+* CheckListBox (not so well in Websocket and Wx)
+```
+|   +C-------------------+   |
+|   |checklistitems      |   |
+|   |                    |   |
+|   +--------------------+   |
+```
 * [Timers](https://github.com/saiftynet/GUIDeFATE/wiki/Timers) also supported
 
 More will be made as time goes along
